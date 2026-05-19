@@ -1,0 +1,38 @@
+/* ============================================================
+   Vista: Reportes
+   ============================================================ */
+
+/* Nombre de archivo truncado */
+#reportes-table td:nth-child(4) {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: #6B7280;
+}
+
+/* Columna empresa */
+#reportes-table td:nth-child(1) strong {
+  color: var(--color-blue-primary);
+}
+
+/* Columna acciones */
+#reportes-table th:last-child,
+#reportes-table td:last-child {
+  text-align: right;
+}
+
+/* ============================================================
+   Responsive: Reportes
+   ============================================================ */
+@media (max-width: 768px) {
+  #reportes-table {
+    min-width: 560px;
+  }
+
+  #reportes-table td:nth-child(4) {
+    max-width: 100px;
+  }
+}

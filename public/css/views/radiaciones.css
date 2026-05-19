@@ -1,0 +1,48 @@
+/* ============================================================
+   Vista: Radiación Solar
+   ============================================================ */
+
+/* Tabla tiene 7 columnas — requiere scroll horizontal */
+#radiaciones-table {
+  min-width: 700px;
+}
+
+/* Columnas numéricas alineadas a la derecha */
+#radiaciones-table th:nth-child(2),
+#radiaciones-table td:nth-child(2),
+#radiaciones-table th:nth-child(3),
+#radiaciones-table td:nth-child(3),
+#radiaciones-table th:nth-child(4),
+#radiaciones-table td:nth-child(4),
+#radiaciones-table th:nth-child(5),
+#radiaciones-table td:nth-child(5) {
+  text-align: right;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+/* Badge para clima */
+#radiaciones-table .clima-badge {
+  display: inline-block;
+  padding: 2px var(--spacing-sm);
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background-color: var(--color-gray-light);
+  color: var(--color-gray-dark);
+}
+
+/* Columna acciones */
+#radiaciones-table th:last-child,
+#radiaciones-table td:last-child {
+  text-align: right;
+}
+
+/* ============================================================
+   Responsive: Radiaciones
+   ============================================================ */
+@media (max-width: 768px) {
+  #radiaciones-table {
+    min-width: 700px;
+  }
+}

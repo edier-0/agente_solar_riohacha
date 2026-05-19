@@ -1,0 +1,39 @@
+/* ============================================================
+   Vista: Alertas
+   ============================================================ */
+
+/* Color de fila según severidad */
+#alertas-container .data-table tbody tr:has(.badge.alert-error) {
+  background-color: #FFF5F5;
+}
+
+#alertas-container .data-table tbody tr:has(.badge.alert-warning) {
+  background-color: #FFFBEB;
+}
+
+#alertas-container .data-table tbody tr:has(.badge.alert-info) {
+  background-color: #EFF6FF;
+}
+
+/* Columna mensaje truncada */
+#alertas-container .data-table td:nth-child(3) {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badge de tipo alineado */
+#alertas-container .data-table th:nth-child(2),
+#alertas-container .data-table td:nth-child(2) {
+  min-width: 120px;
+}
+
+/* ============================================================
+   Responsive: Alertas
+   ============================================================ */
+@media (max-width: 768px) {
+  #alertas-container .data-table td:nth-child(3) {
+    max-width: 150px;
+  }
+}

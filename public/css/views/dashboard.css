@@ -1,0 +1,67 @@
+/* ============================================================
+   Vista: Dashboard
+   ============================================================ */
+
+/* KPI grid superior */
+.kpi-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.kpi-section .grid {
+  margin-bottom: 0;
+}
+
+/* Refuerzo visual del valor KPI */
+.kpi-card .kpi-value {
+  font-size: 2rem;
+  letter-spacing: -1px;
+}
+
+/* Sección de alertas recientes con altura máxima */
+.dashboard-alertas .card-body {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Tabla de empresas en dashboard */
+#empresas-table th:last-child,
+#empresas-table td:last-child {
+  text-align: right;
+}
+
+/* Espaciado entre secciones del dashboard */
+.dashboard-section + .dashboard-section {
+  margin-top: var(--spacing-lg);
+}
+
+/* ============================================================
+   Responsive: Dashboard
+   ============================================================ */
+@media (max-width: 1024px) {
+  .kpi-card .kpi-value {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    text-align: left;
+    padding: var(--spacing-md);
+  }
+
+  .kpi-card .kpi-icon {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .kpi-card .kpi-trend {
+    display: none;
+  }
+
+  .kpi-card .kpi-value {
+    font-size: 1.4rem;
+  }
+}
