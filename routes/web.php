@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\ConsumoController;
 use App\Http\Controllers\Web\RadiacionController;
 use App\Http\Controllers\Web\AlertaController;
 use App\Http\Controllers\Web\ReporteController;
+use App\Http\Controllers\Web\UsuarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,3 +52,8 @@ Route::get('/alertas/create', [AlertaController::class, 'create'])->name('alerta
 Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
 Route::get('/reportes/create', [ReporteController::class, 'create'])->name('reportes.create');
 Route::get('/reportes/{id}/edit', [ReporteController::class, 'edit'])->name('reportes.edit');
+
+// Usuarios
+Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
+Route::get('/usuarios/{id}/edit', [UsuarioController::class, 'edit'])->name('usuarios.edit');

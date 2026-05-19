@@ -78,6 +78,12 @@
                             <span>Reportes</span>
                         </a>
                     </li>
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('usuarios.index') }}" class="sidebar-nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
+                            <span class="sidebar-nav-icon">👤</span>
+                            <span>Usuarios</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
