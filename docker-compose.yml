@@ -3,14 +3,14 @@ version: '3.9'
 services:
   mysql:
     image: mysql:8.0
-    container_name: agente_solar_mysql
+    container_name: agente_solar_mysql_2
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: agente_solar_db
       MYSQL_ALLOW_EMPTY_PASSWORD: "no"
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: agente_solar_api
+    container_name: agente_solar_api_2
     restart: unless-stopped
     depends_on:
       mysql:
@@ -41,7 +41,7 @@ services:
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
       ENVIRONMENT: production
     ports:
-      - "8000:8000"
+      - "8001:8000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -49,14 +49,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.streamlit
-    container_name: agente_solar_streamlit
+    container_name: agente_solar_streamlit_2
     restart: unless-stopped
     depends_on:
       - api
     environment:
       API_BASE_URL: http://api:8000
     ports:
-      - "8501:8501"
+      - "8502:8501"
 
 volumes:
   mysql_data:
