@@ -39,9 +39,14 @@ services:
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
-      ENVIRONMENT: production
+      ENVIRONMENT: development
+      WATCHFILES_FORCE_POLLING: "true"
     ports:
       - "8001:8000"
+    volumes:
+      - ./app:/app/app
+      - ./scripts:/app/scripts
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -57,6 +62,18 @@ services:
       API_BASE_URL: http://api:8000
     ports:
       - "8502:8501"
+    volumes:
+      - ./streamlit_app:/app/streamlit_app
+    command:
+      - streamlit
+      - run
+      - streamlit_app/Home.py
+      - --server.port=8501
+      - --server.address=0.0.0.0
+      - --server.headless=true
+      - --browser.gatherUsageStats=false
+      - --server.runOnSave=true
+      - --server.fileWatcherType=poll
 
 volumes:
   mysql_data:
