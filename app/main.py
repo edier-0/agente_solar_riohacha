@@ -1,0 +1,88 @@
+"""
+Agente Solar Inteligente — API FastAPI
+Dashboard Solar con IA para Ahorro Energético en Riohacha, La Guajira.
+"""
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app.core.config import get_settings
+from app.db.session import engine, Base
+from app.models import models  # noqa: F401  importar para registrar modelos
+
+from app.api.routes import (
+    auth,
+    users,
+    empresas,
+    solar,
+    consumo,
+    ia,
+    predicciones,
+    alertas,
+    reportes,
+)
+
+settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    Base.metadata.create_all(bind=engine)
+    yield
+    # Shutdown
+
+
+app = FastAPI(
+    title="Agente Solar Inteligente API",
+    description=(
+        "API REST para el Dashboard Solar con IA para Ahorro Energético en Riohacha, La Guajira. "
+        "Diseñada para ser consumida desde el frontend Streamlit y aplicaciones móviles."
+    ),
+    version="1.1.0",
+    lifespan=lifespan,
+    contact={
+        "name": "Equipo Hackatón La Guajira",
+        "url": "https://github.com",
+    },
+    license_info={"name": "MIT"},
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción, especificar dominios concretos
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Routers
+API_PREFIX = "/api/v1"
+app.include_router(auth.router, prefix=API_PREFIX)
+app.include_router(users.router, prefix=API_PREFIX)
+app.include_router(empresas.router, prefix=API_PREFIX)
+app.include_router(solar.router, prefix=API_PREFIX)
+app.include_router(consumo.router, prefix=API_PREFIX)
+app.include_router(ia.router, prefix=API_PREFIX)
+app.include_router(predicciones.router, prefix=API_PREFIX)
+app.include_router(alertas.router, prefix=API_PREFIX)
+app.include_router(reportes.router, prefix=API_PREFIX)
+
+
+@app.get("/", tags=["Root"])
+def root():
+    return {
+        "app": "Agente Solar Inteligente API",
+        "version": "1.1.0",
+        "ubicacion": "Riohacha, La Guajira, Colombia",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
+
+@app.get("/health", tags=["Root"])
+def health():
+    return {"status": "ok", "environment": settings.ENVIRONMENT}
