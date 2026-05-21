@@ -126,9 +126,9 @@ Credenciales de acceso:
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
-| 🎨 **Frontend Streamlit** | http://localhost:8501 | Dashboard, gráficas, IA |
-| 📡 **API Swagger Docs** | http://localhost:8000/docs | Documentación interactiva |
-| 📡 **API ReDoc** | http://localhost:8000/redoc | Documentación alternativa |
+| 🎨 **Frontend Streamlit** | http://localhost:8502 | Dashboard, gráficas, IA |
+| 📡 **API Swagger Docs** | http://localhost:8001/docs | Documentación interactiva |
+| 📡 **API ReDoc** | http://localhost:8001/redoc | Documentación alternativa |
 | 🗄️ **MySQL** | `localhost:3306` | DB (user: `root` / pass: `root`) |
 
 ### Paso 7 (Opcional) — Activar IA con Ollama
