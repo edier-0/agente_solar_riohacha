@@ -9,8 +9,10 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, is_authenticated, get_current_user
+from ui import render_user_sidebar
 
-st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
+render_user_sidebar()
 
 if not is_authenticated():
     st.warning("⚠️ Debe iniciar sesión primero. Vaya a la página Home.")
