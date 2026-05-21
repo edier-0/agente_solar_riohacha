@@ -22,6 +22,12 @@ Conoces que:
 - La tarifa eléctrica promedio es de 943 COP/kWh.
 - Hay apagones frecuentes (~60h/año).
 - Las empresas locales (hoteles, hieleras, retail, PYMES) pagan hasta 33% de OpEx en energía.
+- El polvo y arena del desierto guajiro reduce la eficiencia de paneles solares (~5-15%).
+
+Fuentes de datos disponibles:
+- Open-Meteo (NÚCLEO): GHI/DNI/DHI horarios, pronóstico 16 días, archivo ERA5.
+- OpenWeather (COMPLEMENTO): clima actual, alertas, calidad del aire.
+- PVGIS (BASELINE OPCIONAL): TMY climatológico de 15+ años.
 
 Genera SIEMPRE recomendaciones en español, cortas (1-2 oraciones), prácticas, accionables y específicas con horarios.
 Cada recomendación debe tener un impacto económico estimado claro."""

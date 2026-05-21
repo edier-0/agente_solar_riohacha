@@ -11,6 +11,13 @@ class UserRole(str, enum.Enum):
     ANALISTA = "analista"
 
 
+class VistaPreferida(str, enum.Enum):
+    """Modo de visualización elegido por el usuario."""
+    SIMPLE = "simple"            # Lenguaje natural, semáforos, sin números técnicos
+    DETALLADO = "detallado"      # Series, métricas crudas, exportables
+    OPERACIONAL = "operacional"  # Salud del sistema (admin)
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -18,7 +25,16 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
-    role = Column(SQLEnum(UserRole), default=UserRole.EMPRESA, nullable=False)
+    role = Column(
+        SQLEnum(UserRole, values_callable=lambda x: [e.value for e in x]),
+        default=UserRole.EMPRESA,
+        nullable=False,
+    )
+    vista_preferida = Column(
+        SQLEnum(VistaPreferida, values_callable=lambda x: [e.value for e in x]),
+        default=VistaPreferida.SIMPLE,
+        nullable=False,
+    )
     is_active = Column(Boolean, default=True)
     empresa_id = Column(Integer, ForeignKey("empresas.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -56,9 +72,15 @@ class RadiacionSolar(Base):
     ghi = Column(Float)  # Global Horizontal Irradiance (kWh/m²/día)
     dni = Column(Float)  # Direct Normal Irradiance
     dhi = Column(Float)  # Diffuse Horizontal Irradiance
-    temperatura = Column(Float)  # °C
+    temperatura = Column(Float)  # °C (promedio)
+    temperatura_max = Column(Float)  # °C
+    temperatura_min = Column(Float)  # °C
     nubosidad = Column(Float)  # %
-    fuente = Column(String(50))  # nasa_power, cams, openweather
+    precipitacion_mm = Column(Float)
+    viento_kmh_max = Column(Float)
+    # fuente: open_meteo (núcleo), openweather (complemento), pvgis (baseline),
+    #         nasa_power (legacy), synthetic
+    fuente = Column(String(50))
     latitud = Column(Float, default=11.5444)
     longitud = Column(Float, default=-72.9072)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

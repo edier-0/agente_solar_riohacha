@@ -16,9 +16,22 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
     # APIs Externas
-    NASA_POWER_BASE_URL: str = "https://power.larc.nasa.gov/api/temporal/daily/point"
+    # --- NÚCLEO PRINCIPAL: Open-Meteo (gratis, sin API key, GHI/DNI/DHI nativo) ---
+    OPENMETEO_FORECAST_URL: str = "https://api.open-meteo.com/v1/forecast"
+    OPENMETEO_ARCHIVE_URL: str = "https://archive-api.open-meteo.com/v1/archive"
+    OPENMETEO_AIR_QUALITY_URL: str = "https://air-quality-api.open-meteo.com/v1/air-quality"
+
+    # --- COMPLEMENTO: OpenWeather (alertas, validación cruzada) ---
     OPENWEATHER_API_KEY: str = ""
     OPENWEATHER_BASE_URL: str = "https://api.openweathermap.org/data/2.5"
+
+    # --- OPCIONAL: PVGIS v6 (TMY baseline para infraestructura solar) ---
+    PVGIS_BASE_URL: str = "https://re.jrc.ec.europa.eu/api/v5_3"
+    PVGIS_VERSION: str = "v5_3"  # PVGIS API; v6 endpoint no público aún, v5_3 es el estable
+    PVGIS_ENABLED: bool = True
+
+    # --- LEGACY: NASA POWER (se mantiene como respaldo histórico) ---
+    NASA_POWER_BASE_URL: str = "https://power.larc.nasa.gov/api/temporal/daily/point"
 
     # Coordenadas Riohacha
     RIOHACHA_LAT: float = 11.5444

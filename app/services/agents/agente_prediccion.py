@@ -1,7 +1,10 @@
 """
 Agente de Predicción.
 Predice consumo futuro, producción solar y riesgo de apagones (24-72h).
-Usa promedios móviles y patrones simples (sin ML pesado para MVP).
+
+Fuentes:
+- NÚCLEO: Open-Meteo (forecast horario con GHI/DNI/DHI nativo).
+- COMPLEMENTO: OpenWeather (validación cruzada de nubosidad).
 """
 from typing import List, Dict
 from datetime import datetime, timedelta
@@ -15,6 +18,7 @@ from app.models.models import (
     Prediccion,
     Empresa,
 )
+from app.services.openmeteo import openmeteo_service
 from app.services.openweather import openweather_service
 from app.services.agents.agente_solar import agente_solar
 
@@ -54,21 +58,26 @@ class AgentePrediccion:
             promedio_diario = 0
             confianza_consumo = 50.0
 
-        # 2. Pronóstico meteorológico
-        forecast = await openweather_service.get_forecast()
+        # 2. NÚCLEO: Pronóstico Open-Meteo (horario con GHI nativo)
+        dias_horizonte = max(1, min(7, horas_horizonte // 24 + 1))
+        forecast_horario = await openmeteo_service.get_forecast_horario(days=dias_horizonte)
 
-        # 3. Predicción de producción solar por día
-        producciones_dia = {}
-        for item in forecast:
+        # 3. Predicción producción solar agrupando por día.
+        #    Convertir GHI horario W/m² → kWh/m²/día (sum × 1h / 1000)
+        ghi_por_dia: Dict = {}
+        nubosidad_por_dia: Dict = {}
+        for item in forecast_horario:
             fecha_dia = item["fecha"].date()
-            # Estimación rudimentaria: a menor nubosidad, mayor GHI
-            nubosidad = item.get("nubosidad", 30) or 30
-            ghi_estimado = 5.5 * (1 - nubosidad / 100)  # Base 5.5 kWh/m²/día Riohacha
-            produccion_3h = agente_solar.calcular_produccion_estimada_kwh(
-                ghi_estimado / 8,  # 8 períodos de 3h diurnos aprox
-                empresa.capacidad_paneles_kw,
+            ghi_w = item.get("ghi_w_m2") or 0
+            ghi_por_dia[fecha_dia] = ghi_por_dia.get(fecha_dia, 0) + ghi_w / 1000
+            nubosidad_por_dia.setdefault(fecha_dia, []).append(item.get("nubosidad") or 0)
+
+        producciones_dia = {}
+        for fecha_dia, ghi_total in ghi_por_dia.items():
+            produccion = agente_solar.calcular_produccion_estimada_kwh(
+                ghi_total, empresa.capacidad_paneles_kw
             )
-            producciones_dia[fecha_dia] = producciones_dia.get(fecha_dia, 0) + produccion_3h
+            producciones_dia[fecha_dia] = produccion
 
         predicciones_creadas = []
         creadas_resumen = []
@@ -86,7 +95,7 @@ class AgentePrediccion:
                 tipo="produccion_solar",
                 valor=round(produccion_total, 2),
                 unidad="kWh",
-                confianza_pct=75.0,
+                confianza_pct=80.0,  # Open-Meteo da GHI directo → mayor confianza
             )
             db.add(p1)
 
@@ -121,17 +130,23 @@ class AgentePrediccion:
                 "produccion_solar_kwh": round(produccion_total, 2),
                 "consumo_kwh": round(promedio_diario, 2),
                 "costo_cop": round(costo, 0),
+                "ghi_diario_kwh_m2": round(ghi_por_dia[fecha_dia], 2),
             })
 
-        # 4. Riesgo de apagón (basado en nubosidad alta + consumo alto)
-        max_nubosidad = max((f.get("nubosidad", 0) or 0 for f in forecast[:24]), default=0)
-        riesgo_apagon = 0.0
-        if max_nubosidad > 75:
-            riesgo_apagon = 40.0
+        # 4. Riesgo de apagón: nubosidad alta sostenida en próximas 24h
+        prox_24h = forecast_horario[:24]
+        nubosidades = [f.get("nubosidad", 0) or 0 for f in prox_24h]
+        max_nubosidad = max(nubosidades, default=0)
+        prom_nubosidad = sum(nubosidades) / len(nubosidades) if nubosidades else 0
+
+        if max_nubosidad > 80 and prom_nubosidad > 60:
+            riesgo_apagon = 45.0
+        elif max_nubosidad > 75:
+            riesgo_apagon = 30.0
         elif max_nubosidad > 50:
-            riesgo_apagon = 25.0
+            riesgo_apagon = 18.0
         else:
-            riesgo_apagon = 10.0
+            riesgo_apagon = 8.0
 
         p_apagon = Prediccion(
             empresa_id=empresa.id,
@@ -140,7 +155,7 @@ class AgentePrediccion:
             tipo="riesgo_apagon",
             valor=riesgo_apagon,
             unidad="%",
-            confianza_pct=60.0,
+            confianza_pct=65.0,
         )
         db.add(p_apagon)
         predicciones_creadas.append(p_apagon)
@@ -154,6 +169,8 @@ class AgentePrediccion:
             "riesgo_apagon_24h_pct": riesgo_apagon,
             "promedio_consumo_diario_kwh": round(promedio_diario, 2),
             "total_predicciones_guardadas": len(predicciones_creadas),
+            "fuente_principal": "open_meteo",
+            "fuente_complemento": "openweather",
         }
 
 

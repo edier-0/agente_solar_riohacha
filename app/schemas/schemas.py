@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
-from app.models.models import UserRole
+from app.models.models import UserRole, VistaPreferida
 
 
 # --- Auth Schemas ---
@@ -23,12 +23,17 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     role: UserRole
+    vista_preferida: VistaPreferida = VistaPreferida.SIMPLE
     is_active: bool
     empresa_id: Optional[int] = None
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class UserPreferenciasUpdate(BaseModel):
+    vista_preferida: VistaPreferida
 
 
 class Token(BaseModel):
@@ -116,7 +121,11 @@ class RadiacionResponse(BaseModel):
     dni: Optional[float]
     dhi: Optional[float]
     temperatura: Optional[float]
+    temperatura_max: Optional[float] = None
+    temperatura_min: Optional[float] = None
     nubosidad: Optional[float]
+    precipitacion_mm: Optional[float] = None
+    viento_kmh_max: Optional[float] = None
     fuente: Optional[str]
     created_at: datetime
 

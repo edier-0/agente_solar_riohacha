@@ -1,50 +1,65 @@
-"""Componentes compartidos de interfaz para Streamlit."""
+"""Shared Streamlit UI helpers."""
+
 import streamlit as st
 
 from api_client import get_current_user, is_authenticated, logout
+from design import inject_css, inject_style_block, render_sidebar_brand
 
 
-def hide_admin_page_for_non_admin() -> None:
-    """Oculta el enlace de Administracion en el menu para usuarios no admin."""
+PAGE_VISIBILITY = {
+    "Mi_Dia": {"roles": ("empresa", "admin")},
+    "Dashboard": {"roles": ("admin", "empresa", "analista")},
+    "Consumo": {"roles": ("admin", "empresa", "analista")},
+    "Datos_Solares": {"roles": ("admin", "analista")},
+    "Recomendaciones_IA": {"roles": ("admin", "empresa", "analista")},
+    "Alertas": {"roles": ("admin", "empresa", "analista")},
+    "Predicciones": {"roles": ("admin", "empresa", "analista")},
+    "Reportes": {"roles": ("admin", "analista")},
+    "Administracion": {"roles": ("admin",)},
+}
+
+
+def _hide_pages_by_user() -> None:
+    """Hide sidebar pages based on user role only."""
     user = get_current_user() or {}
-    if user.get("role") == "admin":
+    role = user.get("role", "empresa")
+
+    hidden = [key for key, cfg in PAGE_VISIBILITY.items() if role not in cfg["roles"]]
+    if not hidden:
         return
 
-    st.markdown(
-        """
-        <style>
-        [data-testid="stSidebarNav"] li:has(a[href*="Administracion"]),
-        [data-testid="stSidebarNav"] li:has(a[href*="Administraci%C3%B3n"]),
-        [data-testid="stSidebarNav"] div:has(> a[href*="Administracion"]),
-        [data-testid="stSidebarNav"] div:has(> a[href*="Administraci%C3%B3n"]),
-        [data-testid="stSidebarNav"] a[href*="Administracion"],
-        [data-testid="stSidebarNav"] a[href*="Administraci%C3%B3n"] {
-            display: none !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    selectors = []
+    for key in hidden:
+        selectors.append(f'[data-testid="stSidebarNav"] a[href*="{key}"]')
+        selectors.append(f'[data-testid="stSidebarNav"] li:has(a[href*="{key}"])')
+
+    inject_style_block(f"{', '.join(selectors)} {{ display: none !important; }}")
 
 
 def go_to_login() -> None:
-    """Envia al usuario al Home/login."""
+    """Send the user back to Home/login."""
     st.switch_page("Home.py")
 
 
 def render_user_sidebar() -> None:
-    """Muestra datos del usuario y boton de cierre de sesion en el sidebar."""
+    """Render the authenticated sidebar."""
     if not is_authenticated():
         go_to_login()
 
-    hide_admin_page_for_non_admin()
+    inject_css()
+    _hide_pages_by_user()
 
     with st.sidebar:
-        st.markdown("### 🌞 Agente Solar")
+        render_sidebar_brand("Agente Solar", "Operacion diaria simplificada")
+
         user = get_current_user()
         if user:
-            st.success(f"**{user.get('full_name', 'Usuario')}**")
-            st.caption(f"📧 {user.get('email')}")
-        if st.button("🚪 Cerrar sesión", use_container_width=True, key="sidebar_logout"):
+            st.success(user.get("full_name", "Usuario"))
+            st.caption(user.get("email", ""))
+            st.caption(f"Rol: {user.get('role', '-')}")
+            st.caption("Vista inicial: simple con acceso a detalles tecnicos dentro de cada modulo.")
+
+        st.divider()
+        if st.button("Cerrar sesion", use_container_width=True, key="sidebar_logout"):
             logout()
             go_to_login()

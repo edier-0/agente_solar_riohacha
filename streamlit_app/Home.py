@@ -1,201 +1,137 @@
-"""
-Agente Solar Inteligente - Frontend Streamlit
-Página principal: Login + Landing.
-"""
-import streamlit as st
-from api_client import login, logout, is_authenticated, get_current_user, api_get
-from ui import go_to_login, hide_admin_page_for_non_admin
+"""Agente Solar Inteligente - landing and login."""
 
-st.set_page_config(
-    page_title="Agente Solar Inteligente",
-    page_icon="☀️",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    
-    
-)
+import streamlit as st
+
+from api_client import api_get, get_current_user, is_authenticated, login, logout
+from design import inject_css, inject_style_block, render_card, render_hero, render_section_header, render_sidebar_brand, render_spacer
+from ui import _hide_pages_by_user, go_to_login
+
+
+st.set_page_config(page_title="Agente Solar Inteligente", layout="wide", initial_sidebar_state="expanded")
+inject_css()
 
 if not is_authenticated():
-    st.markdown("""
-    <style>
-
-    [data-testid="stSidebar"] {
-        display: none;
-    }
-
-    [data-testid="collapsedControl"] {
-        display: none;
-    }
-
-    </style>
-    """, unsafe_allow_html=True)
+    inject_style_block(
+        """
+        [data-testid="stSidebar"] { display: none; }
+        [data-testid="collapsedControl"] { display: none; }
+        """
+    )
 else:
-    hide_admin_page_for_non_admin()
-    
-# CSS personalizado
-st.markdown("""
-<style>
+    _hide_pages_by_user()
 
-   .main-header {
-        background: linear-gradient(135deg, #1B4F72 0%, #117A65 100%);
-        padding: 2rem;
-        border-radius: 12px;
-        color: white;
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-    .main-header h1 {
-        margin: 0;
-        font-size: 2.5rem;
-    }
-    .main-header p {
-        margin: 0.5rem 0 0 0;
-        opacity: 0.95;
-    }
-    .kpi-card {
-        background: white;
-        border-left: 4px solid #117A65;
-        padding: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .stButton button {
-        background-color: #1B4F72;
-        color: white;
-        border: none;
-        padding: 0.5rem 2rem;
-        border-radius: 6px;
-    }
-    .stButton button:hover {
-        background-color: #117A65;
-        color: white;
-    }
-</style>
-""", unsafe_allow_html=True)
+render_hero(
+    "Agente Solar Inteligente",
+    "Monitorea consumo, produccion solar, alertas y recomendaciones con una experiencia mas clara y menos cargada.",
+    icon="sun",
+    eyebrow="Riohacha · gestion energetica asistida",
+    tone="brand",
+)
 
-
-# Header principal
-st.markdown("""
-<div class="main-header">
-    <h1>☀️ Agente Solar Inteligente</h1>
-    <p>Dashboard Solar con IA para Ahorro Energético en Riohacha, La Guajira</p>
-</div>
-""", unsafe_allow_html=True)
-
-
-# Sidebar: usuario y logout
 with st.sidebar:
-    st.markdown("### 🌞 Agente Solar",)
+    render_sidebar_brand("Agente Solar", "Acceso y navegacion")
     if is_authenticated():
         user = get_current_user()
         if user:
-            st.success(f"**{user.get('full_name', 'Usuario')}**")
-            st.caption(f"📧 {user.get('email')}")
-        if st.button("🚪 Cerrar sesión", use_container_width=True):
+            st.success(user.get("full_name", "Usuario"))
+            st.caption(user.get("email", ""))
+        if st.button("Cerrar sesion", use_container_width=True):
             logout()
             go_to_login()
     else:
-        st.info("Inicie sesión para continuar")
+        st.info("Inicia sesion para continuar.")
 
-
-# Contenido principal según estado
 if not is_authenticated():
-    col_login, col_info = st.columns([1, 1])
+    col_login, col_info = st.columns([1, 1.15])
 
     with col_login:
-        st.subheader("🔐 Iniciar sesión")
+        render_section_header("Iniciar sesion", "lock", "Acceso para administracion, analisis y operacion.")
         with st.form("login_form"):
-            email = st.text_input("Correo electrónico", placeholder="usuario@empresa.com")
-            password = st.text_input("Contraseña", type="password")
+            email = st.text_input("Correo electronico", placeholder="usuario@empresa.com")
+            password = st.text_input("Contrasena", type="password")
             submit = st.form_submit_button("Ingresar", use_container_width=True)
 
             if submit:
                 if email and password:
                     token = login(email, password)
                     if token:
-                        st.success("✅ Sesión iniciada")
+                        st.success("Sesion iniciada correctamente.")
                         st.rerun()
                 else:
-                    st.warning("Complete todos los campos")
+                    st.warning("Completa ambos campos.")
 
-        st.divider()
-        with st.expander("💡 Credenciales de demostración"):
-            st.code("""
-Admin:
-  email: admin@agentesolar.co
-  password: admin123
-
-Empresa Demo (Hotel):
-  email: hotel@agentesolar.co
-  password: hotel123
-            """)
+        with st.expander("Credenciales de demostracion"):
+            st.code(
+                "Admin:\n"
+                "  email: admin@agentesolar.co\n"
+                "  password: admin123\n\n"
+                "Empresa Demo:\n"
+                "  email: hotel@agentesolar.co\n"
+                "  password: hotel123"
+            )
 
     with col_info:
-        st.subheader("🌞 Sobre el Sistema")
-        st.markdown("""
-        **Agente Solar Inteligente** es una plataforma que combina **datos científicos solares** con
-        **agentes IA** para generar recomendaciones automáticas de ahorro energético.
-
-        #### Funcionalidades clave:
-        - 📊 Dashboard con KPIs en tiempo real
-        - ☀️ Datos solares de NASA POWER y OpenWeather
-        - 📁 Carga de consumo desde CSV/Excel
-        - 🤖 Recomendaciones IA con Llama 3.2 (Ollama)
-        - 🔮 Predicciones a 24-72h
-        - 🚨 Sistema de alertas configurables
-        - 📑 Reportes PDF y Excel exportables
-
-        #### Stack:
-        - **FastAPI** + **MySQL** (Backend / API REST)
-        - **Streamlit** (Frontend / Visualización)
-        - **Ollama + Llama 3.2** (IA local privada)
-        - **NASA POWER**, **OpenWeather**, **CAMS** (Datos solares)
-
-        > Caso ancla: empresas reales de Riohacha (hoteles, hieleras, retail).
-        """)
+        render_section_header("Resumen del sistema", "dashboard", "Vista general del producto.")
+        cards = st.columns(2)
+        with cards[0]:
+            render_card(
+                "Monitoreo operativo",
+                body="KPIs, consumo, costos y estado energetico diario con una lectura rapida.",
+                icon="chart",
+                tone="info",
+            )
+        with cards[1]:
+            render_card(
+                "Inteligencia aplicada",
+                body="Recomendaciones, predicciones y alertas construidas sobre datos solares y consumo.",
+                icon="idea",
+                tone="success",
+            )
+        cards = st.columns(2)
+        with cards[0]:
+            render_card(
+                "Fuentes de datos",
+                body="Open-Meteo, NASA POWER, OpenWeather y PVGIS para radiacion, clima y validacion.",
+                icon="cloud",
+                tone="warning",
+            )
+        with cards[1]:
+            render_card(
+                "Casos de uso",
+                body="Hoteles, retail, cadena de frio y otras operaciones con sensibilidad a costo y continuidad.",
+                icon="factory",
+                tone="brand",
+            )
 else:
-    # Usuario autenticado - mostrar bienvenida
     user = get_current_user() or {}
-    st.success(f"### ¡Bienvenido, {user.get('full_name', 'usuario')}!")
+    st.success(f"Bienvenido, {user.get('full_name', 'usuario')}.")
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.info(
-            "**📊 Dashboard**\n\n"
-            "Vea KPIs, gráficas y estado en tiempo real de su empresa."
-        )
-    with col2:
-        st.info(
-            "**🤖 Recomendaciones IA**\n\n"
-            "Genere sugerencias personalizadas de ahorro con IA."
-        )
-    with col3:
-        st.info(
-            "**📑 Reportes**\n\n"
-            "Exporte reportes PDF y Excel para directivos."
-        )
+    cols = st.columns(3)
+    with cols[0]:
+        render_card("Dashboard", body="Consulta KPIs, tendencias y comparativas del negocio.", icon="chart", tone="info")
+    with cols[1]:
+        render_card("Recomendaciones", body="Prioriza acciones concretas de ahorro y operacion.", icon="idea", tone="success")
+    with cols[2]:
+        render_card("Reportes", body="Descarga informes listos para seguimiento interno.", icon="report", tone="brand")
 
-    st.divider()
-    st.markdown("### 👉 Use el menú lateral para navegar por las secciones del sistema.")
+    render_spacer()
+    st.info("Usa el menu lateral para navegar. Cada modulo inicia en vista compacta y permite abrir detalles tecnicos cuando los necesites.")
 
-    # Estado del sistema
-    st.divider()
-    col_estado1, col_estado2 = st.columns(2)
-    with col_estado1:
-        st.markdown("#### 🤖 Estado del Motor IA")
+    status_cols = st.columns(2)
+    with status_cols[0]:
+        render_section_header("Motor de recomendaciones", "idea")
         ia_status = api_get("/ia/status")
         if ia_status:
             if ia_status.get("ollama_disponible"):
-                st.success(f"✅ Ollama disponible — Modelo: `{ia_status.get('modelo')}`")
+                st.success(f"Modelo disponible: {ia_status.get('modelo')}")
             else:
-                st.warning(f"⚠️ Ollama no disponible — Modo: `{ia_status.get('modo')}`")
-                st.caption("Las recomendaciones usarán reglas heurísticas (fallback).")
+                st.warning(f"Modo alterno activo: {ia_status.get('modo')}")
+                st.caption("El sistema seguira operando con reglas heuristicas.")
 
-    with col_estado2:
-        st.markdown("#### 🏢 Empresas Disponibles")
+    with status_cols[1]:
+        render_section_header("Empresas accesibles", "factory")
         empresas = api_get("/empresas/")
         if empresas is not None:
-            st.metric("Total accesibles", len(empresas))
-            if empresas:
-                for e in empresas[:3]:
-                    st.caption(f"• **{e['nombre']}** ({e.get('tipo', 'N/A')})")
+            st.metric("Total", len(empresas))
+            for empresa in empresas[:3]:
+                st.caption(f"{empresa['nombre']} · {empresa.get('tipo', 'N/A')}")

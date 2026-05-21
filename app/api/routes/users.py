@@ -4,7 +4,7 @@ from typing import List
 
 from app.db.session import get_db
 from app.models.models import User, UserRole
-from app.schemas.schemas import UserResponse
+from app.schemas.schemas import UserResponse, UserPreferenciasUpdate
 from app.api.deps.auth import get_current_user, get_admin_user
 
 router = APIRouter(prefix="/users", tags=["Usuarios"])
@@ -17,6 +17,19 @@ def list_users(
 ):
     """Listar todos los usuarios (solo admin)."""
     return db.query(User).all()
+
+
+@router.patch("/me/preferencias", response_model=UserResponse)
+def update_preferencias(
+    payload: UserPreferenciasUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Actualizar la vista preferida del usuario autenticado."""
+    current_user.vista_preferida = payload.vista_preferida
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.get("/{user_id}", response_model=UserResponse)

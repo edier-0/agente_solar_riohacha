@@ -21,6 +21,7 @@ from app.api.routes import (
     predicciones,
     alertas,
     reportes,
+    insights,
 )
 
 settings = get_settings()
@@ -70,6 +71,7 @@ app.include_router(ia.router, prefix=API_PREFIX)
 app.include_router(predicciones.router, prefix=API_PREFIX)
 app.include_router(alertas.router, prefix=API_PREFIX)
 app.include_router(reportes.router, prefix=API_PREFIX)
+app.include_router(insights.router, prefix=API_PREFIX)
 
 
 @app.get("/", tags=["Root"])
