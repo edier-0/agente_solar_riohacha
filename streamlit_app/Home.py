@@ -4,12 +4,13 @@ Página principal: Login + Landing.
 """
 import streamlit as st
 from api_client import login, logout, is_authenticated, get_current_user, api_get
+from ui import go_to_login, hide_admin_page_for_non_admin
 
 st.set_page_config(
     page_title="Agente Solar Inteligente",
     page_icon="☀️",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
     
     
 )
@@ -28,6 +29,8 @@ if not is_authenticated():
 
     </style>
     """, unsafe_allow_html=True)
+else:
+    hide_admin_page_for_non_admin()
     
 # CSS personalizado
 st.markdown("""
@@ -90,7 +93,7 @@ with st.sidebar:
             st.caption(f"📧 {user.get('email')}")
         if st.button("🚪 Cerrar sesión", use_container_width=True):
             logout()
-            st.rerun()
+            go_to_login()
     else:
         st.info("Inicie sesión para continuar")
 
