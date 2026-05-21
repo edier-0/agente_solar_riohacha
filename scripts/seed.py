@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.orm import Session
 from app.db.session import SessionLocal, engine, Base
+from app.db.migrations import ensure_schema_compatibility
 from app.models import models
 from app.models.models import (
     User, Empresa, ConsumoEnergetico, RadiacionSolar,
@@ -22,6 +23,7 @@ from app.core.security import get_password_hash
 def seed():
     print("[INFO] Creando tablas...")
     Base.metadata.create_all(bind=engine)
+    ensure_schema_compatibility(engine)
 
     db: Session = SessionLocal()
 

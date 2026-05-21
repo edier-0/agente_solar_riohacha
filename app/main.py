@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.db.session import engine, Base
+from app.db.migrations import ensure_schema_compatibility
 from app.models import models  # noqa: F401  importar para registrar modelos
 
 from app.api.routes import (
@@ -31,6 +32,7 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     # Startup
     Base.metadata.create_all(bind=engine)
+    ensure_schema_compatibility(engine)
     yield
     # Shutdown
 

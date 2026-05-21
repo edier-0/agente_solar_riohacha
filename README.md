@@ -105,6 +105,8 @@ Abre **otra terminal** (sin cerrar la anterior) y ejecuta:
 docker compose exec api python scripts/seed.py
 ```
 
+> Si tu volumen de MySQL viene de una versión anterior del proyecto, el arranque y el seed intentan reparar automáticamente columnas faltantes como `users.vista_preferida`. Si sigue fallando, recrea la base con `docker compose down -v` y vuelve a levantar el stack.
+
 Esto crea:
 - 3 usuarios demo (admin, empresa, analista)
 - Empresa piloto **"Hotel Solar Riohacha"**
@@ -228,6 +230,18 @@ La API detectará Ollama automáticamente vía `host.docker.internal:11434`.
 ### Construir la BD desde cero (si no existe)
 
 Las tablas se crean **automáticamente** al iniciar la API gracias a `Base.metadata.create_all()` en `app/main.py`. No requiere paso manual la primera vez.
+
+### Si cambias el modelo o el esquema de la BD
+
+Este proyecto usa Docker y un volumen persistente de MySQL. Eso significa que un cambio en los modelos ORM no se aplica solo por reconstruir la imagen: si la BD ya existía, el volumen puede seguir teniendo la estructura vieja.
+
+Regla práctica:
+
+1. Si el cambio es de desarrollo y puedes perder datos, usa `docker compose down -v` y luego `docker compose up --build`.
+2. Después vuelve a ejecutar `docker compose exec api python scripts/seed.py`.
+3. Si no puedes borrar datos, agrega una migración explícita o una corrección puntual de esquema. El proyecto ya incluye una compatibilidad mínima para columnas conocidas que quedaron desfasadas, pero no reemplaza un sistema de migraciones completo.
+
+Cuando aparezca un error como `Unknown column ... in field list`, casi siempre significa que el código cambió antes que la BD del volumen. En ese caso, revisa primero el `SHOW CREATE TABLE` de la tabla afectada dentro del contenedor MySQL.
 
 Si quieres forzar la creación o reconstruir desde cero:
 
