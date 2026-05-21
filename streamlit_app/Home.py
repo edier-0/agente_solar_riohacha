@@ -9,14 +9,31 @@ st.set_page_config(
     page_title="Agente Solar Inteligente",
     page_icon="☀️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
+    
+    
 )
 
+if not is_authenticated():
+    st.markdown("""
+    <style>
 
+    [data-testid="stSidebar"] {
+        display: none;
+    }
+
+    [data-testid="collapsedControl"] {
+        display: none;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+    
 # CSS personalizado
 st.markdown("""
 <style>
-    .main-header {
+
+   .main-header {
         background: linear-gradient(135deg, #1B4F72 0%, #117A65 100%);
         padding: 2rem;
         border-radius: 12px;
@@ -65,15 +82,12 @@ st.markdown("""
 
 # Sidebar: usuario y logout
 with st.sidebar:
-    st.markdown("### 🌞 Agente Solar")
+    st.markdown("### 🌞 Agente Solar",)
     if is_authenticated():
         user = get_current_user()
         if user:
             st.success(f"**{user.get('full_name', 'Usuario')}**")
             st.caption(f"📧 {user.get('email')}")
-            st.caption(f"👤 Rol: `{user.get('role', '')}`")
-            if user.get("empresa_id"):
-                st.caption(f"🏢 Empresa ID: `{user['empresa_id']}`")
         if st.button("🚪 Cerrar sesión", use_container_width=True):
             logout()
             st.rerun()
