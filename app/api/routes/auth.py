@@ -1,20 +1,17 @@
 from datetime import timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.schemas.schemas import UserLogin
 from sqlalchemy.orm import Session
 
-from app.db.session import get_db
-from app.models.models import User, UserRole
-from app.schemas.schemas import UserCreate, UserResponse, Token
-from app.core.security import (
-    verify_password,
-    get_password_hash,
-    create_access_token,
-)
-from app.core.config import get_settings
 from app.api.deps.auth import get_current_user
+from app.core.config import get_settings
+from app.core.security import create_access_token, get_password_hash, verify_password
+from app.db.session import get_db
+from app.models.models import User
+from app.schemas.schemas import MessageResponse, Token, UserCreate, UserLogin, UserResponse
 
-router = APIRouter(prefix="/auth", tags=["Autenticación"])
+
+router = APIRouter(prefix="/auth", tags=["Autenticacion"])
 settings = get_settings()
 
 
@@ -25,7 +22,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El correo ya está registrado",
+            detail="El correo ya esta registrado",
         )
 
     user = User(
@@ -42,10 +39,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(
-    login_data: UserLogin,
-    db: Session = Depends(get_db),
-):
+def login(login_data: UserLogin, db: Session = Depends(get_db)):
     """Login con email y password. Retorna JWT."""
     user = db.query(User).filter(User.email == login_data.email).first()
     if not user or not verify_password(login_data.password, user.hashed_password):
@@ -74,5 +68,17 @@ def login(
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
-    """Obtener información del usuario autenticado."""
+    """Obtener informacion del usuario autenticado."""
     return current_user
+
+
+@router.post("/logout", response_model=MessageResponse)
+def logout(current_user: User = Depends(get_current_user)):
+    """
+    Cerrar sesion del usuario autenticado.
+
+    La autenticacion actual usa JWT stateless, asi que esta ruta valida el token
+    recibido y permite al cliente cerrar sesion de forma explicita limpiando su
+    estado local.
+    """
+    return MessageResponse(message=f"Sesion cerrada correctamente para {current_user.email}")

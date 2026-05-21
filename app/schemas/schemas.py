@@ -47,6 +47,10 @@ class TokenData(BaseModel):
     role: Optional[str] = None
 
 
+class MessageResponse(BaseModel):
+    message: str
+
+
 # --- Empresa Schemas ---
 class EmpresaCreate(BaseModel):
     nombre: str
