@@ -29,7 +29,7 @@ def login(email: str, password: str) -> Optional[str]:
     try:
         resp = requests.post(
             f"{API_BASE_URL}{API_PREFIX}/auth/login",
-            data={"username": email, "password": password},
+            json={"email": email, "password": password},
             timeout=10,
         )
         if resp.status_code == 200:
