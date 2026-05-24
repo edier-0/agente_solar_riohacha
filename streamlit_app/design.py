@@ -172,6 +172,50 @@ def inject_css() -> None:
             font-size: 0.95rem;
             line-height: 1.55;
         }}
+        .ag-card__body[data-tooltip] {{
+            position: relative;
+            cursor: help;
+        }}
+        .ag-card__body[data-tooltip]:hover::after {{
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 12px);
+            left: -10px;
+            width: 260px;
+            background: rgba(15, 29, 39, 0.98);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(8px);
+        }}
+        .ag-card__body[data-tooltip]:hover::before {{
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 15px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: var(--border) transparent transparent transparent;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }}
+        .ag-card__body[data-tooltip]:hover::after,
+        .ag-card__body[data-tooltip]:hover::before {{
+            opacity: 1;
+            transform: translateY(0);
+        }}
         .ag-card__action {{
             margin-top: 0.8rem;
             padding: 0.7rem 0.85rem;
@@ -275,6 +319,16 @@ def inject_css() -> None:
             border: 1px solid var(--border);
             background: rgba(19, 38, 50, 0.84);
             color: var(--text);
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }}
+        .stTabs [data-baseweb="tab-panel"] {{
+            padding-top: 1.5rem !important;
+            padding-bottom: 1rem !important;
+            padding-right: 1.5rem !important;
+            padding-left: 1.5rem !important;
         }}
         .stTabs [aria-selected="true"] {{
             background: rgba(15, 29, 39, 0.98);
@@ -372,12 +426,16 @@ def render_card(
     tone: str = "brand",
     badge: str | None = None,
     action: str | None = None,
+    tooltip: str | None = None,
 ) -> None:
     """Render a dashboard-style summary card."""
     color = TONE_MAP.get(tone, TONE_MAP["brand"])[0]
     badge_html = f'<span class="ag-card__badge">{escape(badge)}</span>' if badge else ""
     value_html = f'<div class="ag-card__value" style="color: {color};">{escape(value)}</div>' if value else ""
-    body_html = f'<div class="ag-card__body">{escape(body)}</div>' if body else ""
+    
+    tooltip_attr = f' data-tooltip="{escape(tooltip)}"' if tooltip else ""
+    body_html = f'<div class="ag-card__body"{tooltip_attr}>{escape(body)}</div>' if body else ""
+    
     action_html = f'<div class="ag-card__action">{escape(action)}</div>' if action else ""
     render_html_block(
         f"""

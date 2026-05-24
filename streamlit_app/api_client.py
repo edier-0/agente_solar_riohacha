@@ -21,7 +21,7 @@ def _get_headers() -> Dict[str, str]:
 
 
 def _clear_session() -> None:
-    for key in ("token", "user"):
+    for key in ("token", "user", "escenario_activo"):
         if key in st.session_state:
             del st.session_state[key]
 
@@ -30,6 +30,20 @@ def _url(path: str) -> str:
     if path.startswith("http"):
         return path
     return f"{API_BASE_URL}{API_PREFIX}{path}"
+
+
+def get_active_scenario() -> str:
+    user = get_current_user()
+    if user and "escenario_usuario" in user:
+        return user["escenario_usuario"]
+    value = st.session_state.get("escenario_activo", "demo")
+    return value if value in ("demo", "real") else "demo"
+
+
+def _with_scenario(params: Optional[Dict]) -> Dict:
+    merged = dict(params or {})
+    merged["escenario"] = get_active_scenario()
+    return merged
 
 
 def login(email: str, password: str) -> Optional[str]:
@@ -57,6 +71,47 @@ def login(email: str, password: str) -> Optional[str]:
     except requests.RequestException as exc:
         st.error(f"Error de conexion con API: {exc}")
         return None
+
+
+def register(
+    email: str,
+    password: str,
+    full_name: str,
+    role: str = "empresa",
+    escenario_usuario: str = "real",
+    nombre_empresa: Optional[str] = None,
+    tipo_empresa: Optional[str] = None,
+    tarifa_kwh: Optional[float] = None,
+) -> bool:
+    """Registra un nuevo usuario en la API."""
+    try:
+        payload = {
+            "email": email,
+            "password": password,
+            "full_name": full_name,
+            "role": role,
+            "escenario_usuario": escenario_usuario,
+            "nombre_empresa": nombre_empresa,
+            "tipo_empresa": tipo_empresa,
+            "tarifa_kwh": tarifa_kwh,
+        }
+        resp = requests.post(
+            f"{API_BASE_URL}{API_PREFIX}/auth/register",
+            json=payload,
+            timeout=15,
+        )
+        if resp.status_code in (200, 201):
+            return True
+
+        try:
+            detail = resp.json().get("detail", "Error desconocido")
+        except Exception:
+            detail = resp.text
+        st.error(f"Registro fallido: {detail}")
+        return False
+    except requests.RequestException as exc:
+        st.error(f"Error de conexion con API: {exc}")
+        return False
 
 
 def logout(call_api: bool = True) -> bool:
@@ -90,7 +145,7 @@ def get_current_user() -> Optional[Dict]:
 
 def api_get(path: str, params: Optional[Dict] = None) -> Optional[Any]:
     try:
-        resp = requests.get(_url(path), headers=_get_headers(), params=params, timeout=30)
+        resp = requests.get(_url(path), headers=_get_headers(), params=_with_scenario(params), timeout=30)
         if resp.status_code == 401:
             _clear_session()
             st.warning("Sesion expirada. Inicie sesion nuevamente.")
@@ -110,7 +165,7 @@ def api_post(path: str, json: Optional[Dict] = None, files: Any = None, params: 
             headers=_get_headers(),
             json=json if files is None else None,
             files=files,
-            params=params,
+            params=_with_scenario(params),
             timeout=120,
         )
         if resp.status_code == 401:
@@ -130,9 +185,15 @@ def api_post(path: str, json: Optional[Dict] = None, files: Any = None, params: 
         return None
 
 
-def api_patch(path: str, json: Optional[Dict] = None) -> Optional[Any]:
+def api_patch(path: str, json: Optional[Dict] = None, params: Optional[Dict] = None) -> Optional[Any]:
     try:
-        resp = requests.patch(_url(path), headers=_get_headers(), json=json, timeout=30)
+        resp = requests.patch(
+            _url(path),
+            headers=_get_headers(),
+            json=json,
+            params=_with_scenario(params),
+            timeout=30,
+        )
         if resp.status_code == 401:
             _clear_session()
             st.warning("Sesion expirada.")
@@ -148,7 +209,7 @@ def api_patch(path: str, json: Optional[Dict] = None) -> Optional[Any]:
 def api_download(path: str, params: Optional[Dict] = None) -> Optional[bytes]:
     """Descarga binaria (PDF/Excel)."""
     try:
-        resp = requests.get(_url(path), headers=_get_headers(), params=params, timeout=60)
+        resp = requests.get(_url(path), headers=_get_headers(), params=_with_scenario(params), timeout=60)
         if resp.status_code == 401:
             _clear_session()
             st.warning("Sesion expirada.")

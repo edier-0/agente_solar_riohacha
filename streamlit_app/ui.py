@@ -2,7 +2,12 @@
 
 import streamlit as st
 
-from api_client import get_current_user, is_authenticated, logout
+from api_client import (
+    get_active_scenario,
+    get_current_user,
+    is_authenticated,
+    logout,
+)
 from design import inject_css, inject_style_block, render_sidebar_brand
 
 
@@ -14,7 +19,7 @@ PAGE_VISIBILITY = {
     "Recomendaciones_IA": {"roles": ("admin", "empresa", "analista")},
     "Alertas": {"roles": ("admin", "empresa", "analista")},
     "Predicciones": {"roles": ("admin", "empresa", "analista")},
-    "Reportes": {"roles": ("admin", "analista")},
+    "Reportes": {"roles": ("admin", "analista", "empresa")},
     "Administracion": {"roles": ("admin",)},
 }
 
@@ -55,9 +60,9 @@ def render_user_sidebar() -> None:
         user = get_current_user()
         if user:
             st.success(user.get("full_name", "Usuario"))
-            st.caption(user.get("email", ""))
-            st.caption(f"Rol: {user.get('role', '-')}")
-            st.caption("Vista inicial: simple con acceso a detalles tecnicos dentro de cada modulo.")
+        escenario_actual = get_active_scenario()
+        escenario_label = "Demo" if escenario_actual == "demo" else "Real"
+        st.caption(f"Escenario activo: **{escenario_label}**")
 
         st.divider()
         if st.button("Cerrar sesion", use_container_width=True, key="sidebar_logout"):
