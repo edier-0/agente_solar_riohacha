@@ -38,6 +38,15 @@ def ensure_schema_compatibility(engine: Engine) -> None:
                         "NOT NULL DEFAULT 'simple' AFTER `role`"
                     )
                 )
+        if "escenario_usuario" not in user_columns:
+            with engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "ALTER TABLE users "
+                        "ADD COLUMN escenario_usuario VARCHAR(20) "
+                        "NOT NULL DEFAULT 'real' AFTER `role`"
+                    )
+                )
 
     if inspector.has_table("radiacion_solar"):
         radiacion_columns = {column["name"] for column in inspector.get_columns("radiacion_solar")}
@@ -51,6 +60,12 @@ def ensure_schema_compatibility(engine: Engine) -> None:
             missing_radiacion_columns.append("ADD COLUMN precipitacion_mm FLOAT NULL")
         if "viento_kmh_max" not in radiacion_columns:
             missing_radiacion_columns.append("ADD COLUMN viento_kmh_max FLOAT NULL")
+        if "escenario" not in radiacion_columns:
+            missing_radiacion_columns.append("ADD COLUMN escenario VARCHAR(20) NOT NULL DEFAULT 'demo'")
+        if "origen_dato" not in radiacion_columns:
+            missing_radiacion_columns.append("ADD COLUMN origen_dato VARCHAR(40) NOT NULL DEFAULT 'seed_demo'")
+        if "confiabilidad" not in radiacion_columns:
+            missing_radiacion_columns.append("ADD COLUMN confiabilidad FLOAT NULL DEFAULT 50")
 
         if missing_radiacion_columns:
             with engine.begin() as connection:
@@ -58,5 +73,70 @@ def ensure_schema_compatibility(engine: Engine) -> None:
                     text(
                         "ALTER TABLE radiacion_solar "
                         + ", ".join(missing_radiacion_columns)
+                    )
+                )
+
+    if inspector.has_table("empresas"):
+        empresa_columns = {column["name"] for column in inspector.get_columns("empresas")}
+        if "escenario_default" not in empresa_columns:
+            with engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "ALTER TABLE empresas "
+                        "ADD COLUMN escenario_default VARCHAR(20) NOT NULL DEFAULT 'demo'"
+                    )
+                )
+
+    if inspector.has_table("consumo_energetico"):
+        consumo_columns = {column["name"] for column in inspector.get_columns("consumo_energetico")}
+        missing_consumo_columns = []
+        if "escenario" not in consumo_columns:
+            missing_consumo_columns.append("ADD COLUMN escenario VARCHAR(20) NOT NULL DEFAULT 'demo'")
+        if "origen_dato" not in consumo_columns:
+            missing_consumo_columns.append("ADD COLUMN origen_dato VARCHAR(40) NOT NULL DEFAULT 'seed_demo'")
+        if "confiabilidad" not in consumo_columns:
+            missing_consumo_columns.append("ADD COLUMN confiabilidad FLOAT NULL DEFAULT 50")
+        if missing_consumo_columns:
+            with engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "ALTER TABLE consumo_energetico "
+                        + ", ".join(missing_consumo_columns)
+                    )
+                )
+
+    if inspector.has_table("predicciones"):
+        pred_columns = {column["name"] for column in inspector.get_columns("predicciones")}
+        missing_pred_columns = []
+        if "escenario" not in pred_columns:
+            missing_pred_columns.append("ADD COLUMN escenario VARCHAR(20) NOT NULL DEFAULT 'demo'")
+        if "origen_dato" not in pred_columns:
+            missing_pred_columns.append("ADD COLUMN origen_dato VARCHAR(40) NOT NULL DEFAULT 'modelo_hibrido'")
+        if "confiabilidad_datos" not in pred_columns:
+            missing_pred_columns.append("ADD COLUMN confiabilidad_datos FLOAT NULL DEFAULT 50")
+        if missing_pred_columns:
+            with engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "ALTER TABLE predicciones "
+                        + ", ".join(missing_pred_columns)
+                    )
+                )
+
+    if inspector.has_table("recomendaciones"):
+        rec_columns = {column["name"] for column in inspector.get_columns("recomendaciones")}
+        missing_rec_columns = []
+        if "escenario" not in rec_columns:
+            missing_rec_columns.append("ADD COLUMN escenario VARCHAR(20) NOT NULL DEFAULT 'demo'")
+        if "origen_dato" not in rec_columns:
+            missing_rec_columns.append("ADD COLUMN origen_dato VARCHAR(40) NOT NULL DEFAULT 'reglas'")
+        if "confiabilidad_datos" not in rec_columns:
+            missing_rec_columns.append("ADD COLUMN confiabilidad_datos FLOAT NULL DEFAULT 50")
+        if missing_rec_columns:
+            with engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "ALTER TABLE recomendaciones "
+                        + ", ".join(missing_rec_columns)
                     )
                 )

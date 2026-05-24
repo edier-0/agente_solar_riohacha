@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from app.models.models import UserRole, VistaPreferida
 
@@ -11,6 +11,10 @@ class UserCreate(BaseModel):
     full_name: str
     role: UserRole = UserRole.EMPRESA
     empresa_id: Optional[int] = None
+    escenario_usuario: str = "real"
+    nombre_empresa: Optional[str] = None
+    tipo_empresa: Optional[str] = None
+    tarifa_kwh: Optional[float] = None
 
 
 class UserLogin(BaseModel):
@@ -23,6 +27,7 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     role: UserRole
+    escenario_usuario: str = "real"
     vista_preferida: VistaPreferida = VistaPreferida.SIMPLE
     is_active: bool
     empresa_id: Optional[int] = None
@@ -101,6 +106,18 @@ class ConsumoCreate(BaseModel):
     periodo: str = "diario"
 
 
+class ConsumoMensualCreate(BaseModel):
+    empresa_id: int
+    anio: int
+    mes: int
+    consumo_total_kwh: float
+    costo_energia_cop: float
+    costo_total_cop: Optional[float] = None
+    fecha_emision: Optional[datetime] = None
+    fecha_pago_oportuno: Optional[datetime] = None
+    fecha_suspension: Optional[datetime] = None
+
+
 class ConsumoResponse(BaseModel):
     id: int
     empresa_id: int
@@ -111,6 +128,9 @@ class ConsumoResponse(BaseModel):
     produccion_solar_kwh: float
     nivel_bateria_pct: Optional[float]
     periodo: str
+    escenario: str = "demo"
+    origen_dato: Optional[str] = None
+    confiabilidad: Optional[float] = None
     created_at: datetime
 
     class Config:
@@ -131,6 +151,9 @@ class RadiacionResponse(BaseModel):
     precipitacion_mm: Optional[float] = None
     viento_kmh_max: Optional[float] = None
     fuente: Optional[str]
+    escenario: Optional[str] = None
+    origen_dato: Optional[str] = None
+    confiabilidad: Optional[float] = None
     created_at: datetime
 
     class Config:
@@ -163,6 +186,9 @@ class RecomendacionResponse(BaseModel):
     tipo: Optional[str]
     impacto_estimado_cop: Optional[float]
     confianza_pct: Optional[float]
+    escenario: Optional[str] = None
+    origen_dato: Optional[str] = None
+    confiabilidad_datos: Optional[float] = None
     aplicada: bool
     created_at: datetime
 
@@ -180,6 +206,9 @@ class PrediccionResponse(BaseModel):
     valor: float
     unidad: Optional[str]
     confianza_pct: Optional[float]
+    escenario: Optional[str] = None
+    origen_dato: Optional[str] = None
+    confiabilidad_datos: Optional[float] = None
     created_at: datetime
 
     class Config:

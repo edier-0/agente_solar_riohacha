@@ -37,10 +37,6 @@ class Settings(BaseSettings):
     RIOHACHA_LAT: float = 11.5444
     RIOHACHA_LON: float = -72.9072
 
-    # Ollama
-    OLLAMA_BASE_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "llama3.2:3b"
-
     # App
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
@@ -56,6 +52,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "allow"
 
 
 @lru_cache()

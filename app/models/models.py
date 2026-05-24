@@ -30,6 +30,7 @@ class User(Base):
         default=UserRole.EMPRESA,
         nullable=False,
     )
+    escenario_usuario = Column(String(20), default="real", nullable=False)  # demo | real
     vista_preferida = Column(
         SQLEnum(VistaPreferida, values_callable=lambda x: [e.value for e in x]),
         default=VistaPreferida.SIMPLE,
@@ -55,6 +56,7 @@ class Empresa(Base):
     tarifa_kwh = Column(Float, default=943.0)  # COP/kWh
     capacidad_paneles_kw = Column(Float, default=0.0)
     capacidad_bateria_kwh = Column(Float, default=0.0)
+    escenario_default = Column(String(20), default="demo")  # demo | real
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -81,6 +83,9 @@ class RadiacionSolar(Base):
     # fuente: open_meteo (núcleo), openweather (complemento), pvgis (baseline),
     #         nasa_power (legacy), synthetic
     fuente = Column(String(50))
+    escenario = Column(String(20), default="demo")  # demo | real
+    origen_dato = Column(String(40), default="seed_demo")  # real_api | seed_demo | synthetic_fallback
+    confiabilidad = Column(Float, default=50.0)  # 0-100
     latitud = Column(Float, default=11.5444)
     longitud = Column(Float, default=-72.9072)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -98,6 +103,9 @@ class ConsumoEnergetico(Base):
     produccion_solar_kwh = Column(Float, default=0.0)
     nivel_bateria_pct = Column(Float)
     periodo = Column(String(20))  # horario, diario, mensual
+    escenario = Column(String(20), default="demo")  # demo | real
+    origen_dato = Column(String(40), default="seed_demo")  # real_upload | seed_demo
+    confiabilidad = Column(Float, default=50.0)  # 0-100
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     empresa = relationship("Empresa", back_populates="consumos")
@@ -126,6 +134,9 @@ class Recomendacion(Base):
     tipo = Column(String(50))  # ahorro, redistribucion, contingencia, mantenimiento
     impacto_estimado_cop = Column(Float)
     confianza_pct = Column(Float)
+    escenario = Column(String(20), default="demo")  # demo | real
+    origen_dato = Column(String(40), default="reglas")  # llm | reglas
+    confiabilidad_datos = Column(Float, default=50.0)  # 0-100
     aplicada = Column(Boolean, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -143,6 +154,9 @@ class Prediccion(Base):
     valor = Column(Float, nullable=False)
     unidad = Column(String(20))  # kWh, COP, %
     confianza_pct = Column(Float)
+    escenario = Column(String(20), default="demo")  # demo | real
+    origen_dato = Column(String(40), default="modelo_hibrido")  # modelo_hibrido
+    confiabilidad_datos = Column(Float, default=50.0)  # 0-100
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
