@@ -34,6 +34,7 @@ class AgentePrediccion:
     ) -> Dict:
         """Genera predicciones y guarda en BD."""
         ahora = datetime.now()
+        escenario = empresa.escenario_default or "demo"
 
         # 1. Promedio histórico de consumo
         since = ahora - timedelta(days=30)
@@ -60,7 +61,10 @@ class AgentePrediccion:
 
         # 2. NÚCLEO: Pronóstico Open-Meteo (horario con GHI nativo)
         dias_horizonte = max(1, min(7, horas_horizonte // 24 + 1))
-        forecast_horario = await openmeteo_service.get_forecast_horario(days=dias_horizonte)
+        forecast_horario = await openmeteo_service.get_forecast_horario(
+            days=dias_horizonte,
+            allow_synthetic=escenario != "real",
+        )
 
         # 3. Predicción producción solar agrupando por día.
         #    Convertir GHI horario W/m² → kWh/m²/día (sum × 1h / 1000)
@@ -96,6 +100,9 @@ class AgentePrediccion:
                 valor=round(produccion_total, 2),
                 unidad="kWh",
                 confianza_pct=80.0,  # Open-Meteo da GHI directo → mayor confianza
+                escenario=escenario,
+                origen_dato="modelo_hibrido",
+                confiabilidad_datos=80.0 if escenario == "real" else 55.0,
             )
             db.add(p1)
 
@@ -108,6 +115,9 @@ class AgentePrediccion:
                 valor=round(promedio_diario, 2),
                 unidad="kWh",
                 confianza_pct=round(confianza_consumo, 1),
+                escenario=escenario,
+                origen_dato="modelo_hibrido",
+                confiabilidad_datos=round(confianza_consumo, 1),
             )
             db.add(p2)
 
@@ -121,6 +131,9 @@ class AgentePrediccion:
                 valor=round(costo, 0),
                 unidad="COP",
                 confianza_pct=round(confianza_consumo, 1),
+                escenario=escenario,
+                origen_dato="modelo_hibrido",
+                confiabilidad_datos=round(confianza_consumo, 1),
             )
             db.add(p3)
 
@@ -156,6 +169,9 @@ class AgentePrediccion:
             valor=riesgo_apagon,
             unidad="%",
             confianza_pct=65.0,
+            escenario=escenario,
+            origen_dato="modelo_hibrido",
+            confiabilidad_datos=65.0 if escenario == "real" else 50.0,
         )
         db.add(p_apagon)
         predicciones_creadas.append(p_apagon)

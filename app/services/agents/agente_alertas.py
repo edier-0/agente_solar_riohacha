@@ -21,6 +21,7 @@ class AgenteAlertas:
 
     def evaluar(self, db: Session, empresa: Empresa) -> List[Alerta]:
         """Evalúa condiciones y crea alertas si corresponde."""
+        escenario = empresa.escenario_default or "demo"
         config = (
             db.query(ConfiguracionAlerta)
             .filter(ConfiguracionAlerta.empresa_id == empresa.id)
@@ -42,6 +43,7 @@ class AgenteAlertas:
             .filter(
                 ConsumoEnergetico.empresa_id == empresa.id,
                 ConsumoEnergetico.fecha >= hoy_inicio,
+                ConsumoEnergetico.escenario == escenario,
             )
             .scalar() or 0.0
         )
@@ -63,7 +65,10 @@ class AgenteAlertas:
         # 2. Batería baja
         ultimo_consumo = (
             db.query(ConsumoEnergetico)
-            .filter(ConsumoEnergetico.empresa_id == empresa.id)
+            .filter(
+                ConsumoEnergetico.empresa_id == empresa.id,
+                ConsumoEnergetico.escenario == escenario,
+            )
             .order_by(desc(ConsumoEnergetico.fecha))
             .first()
         )
@@ -89,6 +94,7 @@ class AgenteAlertas:
         # 3. Radiación baja
         rad_reciente = (
             db.query(RadiacionSolar)
+            .filter(RadiacionSolar.escenario == escenario)
             .order_by(desc(RadiacionSolar.fecha))
             .first()
         )
@@ -118,6 +124,7 @@ class AgenteAlertas:
                 .filter(
                     ConsumoEnergetico.empresa_id == empresa.id,
                     ConsumoEnergetico.demanda_pico_kw.isnot(None),
+                    ConsumoEnergetico.escenario == escenario,
                 )
                 .scalar() or 0
             )

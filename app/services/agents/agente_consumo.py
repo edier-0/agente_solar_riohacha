@@ -17,11 +17,13 @@ class AgenteConsumo:
     def analizar(self, db: Session, empresa: Empresa, days: int = 30) -> Dict:
         """Detecta patrones, desperdicios y anomalías."""
         since = datetime.now() - timedelta(days=days)
+        escenario = empresa.escenario_default or "demo"
         consumos = (
             db.query(ConsumoEnergetico)
             .filter(
                 ConsumoEnergetico.empresa_id == empresa.id,
                 ConsumoEnergetico.fecha >= since,
+                ConsumoEnergetico.escenario == escenario,
             )
             .order_by(ConsumoEnergetico.fecha)
             .all()

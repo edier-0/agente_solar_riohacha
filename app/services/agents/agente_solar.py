@@ -32,12 +32,10 @@ class AgenteAnalisisSolar:
     def analizar(self, db: Session, empresa: Empresa, days: int = 30) -> Dict:
         """Analiza la radiación reciente para una empresa."""
         since = datetime.now() - timedelta(days=days)
-        datos = (
-            db.query(RadiacionSolar)
-            .filter(RadiacionSolar.fecha >= since)
-            .order_by(RadiacionSolar.fecha)
-            .all()
-        )
+        q = db.query(RadiacionSolar).filter(RadiacionSolar.fecha >= since)
+        escenario = empresa.escenario_default or "demo"
+        q = q.filter(RadiacionSolar.escenario == escenario)
+        datos = q.order_by(RadiacionSolar.fecha).all()
 
         if not datos:
             return {
