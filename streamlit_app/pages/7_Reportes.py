@@ -52,33 +52,39 @@ with col_b:
 
 cards = st.columns(2)
 with cards[0]:
-    render_card("Reporte PDF", body="Ideal para presentaciones y resumen ejecutivo.", icon="download", tone="brand")
+    render_card("Reporte PDF", body="Ideal para presentaciones y resumen ejecutivo.", icon="report", tone="brand")
 with cards[1]:
-    render_card("Reporte Excel", body="Ideal para analisis tecnico y seguimiento detallado.", icon="download", tone="success")
+    render_card("Reporte Excel", body="Ideal para analisis tecnico y seguimiento detallado.", icon="chart", tone="success")
 
 st.divider()
+
+show_details = st.toggle("Habilitar Generadores Multiformato", key="descargas", help="Activa la exportación a archivos estáticos como Excel o PDF.")
+if not show_details:
+    st.caption("👈 Activa este interruptor para generar el reporte con los días estipulados y guardarlo localmente.")
+    st.stop()
+
 col_pdf, col_excel = st.columns(2)
 with col_pdf:
-    st.subheader("PDF")
+    render_section_header("PDF", "download", "Archivo de lectura")
     if st.button("Generar y descargar PDF", type="primary", use_container_width=True):
         with st.spinner("Generando reporte PDF..."):
             pdf_bytes = api_download(f"/reportes/pdf/{empresa_id}", params={"days": days})
             if pdf_bytes:
                 filename = f"reporte_{empresa_sel['nombre'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
-                st.download_button("Descargar PDF", data=pdf_bytes, file_name=filename, mime="application/pdf", use_container_width=True)
+                st.download_button("Guardar PDF en el equipo", data=pdf_bytes, file_name=filename, mime="application/pdf", use_container_width=True)
                 st.success("Reporte generado correctamente.")
             else:
                 st.error("No se pudo generar el PDF.")
 
 with col_excel:
-    st.subheader("Excel")
+    render_section_header("Excel", "download", "Libro de cálculo")
     if st.button("Generar y descargar Excel", type="primary", use_container_width=True):
         with st.spinner("Generando reporte Excel..."):
             xlsx_bytes = api_download(f"/reportes/excel/{empresa_id}", params={"days": days})
             if xlsx_bytes:
                 filename = f"reporte_{empresa_sel['nombre'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.xlsx"
                 st.download_button(
-                    "Descargar Excel",
+                    "Guardar Excel en el equipo",
                     data=xlsx_bytes,
                     file_name=filename,
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

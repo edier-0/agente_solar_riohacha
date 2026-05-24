@@ -30,7 +30,7 @@ render_hero(
 
 st.info("Ubicacion: 11.5444 N, 72.9072 W. Referencia historica de GHI: 5.5 a 7.0 kWh/m2/dia.")
 
-render_section_header("Sincronizacion de datos", "upload")
+render_section_header("Enlace con Fuentes Externas", "upload", "Consulta manual de satélites e inst. meteorológicos.")
 tab_om, tab_nasa, tab_pvgis = st.tabs(["Open-Meteo", "NASA POWER", "PVGIS"])
 
 with tab_om:
@@ -78,9 +78,14 @@ with tab_pvgis:
                 st.warning(tmy.get("motivo", "PVGIS no disponible") if tmy else "Sin respuesta")
 
 st.divider()
-render_section_header("Historico de radiacion", "chart")
-days_view = st.slider("Periodo de visualizacion (dias)", 7, 365, 60)
-fuente_filtro = st.selectbox("Fuente", options=["(todas)", "open_meteo", "nasa_power"], index=0)
+render_section_header("Histórico de Radiación", "chart", "Análisis de la energía captada en el terreno.")
+
+filtros = st.columns(2)
+with filtros[0]:
+    days_view = st.slider("Periodo de visualización (días)", 7, 365, 60)
+with filtros[1]:
+    fuente_filtro = st.selectbox("Filtro de Fuente", options=["(todas)", "open_meteo", "nasa_power"], index=0)
+
 params_get = {"days": days_view}
 if fuente_filtro != "(todas)":
     params_get["fuente"] = fuente_filtro
@@ -139,12 +144,13 @@ with col_now:
     st.markdown("**Clima actual**")
     weather = api_get("/solar/weather/current")
     if weather:
-        st.metric("Temperatura", f"{weather.get('temperatura', 0):.1f} C")
-        st.metric("Humedad", f"{weather.get('humedad', 0)} %")
-        st.metric("Nubosidad", f"{weather.get('nubosidad', 0)} %")
-        st.metric("Viento", f"{weather.get('viento_kmh', 0):.1f} km/h")
-        st.caption(weather.get("descripcion", ""))
-        st.caption(f"Fuente: {weather.get('fuente', '?')}")
+        wm1, wm2 = st.columns(2)
+        wm1.metric("Temperatura", f"{weather.get('temperatura', 0):.1f} °C")
+        wm2.metric("Humedad", f"{weather.get('humedad', 0)} %")
+        wm1.metric("Nubosidad", f"{weather.get('nubosidad', 0)} %")
+        wm2.metric("Viento", f"{weather.get('viento_kmh', 0):.1f} km/h")
+        
+        st.caption(f"{str(weather.get('descripcion', '')).capitalize()} — Fuente: {weather.get('fuente', '?')}")
 
 with col_cross:
     st.markdown("**Comparacion entre fuentes**")
@@ -157,9 +163,35 @@ with col_cross:
                     st.success(f"Fuentes consistentes. Delta de temperatura: {delta} C")
                 else:
                     st.warning(f"Discrepancia detectada. Delta de temperatura: {delta} C")
-                st.json(cross)
+                
+                def _fmt(val, is_int=False):
+                    if not isinstance(val, (int, float)): return "--"
+                    return f"{int(val)}" if is_int else f"{val:.1f}"
 
-    st.markdown("**Calidad del aire**")
+                om_d = cross.get("open_meteo") or {}
+                ow_d = cross.get("openweather") or {}
+
+                comp_df = pd.DataFrame({
+                    "Métrica": ["Temperatura (°C)", "Humedad (%)", "Nubosidad (%)", "Viento (km/h)"],
+                    "Open-Meteo": [
+                        _fmt(om_d.get("temperatura")), 
+                        _fmt(om_d.get("humedad"), True), 
+                        _fmt(om_d.get("nubosidad"), True), 
+                        _fmt(om_d.get("viento_kmh"))
+                    ],
+                    "OpenWeather": [
+                        _fmt(ow_d.get("temperatura")), 
+                        _fmt(ow_d.get("humedad"), True), 
+                        _fmt(ow_d.get("nubosidad"), True), 
+                        _fmt(ow_d.get("viento_kmh"))
+                    ]
+                })
+                
+                with st.expander("Ver Tabla de Validación Técnica"):
+                    st.dataframe(comp_df, hide_index=True, use_container_width=True)
+
+    st.markdown(" ")
+    st.markdown("**😷 Calidad del aire**")
     aqi = api_get("/solar/air-quality")
     if aqi and aqi.get("disponible") and aqi.get("datos"):
         primer = aqi["datos"][0]

@@ -46,11 +46,12 @@ fuente = data.get("fuente_narrativa", "plantilla")
 tone_map = {"verde": "success", "amarillo": "warning", "rojo": "danger"}
 score_tone = tone_map.get(score.get("nivel"), "info")
 
+es_hogar = (empresa.get("tipo") == "hogar")
 render_hero(
-    score.get("titulo", "Tu dia energetico"),
-    resumen_narrativo or "Resumen diario listo para tomar decisiones sin sobrecarga visual.",
+    score.get("titulo", "Tu día energético"),
+    resumen_narrativo or ("Resumen diario listo para tomar decisiones en tu hogar sin sobrecarga visual." if es_hogar else "Resumen diario listo para tomar decisiones sin sobrecarga visual."),
     icon="sun",
-    eyebrow=empresa.get("nombre", "Operacion diaria"),
+    eyebrow=f"🏠 Hogar: {empresa.get('nombre')}" if es_hogar else empresa.get("nombre", "Operación diaria"),
     tone=score_tone,
 )
 

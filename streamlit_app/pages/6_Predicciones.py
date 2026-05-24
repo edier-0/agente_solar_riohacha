@@ -88,22 +88,138 @@ render_hero(
     tone=risk_tone if (preds_prod or preds_cons or preds_cost or preds_risk) else "info",
 )
 
-top = st.columns([1, 1, 1, 1, 1])
+top = st.columns(4)
 with top[0]:
-    if st.button("Generar predicciones", type="primary", use_container_width=True):
-        with st.spinner("Consultando pronostico y calculando escenarios..."):
-            resultado = api_post(f"/predicciones/generar/{empresa_id}", params={"horas_horizonte": 72})
-            if resultado:
-                st.success(f"Predicciones guardadas: {resultado.get('total_predicciones_guardadas', 0)}")
-                st.rerun()
-with top[1]:
     render_card("Produccion prevista", value=f"{prod_next:,.0f} kWh", body="Siguiente bloque disponible.", icon="sun", tone="success")
-with top[2]:
+with top[1]:
     render_card("Consumo previsto", value=f"{cons_next:,.0f} kWh", body="Estimacion operativa base.", icon="bolt", tone="info")
-with top[3]:
+with top[2]:
     render_card("Costo previsto", value=f"${cost_next:,.0f}", body="Antes de ajustes operativos.", icon="money", tone="warning")
-with top[4]:
+with top[3]:
     render_card("Cobertura solar", value=f"{coverage:,.0f}%", body=f"Ahorro estimado ${saving:,.0f}.", icon="chart", tone=risk_tone)
+
+st.markdown("""
+<style>
+/* Bóton Flotante (FAB) para proyecciones */
+div[data-testid="stButton"]:has(button[kind="primary"]) {
+    position: fixed !important;
+    bottom: 40px !important;
+    right: 40px !important;
+    width: auto !important;
+    z-index: 9999 !important;
+}
+div[data-testid="stButton"] button[kind="primary"] {
+    border-radius: 50px !important;
+    padding: 16px 24px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    font-size: 1.05rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+if st.button("Proyectar Escenarios", type="primary", use_container_width=False, help="Calcular proyección de los próximos días"):
+    with st.spinner("Consultando pronósticos y calculando escenarios..."):
+        resultado = api_post(f"/predicciones/generar/{empresa_id}", params={"horas_horizonte": 72})
+        if resultado:
+            st.success(f"Predicciones guardadas: {resultado.get('total_predicciones_guardadas', 0)}")
+            st.rerun()
+
+st.write("")
+render_section_header("Orquestación Autónoma de Respaldo", "spark", "Orquestador inteligente de baterías y excedentes solares ante apagones.")
+
+st.markdown(
+    "El Agente Solar de Riohacha implementa un **algoritmo de orquestación proactiva** "
+    "que vincula las predicciones de apagones con el control físico del banco de baterías "
+    "y los excedentes fotovoltaicos. Ajusta el simulador de abajo para ver cómo responde la IA:"
+)
+
+# Slider interactivo
+sim_riesgo = st.slider(
+    "Simular Probabilidad de Apagón para las próximas 24h (%)",
+    min_value=0, max_value=100,
+    value=int(risk_next) if risk_next > 0 else 45,
+    step=5,
+    key="sim_riesgo_slider"
+)
+
+# Algoritmo de orquestación
+capacidad_bateria = empresa_sel.get("capacidad_bateria_kwh", 0.0)
+es_hogar = (empresa_sel.get("tipo") == "hogar")
+
+if capacidad_bateria == 0.0:
+    st.info(
+        "💡 **Simulador Solar Activo:** Actualmente este perfil no posee un banco de baterías físicas "
+        "registrado (capacidad = 0 kWh). A continuación se muestra cómo funcionaría el "
+        "Orquestador Autónomo si equiparas tu sistema con el banco de baterías recomendado "
+        "para tu tipo de perfil (Hogar recomendado: 5 kWh | PYME recomendado: 30 kWh)."
+    )
+    bateria_sim = 5.0 if es_hogar else 30.0
+else:
+    bateria_sim = capacidad_bateria
+
+# Lógica del orquestador basado en el slider
+if sim_riesgo >= 40:
+    estado_orq = "🔴 MÁXIMA PREVENTIVA"
+    desc_orq = (
+        "**Acción del Agente IA:** El riesgo de apagón es CRÍTICO. El orquestador ha bloqueado "
+        "el uso de la batería para ahorro de OpEx diurno. El 100% de la generación solar sobrante "
+        "y energía de la red se destina a cargar las baterías "
+        "al 100% de inmediato para asegurar el máximo de horas de respaldo nocturno."
+    )
+    reserva_target = "100% (Respaldo Total)"
+    rutado_solar = "100% a Baterías"
+    color_banner = "#B8473F"
+elif sim_riesgo >= 20:
+    estado_orq = "🟡 RESPALDO PROACTIVO"
+    desc_orq = (
+        "**Acción del Agente IA:** Riesgo de apagón moderado detectado. El orquestador incrementa el "
+        "umbral mínimo de batería (de 20% a 60%). Los excedentes solares de mediodía se desvían de forma "
+        "prioritaria al banco de baterías para alcanzar este colchón de seguridad antes del atardecer."
+    )
+    reserva_target = "60% (Preventivo)"
+    rutado_solar = "Batería > Consumo"
+    color_banner = "#C88A2E"
+else:
+    estado_orq = "🟢 OPTIMIZACIÓN OPEX"
+    desc_orq = (
+        "**Acción del Agente IA:** Riesgo de apagón muy bajo. El orquestador opera en modo de máxima "
+        "eficiencia económica: los excedentes solares se inyectan directamente a las cargas internas "
+        "para reducir la compra a la red de Air-E, y la batería se descarga de forma "
+        "controlada para aplanar la demanda en horas pico."
+    )
+    reserva_target = "20% (Umbral de Ciclo)"
+    rutado_solar = "Consumo Directo (Ahorro)"
+    color_banner = "#1E6B5C"
+
+# Mostrar métricas del orquestador
+cols_orq = st.columns(4)
+with cols_orq[0]:
+    st.metric("Modo Orquestador", estado_orq)
+with cols_orq[1]:
+    st.metric("Objetivo de Carga", reserva_target)
+with cols_orq[2]:
+    st.metric("Flujo Fotovoltaico", rutado_solar)
+with cols_orq[3]:
+    consumo_prom = cons_next if cons_next > 0 else (400.0 if not es_hogar else 15.0)
+    consumo_hora = (consumo_prom / 24.0)
+    pct_carga = 1.0 if sim_riesgo >= 40 else (0.6 if sim_riesgo >= 20 else 0.2)
+    autonomia_horas = (bateria_sim * pct_carga) / (consumo_hora if consumo_hora > 0 else 1.0)
+    st.metric("Autonomía Apagón", f"{autonomia_horas:.1f} horas")
+
+st.markdown(
+    f"""
+    <div style="background-color: rgba(30, 30, 30, 0.4); border-left: 4px solid {color_banner}; padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+        <p style="margin: 0; font-size: 1rem; color: #f0f2f6;">
+            {desc_orq}
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.divider()
+
 
 if prod_fut:
     render_section_header("Proximos dias", "calendar", "Vista compacta del potencial esperado.")
@@ -122,24 +238,31 @@ if prod_fut:
 elif not (preds_prod or preds_cons or preds_cost or preds_risk):
     st.info("Aun no hay predicciones generadas para esta empresa.")
 
-show_details = st.toggle("Ver detalles tecnicos", key="pred_detalles")
+st.divider()
+
+show_details = st.toggle("Habilitar Gráficos y Modelos Paramétricos", key="pred_detalles", help="Profundiza en las estimaciones por rango de horas e índices de confianza.")
 if not show_details:
-    st.caption("Activa los detalles para ver horizontes, confianza y desagregacion por tipo de prediccion.")
+    st.caption("👈 Activa este interruptor para examinar los gráficos de tendencia, recálculos de horizonte y raw data.")
     st.stop()
 
-render_section_header("Detalle tecnico", "chart", "Confianza, horizontes y definiciones de variables.")
-st.caption("DNI representa radiacion directa normal; en escenarios solares ayuda a estimar el aporte de irradiacion directa en orientaciones especificas.")
+render_section_header("Análisis de Tendencias", "chart", "Confianza de la IA, horizontes y desglose tabular.")
+st.caption("ℹ️ DNI representa radiación directa normal; en escenarios solares ayuda a estimar el aporte en orientaciones específicas.")
 
-horizonte = st.selectbox("Horizonte", [24, 48, 72, 96, 120, 168], index=2, format_func=lambda x: f"{x} horas")
-if st.button("Regenerar con horizonte seleccionado", use_container_width=True):
-    with st.spinner("Actualizando predicciones..."):
-        resultado = api_post(f"/predicciones/generar/{empresa_id}", params={"horas_horizonte": horizonte})
-        if resultado:
-            st.success(f"Predicciones guardadas: {resultado.get('total_predicciones_guardadas', 0)}")
-            st.rerun()
+h_col, hr_btn_col = st.columns([1, 3])
+with h_col:
+    horizonte = st.selectbox("Horizonte a evaluar", [24, 48, 72, 96, 120, 168], index=2, format_func=lambda x: f"Próximas {x}h")
+with hr_btn_col:
+    st.markdown("<br>", unsafe_allow_html=True)
+    # Botón en modo secundario (por defecto) para no invocar las reglas de CSS del botón Primario flotante (FAB)
+    if st.button("↻ Recalcular con este horizonte", key="btn_recalc_horizont"):
+        with st.spinner("⏳ Actualizando motores de predicción..."):
+            resultado = api_post(f"/predicciones/generar/{empresa_id}", params={"horas_horizonte": horizonte})
+            if resultado:
+                st.success(f"Predicciones actualizadas: {resultado.get('total_predicciones_guardadas', 0)}")
+                st.rerun()
 
 tipos_disponibles = {
-    "produccion_solar": "Produccion solar",
+    "produccion_solar": "Producción solar",
     "consumo": "Consumo",
     "costo": "Costo",
     "riesgo_apagon": "Riesgo de continuidad",

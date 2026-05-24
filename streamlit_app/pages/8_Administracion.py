@@ -32,19 +32,23 @@ render_hero(
     tone="info",
 )
 
-tab_users, tab_empresas, tab_nuevo = st.tabs(["Usuarios", "Empresas", "Crear"])
+tab_users, tab_empresas, tab_nuevo = st.tabs(["Usuarios", "Empresas", "Directorio"])
 
 with tab_users:
-    render_section_header("Usuarios registrados", "person")
+    render_section_header("Usuarios registrados", "person", "Directorio de cuentas activas en la plataforma.")
     usuarios = api_get("/users/")
     if usuarios:
-        df = pd.DataFrame(usuarios)
-        st.dataframe(df[["id", "email", "full_name", "role", "is_active", "empresa_id", "created_at"]], use_container_width=True, hide_index=True)
+        show_users_table = st.toggle("Desplegar tabla de usuarios", key="users_toggle")
+        if show_users_table:
+            df = pd.DataFrame(usuarios)
+            st.dataframe(df[["id", "email", "full_name", "role", "is_active", "empresa_id", "created_at"]], use_container_width=True, hide_index=True)
 
+        st.markdown("<br>", unsafe_allow_html=True)
+        render_section_header("Estado de Cuenta", "settings", "Suspende o reactiva los perfiles de acceso.")
         col_a, col_b, col_c = st.columns([2, 1, 1])
         with col_a:
             user_id = st.selectbox(
-                "Usuario",
+                "ID de Usuario",
                 options=[u["id"] for u in usuarios],
                 format_func=lambda item: next(f"{u['email']} ({'activo' if u['is_active'] else 'inactivo'})" for u in usuarios if u["id"] == item),
             )
@@ -60,14 +64,18 @@ with tab_users:
                     st.rerun()
 
 with tab_empresas:
-    render_section_header("Empresas registradas", "factory")
+    render_section_header("Empresas asociadas", "factory", "Clientes corporativos con sistemas solares registrados.")
     empresas = api_get("/empresas/")
     if empresas:
-        st.dataframe(pd.DataFrame(empresas), use_container_width=True, hide_index=True)
+        show_em_table = st.toggle("Desplegar tabla de empresas", key="empresas_toggle")
+        if show_em_table:
+            st.dataframe(pd.DataFrame(empresas), use_container_width=True, hide_index=True)
+        else:
+             st.caption("👈 Activa este interruptor para examinar la tabla JSON de infraestructura.")
 
 with tab_nuevo:
-    render_section_header("Crear entidad", "spark")
-    sub_t1, sub_t2 = st.tabs(["Nueva empresa", "Nuevo usuario"])
+    render_section_header("Gestión de Entidades", "spark", "Alta de nuevas cuentas y clientes corporativos.")
+    sub_t1, sub_t2 = st.tabs(["Alta Empresa", "Alta Usuario"])
 
     with sub_t1:
         with st.form("form_empresa"):

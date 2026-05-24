@@ -46,29 +46,50 @@ verdes = sum(1 for a in alertas_humanizadas if a.get("nivel") == "verde")
 hero_tone = "danger" if rojas else "warning" if amarillas else "success"
 
 render_hero(
-    "Alertas del dia",
-    "Visualiza lo importante primero y abre el detalle tecnico solo cuando haga falta.",
+    "Centro de Alertas",
+    "Visualiza notificaciones operativas críticas. Abre el detalle técnico solo cuando haga falta ajustar los umbrales.",
     icon="alert",
     eyebrow=empresa_sel["nombre"],
     tone=hero_tone,
 )
 
-top_cols = st.columns([1, 1, 1, 1])
-with top_cols[0]:
-    if st.button("Evaluar alertas ahora", type="primary", use_container_width=True):
-        with st.spinner("Evaluando umbrales y eventos..."):
-            creadas = api_post(f"/alertas/evaluar/{empresa_id}")
-            if creadas is not None:
-                st.success(f"Evaluacion completada. Nuevas alertas: {len(creadas)}")
-                st.rerun()
-with top_cols[1]:
+stats = st.columns(3)
+with stats[0]:
     render_card("Urgentes", value=str(rojas), body="Requieren accion pronta.", icon="alert", tone="danger")
-with top_cols[2]:
+with stats[1]:
     render_card("Atencion", value=str(amarillas), body="Conviene seguimiento cercano.", icon="spark", tone="warning")
-with top_cols[3]:
+with stats[2]:
     render_card("Informativas", value=str(verdes), body="Sin criticidad inmediata.", icon="check", tone="success")
 
-render_section_header("Listado prioritario", "alert")
+st.markdown("""
+<style>
+/* Bóton Flotante (FAB) para evaluar alertas */
+div[data-testid="stButton"]:has(button[kind="primary"]) {
+    position: fixed !important;
+    bottom: 40px !important;
+    right: 40px !important;
+    width: auto !important;
+    z-index: 9999 !important;
+}
+div[data-testid="stButton"] button[kind="primary"] {
+    border-radius: 50px !important;
+    padding: 16px 24px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    font-size: 1.05rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+if st.button("Evaluar Alertas Ahora", type="primary", use_container_width=False, help="Forzar escaneo de umbrales en tiempo real"):
+    with st.spinner("Evaluando umbrales y eventos..."):
+        creadas = api_post(f"/alertas/evaluar/{empresa_id}")
+        if creadas is not None:
+            st.success(f"Evaluacion completada. Nuevas alertas: {len(creadas)}")
+            st.rerun()
+
+st.divider()
+render_section_header("Notificaciones Prioritarias", "alert")
 if not alertas_humanizadas:
     st.success("No hay alertas pendientes para esta empresa.")
 else:
@@ -93,17 +114,20 @@ else:
             )
         with cols[1]:
             if not alerta.get("leida"):
-                if st.button("Marcar", key=f"ok_{alerta['id']}", use_container_width=True):
+                st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
+                if st.button("Aceptar", key=f"ok_{alerta['id']}", use_container_width=True):
                     api_patch(f"/alertas/{alerta['id']}/marcar-leida")
                     st.rerun()
 
-show_details = st.toggle("Ver detalles tecnicos", key="alertas_detalles")
+st.divider()
+
+show_details = st.toggle("Habilitar Umbrales y Modo Desarrollador", key="alertas_detalles", help="Baja nivel al log técnico y ajusta variables duras.")
 if not show_details:
-    st.caption("Activa el detalle para revisar severidad tecnica y configuracion de umbrales.")
+    st.caption("👈 Activa este interruptor para ajustar reglas de Alertas (Radiación mínima, tope de consumo) y ver tabla JSON de logs.")
     st.stop()
 
-render_section_header("Detalle tecnico", "settings", "Severidad, configuracion y tabla completa.")
-tab_alertas, tab_config = st.tabs(["Alertas", "Configuracion"])
+render_section_header("Configuración de Umbrales", "settings")
+tab_alertas, tab_config = st.tabs(["Log Técnico", "Parámetros del Sistema"])
 
 with tab_alertas:
     alertas = api_get(f"/alertas/{empresa_id}", params={"solo_no_leidas": solo_no_leidas, "limit": 100}) or []
