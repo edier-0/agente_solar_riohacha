@@ -12,6 +12,7 @@ from app.services.openmeteo import openmeteo_service
 from app.services.openweather import openweather_service
 from app.services.pvgis import pvgis_service
 from app.services.nasa_power import nasa_service  # legacy / respaldo
+from app.services.demo_data import get_radiacion_demo
 
 router = APIRouter(prefix="/solar", tags=["Datos Solares"])
 
@@ -23,38 +24,64 @@ router = APIRouter(prefix="/solar", tags=["Datos Solares"])
 def get_radiacion(
     days: int = Query(30, ge=1, le=365),
     fuente: Optional[str] = None,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Obtener histórico de radiación solar almacenado."""
+    if escenario == "demo":
+        rows = get_radiacion_demo(days=days)
+        if fuente:
+            rows = [r for r in rows if str(r.get("fuente", "")) == fuente]
+        for i, r in enumerate(rows):
+            r.setdefault("id", 200000 + i)
+            r.setdefault("created_at", r.get("fecha"))
+        return rows
     since = datetime.now() - timedelta(days=days)
     q = db.query(RadiacionSolar).filter(RadiacionSolar.fecha >= since)
     if fuente:
         q = q.filter(RadiacionSolar.fuente == fuente)
+    if escenario:
+        q = q.filter(RadiacionSolar.escenario == escenario)
     return q.order_by(desc(RadiacionSolar.fecha)).all()
 
 
 @router.get("/radiacion/latest", response_model=Optional[RadiacionResponse])
 def get_radiacion_latest(
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Último dato de radiación solar registrado."""
-    return (
-        db.query(RadiacionSolar)
-        .order_by(desc(RadiacionSolar.fecha))
-        .first()
-    )
+    if escenario == "demo":
+        rows = get_radiacion_demo(days=365)
+        if not rows:
+            return None
+        row = rows[0]
+        row.setdefault("id", 200000)
+        row.setdefault("created_at", row.get("fecha"))
+        return row
+    q = db.query(RadiacionSolar)
+    if escenario:
+        q = q.filter(RadiacionSolar.escenario == escenario)
+    return q.order_by(desc(RadiacionSolar.fecha)).first()
 
 
 # ---------------------------------------------------------------------------
 # SINCRONIZACIÓN — NÚCLEO: OPEN-METEO
 # ---------------------------------------------------------------------------
 def _upsert_radiacion(db: Session, items: List[dict]) -> List[RadiacionSolar]:
-    """Inserta o actualiza registros de radiación evitando duplicados."""
+    """Inserta o actualiza solo registros reales de radiación evitando duplicados."""
     out = []
     valid_cols = {c.name for c in RadiacionSolar.__table__.columns}
     for item in items:
+        # Regla de oro: en BD solo persiste dato real (nunca synthetic fallback)
+        fuente = str(item.get("fuente") or "").lower()
+        origen = str(item.get("origen_dato") or "").lower()
+        escenario = str(item.get("escenario") or "").lower()
+        if fuente == "synthetic" or origen == "synthetic_fallback" or escenario == "demo":
+            continue
+
         clean = {k: v for k, v in item.items() if k in valid_cols}
         existing = (
             db.query(RadiacionSolar)
@@ -81,10 +108,13 @@ def _upsert_radiacion(db: Session, items: List[dict]) -> List[RadiacionSolar]:
 @router.post("/sync/openmeteo", response_model=List[RadiacionResponse])
 async def sync_openmeteo(
     days: int = Query(30, ge=1, le=365),
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Sincronizar histórico desde Open-Meteo Archive (NÚCLEO PRINCIPAL)."""
+    if escenario == "demo":
+        raise HTTPException(status_code=409, detail="Modo demo no persiste datos en BD")
     try:
         data = await openmeteo_service.get_ultimos_dias(days=days)
     except RuntimeError as e:
@@ -95,10 +125,13 @@ async def sync_openmeteo(
 @router.post("/sync/nasa", response_model=List[RadiacionResponse])
 async def sync_nasa_power(
     days: int = Query(30, ge=1, le=365),
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Sincronizar desde NASA POWER (respaldo / validación cruzada)."""
+    if escenario == "demo":
+        raise HTTPException(status_code=409, detail="Modo demo no persiste datos en BD")
     try:
         data = await nasa_service.get_last_days(days=days)
     except RuntimeError as e:
@@ -112,26 +145,55 @@ async def sync_nasa_power(
 @router.get("/forecast/horario")
 async def get_forecast_horario(
     days: int = Query(7, ge=1, le=16),
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     current_user: User = Depends(get_current_user),
 ):
     """Pronóstico horario con GHI/DNI/DHI (Open-Meteo)."""
-    return await openmeteo_service.get_forecast_horario(days=days)
+    try:
+        return await openmeteo_service.get_forecast_horario(
+            days=days,
+            allow_synthetic=escenario != "real",
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 
 @router.get("/forecast/diario")
 async def get_forecast_diario(
     days: int = Query(7, ge=1, le=16),
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     current_user: User = Depends(get_current_user),
 ):
     """Pronóstico diario con radiación acumulada (Open-Meteo)."""
-    return await openmeteo_service.get_forecast_diario(days=days)
+    try:
+        return await openmeteo_service.get_forecast_diario(
+            days=days,
+            allow_synthetic=escenario != "real",
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 
 @router.get("/air-quality")
 async def get_air_quality(
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     current_user: User = Depends(get_current_user),
 ):
     """Calidad del aire (Open-Meteo). Crítico por polvo en La Guajira."""
+    if escenario == "demo":
+        now = datetime.now().replace(minute=0, second=0, microsecond=0)
+        return {
+            "disponible": True,
+            "datos": [
+                {
+                    "fecha": now.isoformat(),
+                    "pm10": 32.0,
+                    "pm2_5": 14.0,
+                    "polvo": 36.0,
+                    "uv_index": 8.0,
+                }
+            ],
+        }
     return await openmeteo_service.get_calidad_aire()
 
 
@@ -140,18 +202,30 @@ async def get_air_quality(
 # ---------------------------------------------------------------------------
 @router.get("/weather/current")
 async def get_current_weather(
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     current_user: User = Depends(get_current_user),
 ):
     """Clima actual (OpenWeather, capa de validación)."""
-    return await openweather_service.get_current_weather()
+    try:
+        return await openweather_service.get_current_weather(
+            allow_synthetic=escenario != "real"
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 
 @router.get("/weather/forecast")
 async def get_forecast_openweather(
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     current_user: User = Depends(get_current_user),
 ):
     """Pronóstico 5 días/3h (OpenWeather, complemento)."""
-    return await openweather_service.get_forecast()
+    try:
+        return await openweather_service.get_forecast(
+            allow_synthetic=escenario != "real"
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 
 @router.get("/weather/air-pollution")
@@ -164,15 +238,24 @@ async def get_air_pollution_openweather(
 
 @router.get("/weather/cross-check")
 async def cross_check(
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     current_user: User = Depends(get_current_user),
 ):
     """
     Compara clima actual entre Open-Meteo (núcleo) y OpenWeather (complemento)
     para validar consistencia entre fuentes.
     """
-    om_horario = await openmeteo_service.get_forecast_horario(days=1)
+    allow_synthetic = escenario != "real"
+    try:
+        om_horario = await openmeteo_service.get_forecast_horario(
+            days=1, allow_synthetic=allow_synthetic
+        )
+        ow_actual = await openweather_service.get_current_weather(
+            allow_synthetic=allow_synthetic
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     om_actual = om_horario[0] if om_horario else None
-    ow_actual = await openweather_service.get_current_weather()
 
     delta_temp = None
     if om_actual and om_actual.get("temperatura") is not None and ow_actual.get("temperatura") is not None:

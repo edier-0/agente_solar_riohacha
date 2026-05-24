@@ -7,7 +7,7 @@ from app.api.deps.auth import get_current_user
 from app.core.config import get_settings
 from app.core.security import create_access_token, get_password_hash, verify_password
 from app.db.session import get_db
-from app.models.models import User
+from app.models.models import User, Empresa, ConfiguracionAlerta
 from app.schemas.schemas import MessageResponse, Token, UserCreate, UserLogin, UserResponse
 
 
@@ -25,12 +25,42 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="El correo ya esta registrado",
         )
 
+    if user_data.escenario_usuario not in ("demo", "real"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="escenario_usuario debe ser 'demo' o 'real'",
+        )
+
+    empresa_id = user_data.empresa_id
+    if not empresa_id:
+        # Crear automáticamente una empresa/hogar si no se provee
+        nombre_emp = user_data.nombre_empresa or f"Hogar de {user_data.full_name}"
+        tipo_emp = user_data.tipo_empresa or "hogar"
+        tarifa = user_data.tarifa_kwh if user_data.tarifa_kwh is not None else 943.0
+
+        nueva_empresa = Empresa(
+            nombre=nombre_emp,
+            tipo=tipo_emp,
+            tarifa_kwh=tarifa,
+            escenario_default=user_data.escenario_usuario,
+        )
+        db.add(nueva_empresa)
+        db.commit()
+        db.refresh(nueva_empresa)
+        empresa_id = nueva_empresa.id
+
+        # Crear configuración de alertas por defecto
+        nueva_config = ConfiguracionAlerta(empresa_id=empresa_id)
+        db.add(nueva_config)
+        db.commit()
+
     user = User(
         email=user_data.email,
         hashed_password=get_password_hash(user_data.password),
         full_name=user_data.full_name,
         role=user_data.role,
-        empresa_id=user_data.empresa_id,
+        escenario_usuario=user_data.escenario_usuario,
+        empresa_id=empresa_id,
     )
     db.add(user)
     db.commit()

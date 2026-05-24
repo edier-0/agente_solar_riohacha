@@ -1,27 +1,30 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from datetime import datetime
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
+
+from app.api.deps.auth import get_current_user
 from app.db.session import get_db
 from app.models.models import Alerta, ConfiguracionAlerta, Empresa, User, UserRole
-from app.schemas.schemas import (
-    AlertaResponse,
-    AlertaUpdate,
-    ConfigAlertaUpdate,
-)
-from app.api.deps.auth import get_current_user
+from app.schemas.schemas import AlertaResponse, ConfigAlertaUpdate
 from app.services.agents.agente_alertas import agente_alertas
 from app.services.alertas_translator import humanizar_lote
+from app.services.demo_data import get_consumo_demo, get_radiacion_demo
+from app.services.demo_ops import (
+    get_demo_alert_config,
+    list_demo_alerts,
+    mark_demo_alert_read,
+    save_demo_alerts,
+    set_demo_alert_config,
+)
 
 router = APIRouter(prefix="/alertas", tags=["Alertas"])
 
 
 def _check_acceso(current_user: User, empresa_id: int):
-    if (
-        current_user.role == UserRole.EMPRESA
-        and current_user.empresa_id != empresa_id
-    ):
+    if current_user.role == UserRole.EMPRESA and current_user.empresa_id != empresa_id:
         raise HTTPException(status_code=403, detail="Sin permisos")
 
 
@@ -30,14 +33,19 @@ def list_alertas(
     empresa_id: int,
     solo_no_leidas: bool = False,
     limit: int = Query(50, ge=1, le=200),
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Listar alertas de la empresa."""
+    if escenario == "demo":
+        rows = list_demo_alerts(empresa_id)
+        if solo_no_leidas:
+            rows = [a for a in rows if not a.get("leida")]
+        return rows[:limit]
     _check_acceso(current_user, empresa_id)
     q = db.query(Alerta).filter(Alerta.empresa_id == empresa_id)
     if solo_no_leidas:
-        q = q.filter(Alerta.leida == False)
+        q = q.filter(Alerta.leida == False)  # noqa: E712
     return q.order_by(desc(Alerta.created_at)).limit(limit).all()
 
 
@@ -46,17 +54,19 @@ def list_alertas_humanizadas(
     empresa_id: int,
     solo_no_leidas: bool = False,
     limit: int = Query(50, ge=1, le=200),
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Versión humanizada de las alertas para la vista 'simple'.
-    Cada alerta incluye {emoji, nivel, titulo, mensaje, accion}.
-    """
+    if escenario == "demo":
+        rows = list_demo_alerts(empresa_id)
+        if solo_no_leidas:
+            rows = [a for a in rows if not a.get("leida")]
+        return humanizar_lote(rows[:limit])
     _check_acceso(current_user, empresa_id)
     q = db.query(Alerta).filter(Alerta.empresa_id == empresa_id)
     if solo_no_leidas:
-        q = q.filter(Alerta.leida == False)
+        q = q.filter(Alerta.leida == False)  # noqa: E712
     rows = q.order_by(desc(Alerta.created_at)).limit(limit).all()
     crudas = [
         {
@@ -76,10 +86,29 @@ def list_alertas_humanizadas(
 @router.post("/evaluar/{empresa_id}", response_model=List[AlertaResponse])
 def evaluar_alertas(
     empresa_id: int,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Forzar evaluación de alertas para la empresa (genera nuevas si corresponde)."""
+    if escenario == "demo":
+        cfg = get_demo_alert_config()
+        consumos = get_consumo_demo(days=2)
+        radiacion = get_radiacion_demo(days=2)
+        now = datetime.now().replace(microsecond=0).isoformat()
+        rows = []
+        hoy = datetime.now().date()
+        c_hoy = [c for c in consumos if datetime.fromisoformat(c["fecha"]).date() == hoy]
+        total_hoy = sum((c.get("consumo_kwh") or 0) for c in c_hoy)
+        if total_hoy > float(cfg.get("umbral_consumo_diario_kwh", 400.0)):
+            rows.append({"id": int(datetime.now().timestamp()) + 1, "empresa_id": empresa_id, "tipo": "consumo_alto", "mensaje": f"Consumo diario demo {total_hoy:.1f} kWh supera umbral.", "severidad": "media", "leida": False, "created_at": now})
+        bateria = c_hoy[0].get("nivel_bateria_pct") if c_hoy else None
+        if bateria is not None and bateria < float(cfg.get("umbral_bateria_baja_pct", 20.0)):
+            rows.append({"id": int(datetime.now().timestamp()) + 2, "empresa_id": empresa_id, "tipo": "bateria_baja", "mensaje": f"Bateria demo en {bateria:.1f}%.", "severidad": "alta", "leida": False, "created_at": now})
+        ghi = radiacion[0].get("ghi") if radiacion else None
+        if ghi is not None and ghi < float(cfg.get("umbral_radiacion_baja", 2.5)):
+            rows.append({"id": int(datetime.now().timestamp()) + 3, "empresa_id": empresa_id, "tipo": "baja_radiacion", "mensaje": f"Radiacion demo baja ({ghi:.2f}).", "severidad": "media", "leida": False, "created_at": now})
+        return save_demo_alerts(empresa_id, rows)
+
     _check_acceso(current_user, empresa_id)
     empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
     if not empresa:
@@ -91,10 +120,15 @@ def evaluar_alertas(
 @router.patch("/{alerta_id}/marcar-leida", response_model=AlertaResponse)
 def marcar_leida(
     alerta_id: int,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Marcar alerta como leída."""
+    if escenario == "demo":
+        row = mark_demo_alert_read(alerta_id)
+        if not row:
+            raise HTTPException(status_code=404, detail="Alerta demo no encontrada")
+        return row
     alerta = db.query(Alerta).filter(Alerta.id == alerta_id).first()
     if not alerta:
         raise HTTPException(status_code=404, detail="Alerta no encontrada")
@@ -108,16 +142,14 @@ def marcar_leida(
 @router.get("/config/{empresa_id}")
 def get_configuracion(
     empresa_id: int,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Obtener configuración de alertas de la empresa."""
+    if escenario == "demo":
+        return {"id": 0, "empresa_id": empresa_id, **get_demo_alert_config()}
     _check_acceso(current_user, empresa_id)
-    config = (
-        db.query(ConfiguracionAlerta)
-        .filter(ConfiguracionAlerta.empresa_id == empresa_id)
-        .first()
-    )
+    config = db.query(ConfiguracionAlerta).filter(ConfiguracionAlerta.empresa_id == empresa_id).first()
     if not config:
         config = ConfiguracionAlerta(empresa_id=empresa_id)
         db.add(config)
@@ -138,20 +170,18 @@ def get_configuracion(
 def update_configuracion(
     empresa_id: int,
     data: ConfigAlertaUpdate,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Actualizar configuración de alertas."""
+    if escenario == "demo":
+        cfg = set_demo_alert_config(data.model_dump(exclude_unset=True))
+        return {"empresa_id": empresa_id, **cfg}
     _check_acceso(current_user, empresa_id)
-    config = (
-        db.query(ConfiguracionAlerta)
-        .filter(ConfiguracionAlerta.empresa_id == empresa_id)
-        .first()
-    )
+    config = db.query(ConfiguracionAlerta).filter(ConfiguracionAlerta.empresa_id == empresa_id).first()
     if not config:
         config = ConfiguracionAlerta(empresa_id=empresa_id)
         db.add(config)
-
     for k, v in data.model_dump(exclude_unset=True).items():
         setattr(config, k, v)
     db.commit()
@@ -164,3 +194,4 @@ def update_configuracion(
         "notificar_email": config.notificar_email,
         "notificar_dashboard": config.notificar_dashboard,
     }
+

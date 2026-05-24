@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -12,11 +12,15 @@ router = APIRouter(prefix="/users", tags=["Usuarios"])
 
 @router.get("/", response_model=List[UserResponse])
 def list_users(
+    escenario_usuario: str | None = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     admin: User = Depends(get_admin_user),
 ):
     """Listar todos los usuarios (solo admin)."""
-    return db.query(User).all()
+    q = db.query(User)
+    if escenario_usuario:
+        q = q.filter(User.escenario_usuario == escenario_usuario)
+    return q.all()
 
 
 @router.patch("/me/preferencias", response_model=UserResponse)

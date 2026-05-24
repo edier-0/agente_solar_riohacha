@@ -24,6 +24,7 @@ def _check_acceso(current_user: User, empresa_id: int):
 def descargar_pdf(
     empresa_id: int,
     days: int = Query(30, ge=1, le=365),
+    escenario: str = Query("real", pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -33,7 +34,7 @@ def descargar_pdf(
     if not empresa:
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
-    pdf_bytes = reporte_service.generar_pdf(db, empresa, days)
+    pdf_bytes = reporte_service.generar_pdf(db, empresa, days, escenario=escenario)
     filename = f"reporte_{empresa.nombre.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
 
     return StreamingResponse(
@@ -47,6 +48,7 @@ def descargar_pdf(
 def descargar_excel(
     empresa_id: int,
     days: int = Query(30, ge=1, le=365),
+    escenario: str = Query("real", pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -56,7 +58,7 @@ def descargar_excel(
     if not empresa:
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
-    xlsx_bytes = reporte_service.generar_excel(db, empresa, days)
+    xlsx_bytes = reporte_service.generar_excel(db, empresa, days, escenario=escenario)
     filename = f"reporte_{empresa.nombre.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.xlsx"
 
     return StreamingResponse(
