@@ -1,22 +1,18 @@
 """
-Servicio OpenWeather (COMPLEMENTO).
-
-Rol secundario en el sistema. Open-Meteo es el núcleo principal.
-OpenWeather aporta:
-- Validación cruzada del clima actual y a corto plazo.
-- Alertas meteorológicas específicas (One Call si hay key paga).
-- Calidad del aire vía Air Pollution API (gratis con API key).
+Servicio OpenWeather (complemento).
 """
-import httpx
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-from datetime import datetime
+
+import httpx
+
 from app.core.config import get_settings
 
 settings = get_settings()
 
 
 class OpenWeatherService:
-    """Cliente OpenWeather usado como capa de validación y AQI."""
+    """Cliente OpenWeather usado como capa de validacion y AQI."""
 
     def __init__(self):
         self.base_url = settings.OPENWEATHER_BASE_URL
@@ -28,11 +24,12 @@ class OpenWeatherService:
         self,
         lat: Optional[float] = None,
         lon: Optional[float] = None,
+        allow_synthetic: bool = True,
     ) -> Dict:
-        """Clima actual."""
         if not self.api_key:
-            # Fallback con datos sintéticos si no hay API key
-            return self._synthetic_current()
+            if allow_synthetic:
+                return self._synthetic_current()
+            raise RuntimeError("OpenWeather no disponible sin API key en modo real")
 
         params = {
             "lat": lat or self.lat,
@@ -47,7 +44,9 @@ class OpenWeatherService:
                 resp.raise_for_status()
                 data = resp.json()
             except httpx.HTTPError:
-                return self._synthetic_current()
+                if allow_synthetic:
+                    return self._synthetic_current()
+                raise RuntimeError("No se pudo consultar OpenWeather en modo real")
 
         return {
             "fecha": datetime.now(),
@@ -57,16 +56,21 @@ class OpenWeatherService:
             "descripcion": data.get("weather", [{}])[0].get("description"),
             "viento_kmh": data.get("wind", {}).get("speed", 0) * 3.6,
             "fuente": "openweather",
+            "origen_dato": "real_api",
+            "escenario": "real",
+            "confiabilidad": 90.0,
         }
 
     async def get_forecast(
         self,
         lat: Optional[float] = None,
         lon: Optional[float] = None,
+        allow_synthetic: bool = True,
     ) -> List[Dict]:
-        """Pronóstico 5 días / 3h."""
         if not self.api_key:
-            return self._synthetic_forecast()
+            if allow_synthetic:
+                return self._synthetic_forecast()
+            raise RuntimeError("OpenWeather forecast no disponible sin API key en modo real")
 
         params = {
             "lat": lat or self.lat,
@@ -81,24 +85,30 @@ class OpenWeatherService:
                 resp.raise_for_status()
                 data = resp.json()
             except httpx.HTTPError:
-                return self._synthetic_forecast()
+                if allow_synthetic:
+                    return self._synthetic_forecast()
+                raise RuntimeError("No se pudo consultar OpenWeather forecast en modo real")
 
         results = []
         for item in data.get("list", []):
-            results.append({
-                "fecha": datetime.fromtimestamp(item["dt"]),
-                "temperatura": item.get("main", {}).get("temp"),
-                "humedad": item.get("main", {}).get("humidity"),
-                "nubosidad": item.get("clouds", {}).get("all"),
-                "descripcion": item.get("weather", [{}])[0].get("description"),
-                "viento_kmh": item.get("wind", {}).get("speed", 0) * 3.6,
-            })
+            results.append(
+                {
+                    "fecha": datetime.fromtimestamp(item["dt"]),
+                    "temperatura": item.get("main", {}).get("temp"),
+                    "humedad": item.get("main", {}).get("humidity"),
+                    "nubosidad": item.get("clouds", {}).get("all"),
+                    "descripcion": item.get("weather", [{}])[0].get("description"),
+                    "viento_kmh": item.get("wind", {}).get("speed", 0) * 3.6,
+                    "fuente": "openweather",
+                    "origen_dato": "real_api",
+                    "escenario": "real",
+                    "confiabilidad": 90.0,
+                }
+            )
         return results
 
     def _synthetic_current(self) -> Dict:
-        """Datos sintéticos cuando no hay API key configurada."""
         hour = datetime.now().hour
-        # Riohacha: clima cálido, soleado típicamente
         return {
             "fecha": datetime.now(),
             "temperatura": 30.0 if 10 <= hour <= 16 else 26.0,
@@ -107,24 +117,31 @@ class OpenWeatherService:
             "descripcion": "soleado" if 8 <= hour <= 17 else "despejado",
             "viento_kmh": 18.0,
             "fuente": "synthetic",
+            "origen_dato": "synthetic_fallback",
+            "escenario": "demo",
+            "confiabilidad": 30.0,
         }
 
     def _synthetic_forecast(self) -> List[Dict]:
-        """Pronóstico sintético basado en perfil climático de Riohacha."""
-        from datetime import timedelta
         now = datetime.now()
         results = []
-        for h in range(0, 120, 3):  # 5 días, cada 3h
+        for h in range(0, 120, 3):
             future = now + timedelta(hours=h)
             hour = future.hour
-            results.append({
-                "fecha": future,
-                "temperatura": 30.0 if 10 <= hour <= 16 else 26.0,
-                "humedad": 65,
-                "nubosidad": 20 if 10 <= hour <= 16 else 35,
-                "descripcion": "soleado",
-                "viento_kmh": 18.0,
-            })
+            results.append(
+                {
+                    "fecha": future,
+                    "temperatura": 30.0 if 10 <= hour <= 16 else 26.0,
+                    "humedad": 65,
+                    "nubosidad": 20 if 10 <= hour <= 16 else 35,
+                    "descripcion": "soleado",
+                    "viento_kmh": 18.0,
+                    "fuente": "synthetic",
+                    "origen_dato": "synthetic_fallback",
+                    "escenario": "demo",
+                    "confiabilidad": 30.0,
+                }
+            )
         return results
 
     async def get_air_pollution(
@@ -132,11 +149,6 @@ class OpenWeatherService:
         lat: Optional[float] = None,
         lon: Optional[float] = None,
     ) -> Dict:
-        """
-        Calidad del aire (Air Pollution API). Útil porque el polvo en La Guajira
-        reduce eficiencia de paneles solares.
-        AQI: 1=Bueno, 2=Aceptable, 3=Moderado, 4=Pobre, 5=Muy pobre.
-        """
         if not self.api_key:
             return {"disponible": False, "motivo": "Sin API key"}
 
@@ -153,8 +165,8 @@ class OpenWeatherService:
                 )
                 resp.raise_for_status()
                 data = resp.json()
-            except httpx.HTTPError as e:
-                return {"disponible": False, "motivo": str(e)}
+            except httpx.HTTPError as exc:
+                return {"disponible": False, "motivo": str(exc)}
 
         items = data.get("list", [])
         if not items:
@@ -178,16 +190,15 @@ class OpenWeatherService:
         self,
         lat: Optional[float] = None,
         lon: Optional[float] = None,
+        allow_synthetic: bool = True,
     ) -> Dict:
-        """
-        Devuelve clima actual + descripción para validar contra Open-Meteo.
-        Pensado para detectar discrepancias grandes entre fuentes.
-        """
-        actual = await self.get_current_weather(lat=lat, lon=lon)
-        return {
-            "fuente": "openweather",
-            "clima_actual": actual,
-        }
+        actual = await self.get_current_weather(
+            lat=lat,
+            lon=lon,
+            allow_synthetic=allow_synthetic,
+        )
+        return {"fuente": "openweather", "clima_actual": actual}
 
 
 openweather_service = OpenWeatherService()
+

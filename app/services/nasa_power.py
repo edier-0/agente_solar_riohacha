@@ -80,6 +80,9 @@ class NASAPowerService:
                 "temperatura": temp.get(fecha_str) if temp.get(fecha_str) != -999 else None,
                 "nubosidad": clouds.get(fecha_str) if clouds.get(fecha_str) != -999 else None,
                 "fuente": "nasa_power",
+                "origen_dato": "real_api",
+                "escenario": "real",
+                "confiabilidad": 88.0,
                 "latitud": lat or self.lat,
                 "longitud": lon or self.lon,
             })

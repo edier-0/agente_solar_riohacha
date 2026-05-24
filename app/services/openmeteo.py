@@ -66,6 +66,7 @@ class OpenMeteoService:
         days: int = 7,
         lat: Optional[float] = None,
         lon: Optional[float] = None,
+        allow_synthetic: bool = True,
     ) -> List[Dict]:
         """Pronóstico horario con radiación solar (GHI/DNI/DHI)."""
         params = {
@@ -81,7 +82,9 @@ class OpenMeteoService:
                 resp.raise_for_status()
                 data = resp.json()
             except httpx.HTTPError:
-                return self._synthetic_forecast_horario(days)
+                if allow_synthetic:
+                    return self._synthetic_forecast_horario(days)
+                raise RuntimeError("No se pudo consultar Open-Meteo forecast horario en modo real")
 
         return self._parse_hourly(data)
 
@@ -90,6 +93,7 @@ class OpenMeteoService:
         days: int = 7,
         lat: Optional[float] = None,
         lon: Optional[float] = None,
+        allow_synthetic: bool = True,
     ) -> List[Dict]:
         """Pronóstico diario con radiación solar acumulada."""
         params = {
@@ -105,7 +109,9 @@ class OpenMeteoService:
                 resp.raise_for_status()
                 data = resp.json()
             except httpx.HTTPError:
-                return self._synthetic_forecast_diario(days)
+                if allow_synthetic:
+                    return self._synthetic_forecast_diario(days)
+                raise RuntimeError("No se pudo consultar Open-Meteo forecast diario en modo real")
 
         return self._parse_daily(data)
 
@@ -222,6 +228,9 @@ class OpenMeteoService:
                 "dhi_w_m2": dhi_w,
                 "precipitacion_mm": self._safe(hourly, "precipitation", i),
                 "fuente": "open_meteo",
+                "origen_dato": "real_api",
+                "escenario": "real",
+                "confiabilidad": 90.0,
             })
         return results
 
@@ -256,6 +265,9 @@ class OpenMeteoService:
                 "precipitacion_mm": self._safe(daily, "precipitation_sum", i),
                 "viento_kmh_max": self._mul(self._safe(daily, "wind_speed_10m_max", i), 3.6),
                 "fuente": "open_meteo",
+                "origen_dato": "real_api",
+                "escenario": "real",
+                "confiabilidad": 90.0,
                 "latitud": self.lat,
                 "longitud": self.lon,
             })
@@ -294,6 +306,9 @@ class OpenMeteoService:
                 "dhi_w_m2": 100 if soleado else 0,
                 "precipitacion_mm": 0,
                 "fuente": "synthetic",
+                "origen_dato": "synthetic_fallback",
+                "escenario": "demo",
+                "confiabilidad": 30.0,
             })
         return results
 
@@ -314,6 +329,9 @@ class OpenMeteoService:
                 "precipitacion_mm": 0,
                 "viento_kmh_max": 25.0,
                 "fuente": "synthetic",
+                "origen_dato": "synthetic_fallback",
+                "escenario": "demo",
+                "confiabilidad": 30.0,
                 "latitud": self.lat,
                 "longitud": self.lon,
             })
