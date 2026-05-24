@@ -4,6 +4,7 @@ Servicio de generación de reportes PDF y Excel.
 from io import BytesIO
 from datetime import datetime, timedelta
 from typing import List
+from types import SimpleNamespace
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
@@ -29,6 +30,7 @@ from app.models.models import (
     Empresa,
     Alerta,
 )
+from app.services.demo_data import get_consumo_demo
 
 
 class ReporteService:
@@ -39,8 +41,39 @@ class ReporteService:
         db: Session,
         empresa: Empresa,
         days: int = 30,
+        escenario: str = "real",
     ) -> dict:
         since = datetime.now() - timedelta(days=days)
+        if escenario == "demo":
+            demo_rows = get_consumo_demo(days=days)
+            consumos = [
+                SimpleNamespace(
+                    fecha=datetime.fromisoformat(r["fecha"]),
+                    consumo_kwh=r.get("consumo_kwh") or 0,
+                    costo_cop=r.get("costo_cop"),
+                    demanda_pico_kw=r.get("demanda_pico_kw"),
+                    produccion_solar_kwh=r.get("produccion_solar_kwh") or 0,
+                    nivel_bateria_pct=r.get("nivel_bateria_pct"),
+                )
+                for r in demo_rows
+            ]
+            recomendaciones = []
+            alertas = []
+            total_kwh = sum(c.consumo_kwh for c in consumos)
+            produccion_total = sum(c.produccion_solar_kwh or 0 for c in consumos)
+            costo_total = sum(c.costo_cop or (c.consumo_kwh * empresa.tarifa_kwh) for c in consumos)
+            ahorro_solar = produccion_total * empresa.tarifa_kwh
+            return {
+                "consumos": consumos,
+                "recomendaciones": recomendaciones,
+                "alertas": alertas,
+                "total_kwh": total_kwh,
+                "produccion_total_kwh": produccion_total,
+                "costo_total_cop": costo_total,
+                "ahorro_solar_cop": ahorro_solar,
+                "dias": days,
+            }
+
         consumos = (
             db.query(ConsumoEnergetico)
             .filter(
@@ -89,9 +122,10 @@ class ReporteService:
         db: Session,
         empresa: Empresa,
         days: int = 30,
+        escenario: str = "real",
     ) -> bytes:
         """Genera reporte PDF."""
-        data = cls._get_data(db, empresa, days)
+        data = cls._get_data(db, empresa, days, escenario=escenario)
         buffer = BytesIO()
         doc = SimpleDocTemplate(
             buffer,
@@ -251,9 +285,10 @@ class ReporteService:
         db: Session,
         empresa: Empresa,
         days: int = 30,
+        escenario: str = "real",
     ) -> bytes:
         """Genera reporte Excel."""
-        data = cls._get_data(db, empresa, days)
+        data = cls._get_data(db, empresa, days, escenario=escenario)
         buffer = BytesIO()
         wb = xlsxwriter.Workbook(buffer, {"in_memory": True})
 

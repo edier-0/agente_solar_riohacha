@@ -6,15 +6,15 @@ Plataforma que analiza datos históricos de radiación solar y perfiles de consu
 
 ## 🎯 Stack tecnológico
 
-| Capa | Tecnología |
-|------|-----------|
-| Backend / API REST | **FastAPI** |
-| Frontend / Visualización | **Streamlit** |
-| Base de datos | **MySQL 8** |
-| LLM (local) | **Ollama + Llama 3.2** (con fallback a reglas) |
-| Datos solares | **Open-Meteo** (núcleo), **OpenWeather** (complemento), **PVGIS** (baseline opcional), NASA POWER (respaldo) |
-| Reportes | ReportLab (PDF), XlsxWriter (Excel) |
-| Despliegue | **Docker + Docker Compose** |
+| Capa                     | Tecnología                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Backend / API REST       | **FastAPI**                                                                                                  |
+| Frontend / Visualización | **Streamlit**                                                                                                |
+| Base de datos            | **MySQL 8**                                                                                                  |
+| LLM (cloud)              | **Google Gemini (Flash Lite)** (con fallback a reglas)                                                       |
+| Datos solares            | **Open-Meteo** (núcleo), **OpenWeather** (complemento), **PVGIS** (baseline opcional), NASA POWER (respaldo) |
+| Reportes                 | ReportLab (PDF), XlsxWriter (Excel)                                                                          |
+| Despliegue               | **Docker + Docker Compose**                                                                                  |
 
 La API REST está diseñada para ser consumida también desde apps móviles (no incluidas).
 
@@ -126,58 +126,55 @@ Credenciales de acceso:
 
 ### Paso 6 — Acceder a la aplicación
 
-| Servicio | URL | Descripción |
-|----------|-----|-------------|
-| 🎨 **Frontend Streamlit** | http://localhost:8502 | Dashboard, gráficas, IA |
-| 📡 **API Swagger Docs** | http://localhost:8001/docs | Documentación interactiva |
-| 📡 **API ReDoc** | http://localhost:8001/redoc | Documentación alternativa |
-| 🗄️ **MySQL** | `localhost:3306` | DB (user: `root` / pass: `root`) |
+| Servicio                 | URL                         | Descripción                      |
+| ------------------------ | --------------------------- | -------------------------------- |
+| 🎨 **Frontend Streamlit** | http://localhost:8502       | Dashboard, gráficas, IA          |
+| 📡 **API Swagger Docs**   | http://localhost:8001/docs  | Documentación interactiva        |
+| 📡 **API ReDoc**          | http://localhost:8001/redoc | Documentación alternativa        |
+| 🗄️ **MySQL**              | `localhost:3306`            | DB (user: `root` / pass: `root`) |
 
-### Paso 7 (Opcional) — Activar IA con Ollama
+### Paso 7 — Activar IA con Gemini
 
-Por defecto las recomendaciones usan reglas heurísticas. Para activar **Llama 3.2** local:
+Crea tu clave de API en Google AI Studio y asegúrate de establecerla en tus variables de entorno para habilitar el motor de recomendaciones.
 
-1. Instala Ollama en tu máquina (no en Docker): https://ollama.com/download
-2. Descarga el modelo:
+1. Consigue tu API KEY en Google AI Studio.
+2. Cópiala en tu archivo `.env`: `GEMINI_API_KEY=tu_key`
+3. Reinicia los contenedores:
    ```bash
-   ollama pull llama3.2:3b
-   ```
-3. Asegúrate de que Ollama esté corriendo (`ollama serve` o ya viene como servicio).
-4. Reinicia la API:
-   ```bash
-   docker compose restart api
+   docker compose down
+   docker compose up -d
    ```
 
-La API detectará Ollama automáticamente vía `host.docker.internal:11434`.
+La API detectará Gemini automáticamente.
 
 ---
 
 ## 🔐 Credenciales demo
 
-| Rol | Email | Contraseña |
-|-----|-------|-----------|
-| Admin | `admin@agentesolar.co` | `admin123` |
-| Empresa (Hotel piloto) | `hotel@agentesolar.co` | `hotel123` |
-| Analista | `analista@agentesolar.co` | `analista123` |
+| Rol                    | Email                     | Contraseña    |
+| ---------------------- | ------------------------- | ------------- |
+| Admin                  | `admin@agentesolar.co`    | `admin123`    |
+| Empresa (Hotel piloto) | `hotel@agentesolar.co`    | `hotel123`    |
+| Analista               | `analista@agentesolar.co` | `analista123` |
 
 ---
 
 ## 🛠️ Comandos Docker útiles
 
-| Acción | Comando |
-|--------|---------|
-| Iniciar todo (primera vez o tras cambios) | `docker compose up --build` |
-| Iniciar en segundo plano | `docker compose up -d` |
-| Ver logs en vivo | `docker compose logs -f` |
-| Ver logs de un servicio | `docker compose logs -f api` |
-| Detener todo | `docker compose down` |
-| Detener y borrar datos MySQL | `docker compose down -v` |
-| Reiniciar la API | `docker compose restart api` |
-| Reconstruir desde cero (sin caché) | `docker compose build --no-cache` |
-| Entrar a la consola de la API | `docker compose exec api bash` |
-| Entrar a MySQL | `docker compose exec mysql mysql -uroot -proot agente_solar_db` |
-| Re-ejecutar seed | `docker compose exec api python scripts/seed.py` |
-| Ver contenedores activos | `docker compose ps` |
+| Acción                                    | Comando                                                         |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| Iniciar todo (primera vez o tras cambios) | `docker compose up --build`                                     |
+| Iniciar en segundo plano                  | `docker compose up -d`                                          |
+| Ver logs en vivo                          | `docker compose logs -f`                                        |
+| Ver logs de un servicio                   | `docker compose logs -f api`                                    |
+| Detener todo                              | `docker compose down`                                           |
+| Detener y borrar datos MySQL              | `docker compose down -v`                                        |
+| Reiniciar la API                          | `docker compose restart api`                                    |
+| Reconstruir desde cero (sin caché)        | `docker compose build --no-cache`                               |
+| Entrar a la consola de la API             | `docker compose exec api bash`                                  |
+| Entrar a MySQL                            | `docker compose exec mysql mysql -uroot -proot agente_solar_db` |
+| Re-ejecutar seed                          | `docker compose exec api python scripts/seed.py`                |
+| Ver contenedores activos                  | `docker compose ps`                                             |
 
 ---
 
@@ -200,7 +197,6 @@ La API detectará Ollama automáticamente vía `host.docker.internal:11434`.
 │       ├── openweather.py        # OpenWeather API (complemento + AQI)
 │       ├── pvgis.py              # PVGIS API (baseline TMY opcional)
 │       ├── consumo_parser.py     # Parser CSV/Excel
-│       ├── ollama_client.py      # Cliente LLM local
 │       ├── reportes.py           # Generación PDF/Excel
 │       └── agents/               # 5 Agentes IA
 │           ├── agente_solar.py
@@ -259,45 +255,45 @@ docker compose exec api python -c "from app.db.session import engine, Base; from
 
 ## 🌐 Fuentes de datos meteorológicos / solares
 
-| Fuente | Rol | API key | Datos clave |
-|--------|-----|---------|-------------|
-| **Open-Meteo** | 🟢 Núcleo | ❌ No requiere | GHI / DNI / DHI horarios, ERA5 histórico, calidad del aire |
-| **OpenWeather** | 🔵 Complemento | ✅ Gratuita | Clima actual, pronóstico 5d, AQI, validación cruzada |
-| **PVGIS** | 🟡 Baseline opcional | ❌ No requiere | TMY 15+ años, radiación mensual, simulación PV |
-| **NASA POWER** | ⚪ Respaldo legacy | ❌ No requiere | Radiación diaria histórica |
+| Fuente          | Rol                 | API key       | Datos clave                                                |
+| --------------- | ------------------- | ------------- | ---------------------------------------------------------- |
+| **Open-Meteo**  | 🟢 Núcleo            | ❌ No requiere | GHI / DNI / DHI horarios, ERA5 histórico, calidad del aire |
+| **OpenWeather** | 🔵 Complemento       | ✅ Gratuita    | Clima actual, pronóstico 5d, AQI, validación cruzada       |
+| **PVGIS**       | 🟡 Baseline opcional | ❌ No requiere | TMY 15+ años, radiación mensual, simulación PV             |
+| **NASA POWER**  | ⚪ Respaldo legacy   | ❌ No requiere | Radiación diaria histórica                                 |
 
 > **Por qué esta arquitectura:** Open-Meteo entrega GHI/DNI/DHI nativos sin pago, hasta 16 días de pronóstico y archivo ERA5 — ideal como núcleo. OpenWeather complementa con AQI y permite contrastar pronósticos. PVGIS provee la línea base climatológica para Riohacha.
 
 ---
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `POST` | `/api/v1/auth/login` | Login (form-urlencoded), retorna JWT |
-| `POST` | `/api/v1/auth/register` | Registro de usuarios |
-| `GET` | `/api/v1/auth/me` | Info del usuario actual |
-| `GET` | `/api/v1/empresas/` | Lista empresas |
-| `POST` | `/api/v1/empresas/` | Crear empresa (admin) |
-| `GET` | `/api/v1/consumo/empresa/{id}` | Consumo histórico |
-| `POST` | `/api/v1/consumo/upload/{id}` | Upload CSV/Excel |
-| `GET` | `/api/v1/consumo/kpis/{id}` | KPIs del dashboard |
-| `POST` | `/api/v1/solar/sync/openmeteo` | Sincronizar histórico Open-Meteo (núcleo) |
-| `POST` | `/api/v1/solar/sync/nasa` | Sincronizar NASA POWER (respaldo) |
-| `GET` | `/api/v1/solar/radiacion` | Radiación histórica (filtro `fuente=`) |
-| `GET` | `/api/v1/solar/forecast/horario` | Pronóstico horario con GHI/DNI/DHI (Open-Meteo) |
-| `GET` | `/api/v1/solar/forecast/diario` | Pronóstico diario (Open-Meteo) |
-| `GET` | `/api/v1/solar/air-quality` | Calidad del aire / polvo (Open-Meteo) |
-| `GET` | `/api/v1/solar/weather/current` | Clima actual (OpenWeather) |
-| `GET` | `/api/v1/solar/weather/forecast` | Pronóstico OpenWeather |
-| `GET` | `/api/v1/solar/weather/air-pollution` | AQI (OpenWeather) |
-| `GET` | `/api/v1/solar/weather/cross-check` | Validación cruzada Open-Meteo vs OpenWeather |
-| `GET` | `/api/v1/solar/pvgis/tmy` | Año Meteorológico Típico de Riohacha |
-| `GET` | `/api/v1/solar/pvgis/monthly` | Promedios mensuales históricos |
-| `GET` | `/api/v1/solar/pvgis/pvcalc` | Estimación de generación PV |
-| `POST` | `/api/v1/ia/recomendaciones/{id}` | Generar recomendaciones IA |
-| `POST` | `/api/v1/predicciones/generar/{id}` | Predicciones 24-72h |
-| `POST` | `/api/v1/alertas/evaluar/{id}` | Evaluar alertas |
-| `GET` | `/api/v1/reportes/pdf/{id}` | Descargar reporte PDF |
-| `GET` | `/api/v1/reportes/excel/{id}` | Descargar reporte Excel |
+| Método | Endpoint                              | Descripción                                     |
+| ------ | ------------------------------------- | ----------------------------------------------- |
+| `POST` | `/api/v1/auth/login`                  | Login (form-urlencoded), retorna JWT            |
+| `POST` | `/api/v1/auth/register`               | Registro de usuarios                            |
+| `GET`  | `/api/v1/auth/me`                     | Info del usuario actual                         |
+| `GET`  | `/api/v1/empresas/`                   | Lista empresas                                  |
+| `POST` | `/api/v1/empresas/`                   | Crear empresa (admin)                           |
+| `GET`  | `/api/v1/consumo/empresa/{id}`        | Consumo histórico                               |
+| `POST` | `/api/v1/consumo/upload/{id}`         | Upload CSV/Excel                                |
+| `GET`  | `/api/v1/consumo/kpis/{id}`           | KPIs del dashboard                              |
+| `POST` | `/api/v1/solar/sync/openmeteo`        | Sincronizar histórico Open-Meteo (núcleo)       |
+| `POST` | `/api/v1/solar/sync/nasa`             | Sincronizar NASA POWER (respaldo)               |
+| `GET`  | `/api/v1/solar/radiacion`             | Radiación histórica (filtro `fuente=`)          |
+| `GET`  | `/api/v1/solar/forecast/horario`      | Pronóstico horario con GHI/DNI/DHI (Open-Meteo) |
+| `GET`  | `/api/v1/solar/forecast/diario`       | Pronóstico diario (Open-Meteo)                  |
+| `GET`  | `/api/v1/solar/air-quality`           | Calidad del aire / polvo (Open-Meteo)           |
+| `GET`  | `/api/v1/solar/weather/current`       | Clima actual (OpenWeather)                      |
+| `GET`  | `/api/v1/solar/weather/forecast`      | Pronóstico OpenWeather                          |
+| `GET`  | `/api/v1/solar/weather/air-pollution` | AQI (OpenWeather)                               |
+| `GET`  | `/api/v1/solar/weather/cross-check`   | Validación cruzada Open-Meteo vs OpenWeather    |
+| `GET`  | `/api/v1/solar/pvgis/tmy`             | Año Meteorológico Típico de Riohacha            |
+| `GET`  | `/api/v1/solar/pvgis/monthly`         | Promedios mensuales históricos                  |
+| `GET`  | `/api/v1/solar/pvgis/pvcalc`          | Estimación de generación PV                     |
+| `POST` | `/api/v1/ia/recomendaciones/{id}`     | Generar recomendaciones IA                      |
+| `POST` | `/api/v1/predicciones/generar/{id}`   | Predicciones 24-72h                             |
+| `POST` | `/api/v1/alertas/evaluar/{id}`        | Evaluar alertas                                 |
+| `GET`  | `/api/v1/reportes/pdf/{id}`           | Descargar reporte PDF                           |
+| `GET`  | `/api/v1/reportes/excel/{id}`         | Descargar reporte Excel                         |
 
 📖 **Documentación interactiva completa**: http://localhost:8000/docs
 
@@ -305,18 +301,18 @@ docker compose exec api python -c "from app.db.session import engine, Base; from
 
 ## 🤖 Arquitectura IA (5 Agentes)
 
-| Agente | Responsabilidad |
-|--------|-----------------|
-| **Análisis Solar** | Calcula potencial de generación según radiación |
-| **Consumo** | Detecta patrones, anomalías, picos |
+| Agente              | Responsabilidad                                       |
+| ------------------- | ----------------------------------------------------- |
+| **Análisis Solar**  | Calcula potencial de generación según radiación       |
+| **Consumo**         | Detecta patrones, anomalías, picos                    |
 | **Recomendaciones** | Genera sugerencias en lenguaje natural (LLM o reglas) |
-| **Predicción** | Pronostica producción/consumo/costo a 24-72h |
-| **Alertas** | Monitorea umbrales y dispara notificaciones |
+| **Predicción**      | Pronostica producción/consumo/costo a 24-72h          |
+| **Alertas**         | Monitorea umbrales y dispara notificaciones           |
 
 ### Modos de operación
 
-- **Con Ollama activo** → usa **Llama 3.2 3B** para generar recomendaciones en lenguaje natural.
-- **Sin Ollama** → fallback automático a **reglas heurísticas** basadas en el contexto local de Riohacha.
+- **Con Gemini activo** → usa **Gemini 2.5 Flash Lite** para generar recomendaciones en lenguaje natural.
+- **Sin Gemini** → fallback automático a **reglas heurísticas** basadas en el contexto local de Riohacha.
 
 ---
 
@@ -356,22 +352,20 @@ fecha,consumo_kwh,costo_cop,demanda_pico_kw,produccion_solar_kwh,nivel_bateria_p
 
 ## 🔧 Variables de entorno (`.env`)
 
-| Variable | Descripción | Default |
-|----------|-------------|---------|
-| `MYSQL_HOST` | Host MySQL (en Docker = `mysql`) | `mysql` |
-| `MYSQL_USER` | Usuario MySQL | `root` |
-| `MYSQL_PASSWORD` | Password MySQL | `root` |
-| `MYSQL_DATABASE` | Nombre BD | `agente_solar_db` |
-| `SECRET_KEY` | JWT secret (cambiar en producción) | `cambiar-en-produccion-2026` |
-| `OPENMETEO_FORECAST_URL` | Endpoint forecast Open-Meteo (núcleo) | `https://api.open-meteo.com/v1/forecast` |
-| `OPENMETEO_ARCHIVE_URL` | Endpoint histórico ERA5 | `https://archive-api.open-meteo.com/v1/archive` |
-| `OPENMETEO_AIR_QUALITY_URL` | Endpoint calidad del aire | `https://air-quality-api.open-meteo.com/v1/air-quality` |
-| `OPENWEATHER_API_KEY` | API key OpenWeather (opcional) | (vacío → fallback sintético) |
-| `PVGIS_BASE_URL` | Endpoint PVGIS v5_3 (opcional) | `https://re.jrc.ec.europa.eu/api/v5_3` |
-| `PVGIS_ENABLED` | Habilitar PVGIS | `true` |
-| `NASA_POWER_BASE_URL` | NASA POWER (respaldo) | `https://power.larc.nasa.gov/api/temporal/daily/point` |
-| `OLLAMA_BASE_URL` | URL Ollama | `http://host.docker.internal:11434` |
-| `OLLAMA_MODEL` | Modelo Llama | `llama3.2:3b` |
+| Variable                    | Descripción                           | Default                                                 |
+| --------------------------- | ------------------------------------- | ------------------------------------------------------- |
+| `MYSQL_HOST`                | Host MySQL (en Docker = `mysql`)      | `mysql`                                                 |
+| `MYSQL_USER`                | Usuario MySQL                         | `root`                                                  |
+| `MYSQL_PASSWORD`            | Password MySQL                        | `root`                                                  |
+| `MYSQL_DATABASE`            | Nombre BD                             | `agente_solar_db`                                       |
+| `SECRET_KEY`                | JWT secret (cambiar en producción)    | `cambiar-en-produccion-2026`                            |
+| `OPENMETEO_FORECAST_URL`    | Endpoint forecast Open-Meteo (núcleo) | `https://api.open-meteo.com/v1/forecast`                |
+| `OPENMETEO_ARCHIVE_URL`     | Endpoint histórico ERA5               | `https://archive-api.open-meteo.com/v1/archive`         |
+| `OPENMETEO_AIR_QUALITY_URL` | Endpoint calidad del aire             | `https://air-quality-api.open-meteo.com/v1/air-quality` |
+| `OPENWEATHER_API_KEY`       | API key OpenWeather (opcional)        | (vacío → fallback sintético)                            |
+| `PVGIS_BASE_URL`            | Endpoint PVGIS v5_3 (opcional)        | `https://re.jrc.ec.europa.eu/api/v5_3`                  |
+| `PVGIS_ENABLED`             | Habilitar PVGIS                       | `true`                                                  |
+| `NASA_POWER_BASE_URL`       | NASA POWER (respaldo)                 | `https://power.larc.nasa.gov/api/temporal/daily/point`  |
 
 ---
 

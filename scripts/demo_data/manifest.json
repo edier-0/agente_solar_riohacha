@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-05-24T10:31:17.013675",
+  "files": [
+    "consumo_demo.json",
+    "radiacion_demo.json"
+  ],
+  "records": {
+    "consumo_demo": 60,
+    "radiacion_demo": 60
+  }
+}

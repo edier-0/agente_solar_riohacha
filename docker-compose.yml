@@ -15,7 +15,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -37,8 +37,7 @@ services:
       MYSQL_DATABASE: agente_solar_db
       SECRET_KEY: ${SECRET_KEY:-cambiar-en-produccion-2026}
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       ENVIRONMENT: development
       WATCHFILES_FORCE_POLLING: "true"
     ports:

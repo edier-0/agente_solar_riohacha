@@ -1,0 +1,100 @@
+"""
+Genera datos sintéticos demo en JSON (sin persistir en base de datos).
+"""
+from __future__ import annotations
+
+import json
+import random
+from datetime import datetime, timedelta
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parent
+OUT_DIR = ROOT / "demo_data"
+
+
+def build_consumo(days: int = 60) -> list[dict]:
+    random.seed(42)
+    now = datetime.now()
+    rows: list[dict] = []
+    tarifa_kwh = 943.0
+    for i in range(days):
+        fecha = (now - timedelta(days=i)).replace(hour=23, minute=59, second=0, microsecond=0)
+        base_consumo = 380 + random.gauss(0, 30)
+        if i in (15, 35):
+            base_consumo *= 1.6
+        base_produccion = max(0, 60 + random.gauss(0, 15))
+        demanda = 20 + random.gauss(0, 3)
+        bateria = max(20, min(100, 75 + random.gauss(0, 15)))
+        consumo_kwh = round(max(0, base_consumo), 2)
+        rows.append(
+            {
+                "fecha": fecha.isoformat(),
+                "consumo_kwh": consumo_kwh,
+                "costo_cop": round(consumo_kwh * tarifa_kwh, 0),
+                "demanda_pico_kw": round(max(0, demanda), 2),
+                "produccion_solar_kwh": round(base_produccion, 2),
+                "nivel_bateria_pct": round(bateria, 1),
+                "periodo": "diario",
+                "escenario": "demo",
+                "origen_dato": "json_demo",
+                "confiabilidad": 35.0,
+            }
+        )
+    return rows
+
+
+def build_radiacion(days: int = 60) -> list[dict]:
+    random.seed(7)
+    now = datetime.now()
+    rows: list[dict] = []
+    for i in range(days):
+        fecha = (now - timedelta(days=i)).replace(hour=12, minute=0, second=0, microsecond=0)
+        ghi = max(2.0, min(7.5, 5.8 + random.gauss(0, 0.7)))
+        rows.append(
+            {
+                "fecha": fecha.isoformat(),
+                "ghi": round(ghi, 2),
+                "dni": round(ghi * 1.3 + random.gauss(0, 0.3), 2),
+                "dhi": round(ghi * 0.4 + random.gauss(0, 0.2), 2),
+                "temperatura": round(28 + random.gauss(0, 2), 1),
+                "nubosidad": round(max(0, min(100, 25 + random.gauss(0, 15))), 1),
+                "fuente": "synthetic",
+                "escenario": "demo",
+                "origen_dato": "json_demo",
+                "confiabilidad": 35.0,
+                "latitud": 11.5444,
+                "longitud": -72.9072,
+            }
+        )
+    return rows
+
+
+def main() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    consumo = build_consumo()
+    radiacion = build_radiacion()
+
+    (OUT_DIR / "consumo_demo.json").write_text(
+        json.dumps(consumo, ensure_ascii=True, indent=2), encoding="utf-8"
+    )
+    (OUT_DIR / "radiacion_demo.json").write_text(
+        json.dumps(radiacion, ensure_ascii=True, indent=2), encoding="utf-8"
+    )
+    manifest = {
+        "generated_at": datetime.now().isoformat(),
+        "files": ["consumo_demo.json", "radiacion_demo.json"],
+        "records": {
+            "consumo_demo": len(consumo),
+            "radiacion_demo": len(radiacion),
+        },
+    }
+    (OUT_DIR / "manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=True, indent=2), encoding="utf-8"
+    )
+    print(f"[OK] JSON demo generado en: {OUT_DIR}")
+
+
+if __name__ == "__main__":
+    main()
+
