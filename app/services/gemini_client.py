@@ -1,39 +1,47 @@
+import asyncio
 import os
+from functools import partial
+
 from google import genai
 from google.genai import types
 
-async def obtener_respuesta_gemini(prompt: str, system_instruction: str = None, model_name: str = "gemini-2.5-flash-lite"):
+
+def _llamar_gemini_sync(api_key: str, model_name: str, prompt: str, config) -> str:
+    """Llamada síncrona a Gemini. Se ejecuta en un thread para no bloquear."""
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+        config=config,
+    )
+    return response.text
+
+
+async def obtener_respuesta_gemini(
+    prompt: str,
+    system_instruction: str = None,
+    model_name: str = "gemini-2.5-flash-lite",
+) -> str:
     """
-    Se comunica asíncronamente con Gemini usando el nuevo SDK `google-genai`.
+    Llama a Gemini de forma no bloqueante usando run_in_executor.
+    Evita depender de aiohttp (client.aio) cuya compatibilidad es inestable.
     """
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY no está configurada")
 
-    # Inicializar el cliente
-    client = genai.Client(api_key=api_key)
-
-    # Configurar instrucciones del sistema si se proporcionan
     config = None
     if system_instruction:
-        config = types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            temperature=0.3, # Baja temperatura para respuestas más precisas
-            response_mime_type="application/json" # Como los agentes piden JSON, lo dejamos base o podemos inyectarlo luego, mejor no ponerlo aquí global.
-        )
-        # Quitamos response_mime_type global para que sirva para chat también.
         config = types.GenerateContentConfig(
             system_instruction=system_instruction,
             temperature=0.3,
         )
 
     try:
-        response = await client.aio.models.generate_content(
-            model=model_name,
-            contents=prompt,
-            config=config
-        )
-        return response.text
+        loop = asyncio.get_event_loop()
+        fn = partial(_llamar_gemini_sync, api_key, model_name, prompt, config)
+        return await loop.run_in_executor(None, fn)
     except Exception as e:
         print(f"Error al conectar con Gemini: {e}")
-        return "Lo siento, hubo un error al procesar tu solicitud con el modelo de IA."
+        return None
+

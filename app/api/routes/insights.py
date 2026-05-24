@@ -38,6 +38,35 @@ def _check_acceso(current_user: User, empresa_id: int):
         raise HTTPException(status_code=403, detail="Sin permisos")
 
 
+def _generar_narrativa_fallback(resumen: dict, empresa_nombre: str, empresa_tipo: str) -> str:
+    """Genera un resumen narrativo de fallback rico y bien redactado a partir de las tarjetas."""
+    tarjetas = resumen.get("tarjetas", {})
+    
+    dia_solar = tarjetas.get("dia_solar", {}).get("mensaje", "")
+    consumo = tarjetas.get("consumo", {}).get("mensaje", "")
+    produccion = tarjetas.get("produccion", {}).get("mensaje", "")
+    riesgo = tarjetas.get("riesgo_apagon", {}).get("mensaje", "")
+    bateria = tarjetas.get("bateria", {}).get("mensaje", "")
+    
+    es_hogar = (empresa_tipo == "hogar")
+    
+    if es_hogar:
+        narrativa = (
+            f"¡Hola! Analizamos los datos de tu hogar para el día de hoy. En cuanto a las condiciones climáticas de Riohacha, {dia_solar} "
+            f"Con respecto al comportamiento de tu casa, {consumo} Adicionalmente, sobre la autogeneración solar, {produccion}\n\n"
+            f"Para mantener tu hogar seguro hoy, {riesgo} En cuanto al almacenamiento de energía en tu casa, {bateria} "
+            f"¡Que tengas un gran día con tu familia en {empresa_nombre}!"
+        )
+    else:
+        narrativa = (
+            f"Informe de análisis operativo diario para {empresa_nombre}. Respecto a las condiciones de radiación solar en Riohacha, {dia_solar} "
+            f"En términos de demanda y costos energéticos, {consumo} Sobre la capacidad de generación propia distribuida, {produccion}\n\n"
+            f"En la dimensión de resiliencia operativa y riesgos de red, {riesgo} Los sistemas de almacenamiento local reportan que {bateria} "
+            f"Se sugiere mantener el seguimiento de estas métricas operativas para optimizar la eficiencia y rentabilidad hoy."
+        )
+    return narrativa
+
+
 @router.get("/diario/{empresa_id}")
 async def insights_diario(
     empresa_id: int,
@@ -50,7 +79,7 @@ async def insights_diario(
     Devuelve el panel humano-amigable del día para la empresa:
     - score global (verde/amarillo/rojo)
     - tarjetas de día solar, consumo, producción, riesgo, aire y batería
-    - resumen narrativo opcional generado por Gemini
+    - resumen narrativo opcional generado por Gemini o fallback por plantilla
     """
     _check_acceso(current_user, empresa_id)
     if escenario == "demo":
@@ -84,12 +113,13 @@ async def insights_diario(
             capacidad_paneles_kw=demo.get("capacidad_paneles_kw", 0.0),
             capacidad_bateria_kwh=demo.get("capacidad_bateria_kwh", 0.0),
         )
+        resumen_narrativo = _generar_narrativa_fallback(resumen, demo["nombre"], demo.get("tipo", "pyme"))
         return {
             "empresa": {"id": demo["id"], "nombre": demo["nombre"], "tipo": demo["tipo"]},
             "fecha": ahora.isoformat(),
             "score_global": resumen["score_global"],
             "tarjetas": resumen["tarjetas"],
-            "resumen_narrativo": None,
+            "resumen_narrativo": resumen_narrativo,
             "fuente_narrativa": "plantilla",
         }
 
@@ -175,6 +205,7 @@ async def insights_diario(
 
     # ---- Resumen narrativo (LLM) ----
     resumen_llm = None
+    fuente = "plantilla"
     if incluir_resumen_llm:
         fecha = ahora.strftime("%Y-%m-%d")
         prompt = f"""Genera un resumen diario (de 2 a 3 párrafos cortos) para el hogar "{empresa.nombre}" (Sector: Residencial) en base a los siguientes datos operativos y climáticos de hoy:
@@ -193,8 +224,15 @@ Da un consejo corto de cierre."""
                 system_instruction=system_instruction,
                 model_name="gemini-2.5-flash-lite"
             )
+            if resumen_llm:
+                fuente = "gemini"
         except Exception as e:
-            resumen_llm = f"No se pudo generar el resumen con Gemini: {str(e)}"
+            print(f"Excepción capturada al obtener respuesta de Gemini: {e}")
+            resumen_llm = None
+
+    if not resumen_llm:
+        resumen_llm = _generar_narrativa_fallback(resumen, empresa.nombre, empresa.tipo)
+        fuente = "plantilla"
 
     return {
         "empresa": {
@@ -206,5 +244,6 @@ Da un consejo corto de cierre."""
         "score_global": resumen["score_global"],
         "tarjetas": resumen["tarjetas"],
         "resumen_narrativo": resumen_llm,
-        "fuente_narrativa": "gemini" if resumen_llm else "plantilla",
+        "fuente_narrativa": fuente,
     }
+
