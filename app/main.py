@@ -33,6 +33,18 @@ async def lifespan(app: FastAPI):
     # Startup
     Base.metadata.create_all(bind=engine)
     ensure_schema_compatibility(engine)
+    
+    # Sincronización automática de Fuentes de Verdad en segundo plano (no bloqueante)
+    import asyncio
+    from app.db.session import SessionLocal
+    from app.services.startup_sync import ejecutar_sincronizacion_inicial
+    
+    db = SessionLocal()
+    try:
+        asyncio.create_task(ejecutar_sincronizacion_inicial(db))
+    except Exception as e:
+        print(f"[STARTUP ERROR] No se pudo lanzar la sincronización inicial: {e}")
+        
     yield
     # Shutdown
 
