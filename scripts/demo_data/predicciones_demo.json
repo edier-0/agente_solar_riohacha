@@ -1,9 +1,9 @@
 [
   {
-    "id": 1779638411,
+    "id": 1779739211,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-25T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-26T20:00:00",
     "tipo": "produccion_solar",
     "valor": 72.0,
     "unidad": "kWh",
@@ -11,41 +11,41 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638412,
+    "id": 1779739212,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-25T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-26T20:00:00",
     "tipo": "consumo",
-    "valor": 391.38,
+    "valor": 391.66,
     "unidad": "kWh",
     "confianza_pct": 70.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638413,
+    "id": 1779739213,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-25T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-26T20:00:00",
     "tipo": "costo",
-    "valor": 301175.0,
+    "valor": 301439.0,
     "unidad": "COP",
     "confianza_pct": 70.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638421,
+    "id": 1779739221,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-26T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-27T20:00:00",
     "tipo": "produccion_solar",
     "valor": 68.5,
     "unidad": "kWh",
@@ -53,41 +53,41 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638422,
+    "id": 1779739222,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-26T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-27T20:00:00",
     "tipo": "consumo",
-    "valor": 395.3,
+    "valor": 395.58,
     "unidad": "kWh",
     "confianza_pct": 70.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638423,
+    "id": 1779739223,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-26T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-27T20:00:00",
     "tipo": "costo",
-    "valor": 308172.0,
+    "valor": 308436.0,
     "unidad": "COP",
     "confianza_pct": 70.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638431,
+    "id": 1779739231,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-27T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-28T20:00:00",
     "tipo": "produccion_solar",
     "valor": 65.0,
     "unidad": "kWh",
@@ -95,41 +95,41 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638432,
+    "id": 1779739232,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-27T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-28T20:00:00",
     "tipo": "consumo",
-    "valor": 387.47,
+    "valor": 387.75,
     "unidad": "kWh",
     "confianza_pct": 70.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779638433,
+    "id": 1779739233,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-27T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-28T20:00:00",
     "tipo": "costo",
-    "valor": 304089.0,
+    "valor": 304353.0,
     "unidad": "COP",
     "confianza_pct": 70.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   },
   {
-    "id": 1779639399,
+    "id": 1779740199,
     "empresa_id": 1,
-    "fecha_prediccion": "2026-05-24T16:00:00",
-    "fecha_objetivo": "2026-05-25T16:00:00",
+    "fecha_prediccion": "2026-05-25T20:00:00",
+    "fecha_objetivo": "2026-05-26T20:00:00",
     "tipo": "riesgo_apagon",
     "valor": 18.0,
     "unidad": "%",
@@ -137,6 +137,6 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
-    "created_at": "2026-05-24T16:00:00"
+    "created_at": "2026-05-25T20:00:00"
   }
 ]
