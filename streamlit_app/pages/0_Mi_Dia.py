@@ -1,4 +1,4 @@
-"""Pagina Mi Dia con vista compacta y detalle opcional."""
+"""Pagina Mi Dia con vista compacta y detalle opcional integrado en el hero."""
 
 import os
 import sys
@@ -26,13 +26,20 @@ if not empresa_id:
     if not empresas:
         st.info("No hay empresas disponibles.")
         st.stop()
-    seleccion = st.selectbox("Selecciona una empresa", options=empresas, format_func=lambda e: e["nombre"])
+    seleccion = st.selectbox(
+        "Selecciona una empresa",
+        options=empresas,
+        format_func=lambda e: e["nombre"],
+    )
     empresa_id = seleccion["id"] if seleccion else None
 
 if not empresa_id:
     st.stop()
 
-data = api_get(f"/insights/diario/{empresa_id}", params={"incluir_resumen_llm": "true"})
+data = api_get(
+    f"/insights/diario/{empresa_id}",
+    params={"incluir_resumen_llm": "true"},
+)
 if not data:
     st.error("No se pudo cargar el resumen del dia.")
     st.stop()
@@ -47,15 +54,36 @@ tone_map = {"verde": "success", "amarillo": "warning", "rojo": "danger"}
 score_tone = tone_map.get(score.get("nivel"), "info")
 
 es_hogar = (empresa.get("tipo") == "hogar")
+resumen_text = resumen_narrativo or (
+    "Resumen diario listo para tomar decisiones en tu hogar sin sobrecarga visual."
+    if es_hogar
+    else "Resumen diario listo para tomar decisiones sin sobrecarga visual."
+)
+
+# Construir version breve y decidir si hay desglose
+es_largo = len(resumen_text) > 180
+resumen_breve = (
+    resumen_text
+    if not es_largo
+    else resumen_text[:180].rsplit(" ", 1)[0] + "..."
+)
+
+# Hero con boton "Ver mas" integrado dentro del cuadro verde
 render_hero(
     score.get("titulo", "Tu día energético"),
-    resumen_narrativo or ("Resumen diario listo para tomar decisiones en tu hogar sin sobrecarga visual." if es_hogar else "Resumen diario listo para tomar decisiones sin sobrecarga visual."),
+    resumen_breve,
     icon="sun",
     eyebrow=f"🏠 Hogar: {empresa.get('nombre')}" if es_hogar else empresa.get("nombre", "Operación diaria"),
     tone=score_tone,
+    expandable_text=resumen_text if es_largo else None,
 )
 
-render_section_header("Resumen clave", "spark", "Lectura compacta del estado actual.")
+render_section_header(
+    "Resumen clave",
+    "spark",
+    "Lectura compacta del estado actual.",
+)
+
 order = [
     ("dia_solar", "Dia solar", "sun"),
     ("consumo", "Consumo de hoy", "bolt"),
@@ -97,4 +125,7 @@ with shortcut_cols[3]:
     if st.button("Detalles tecnicos", use_container_width=True):
         st.switch_page("pages/1_Dashboard.py")
 
-st.caption("La pagina prioriza una lectura compacta. Para ampliar indicadores y contexto tecnico, usa el acceso directo a Detalles tecnicos.")
+st.caption(
+    "La pagina prioriza una lectura compacta. Para ampliar indicadores y contexto tecnico, "
+    "usa el acceso directo a Detalles tecnicos."
+)
