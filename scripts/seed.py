@@ -5,10 +5,12 @@ Ejecutar: python scripts/seed.py
 """
 from __future__ import annotations
 
+import json
 import os
 import random
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -116,60 +118,56 @@ def seed() -> None:
                 .count()
             )
             if consumo_count == 0:
-                print("[INFO] Generando datos sinteticos de consumo (60 dias)...")
-                random.seed(42)
-                ahora = datetime.now()
-                for i in range(60):
-                    fecha = ahora - timedelta(days=i)
-                    base_consumo = 380 + random.gauss(0, 30)
-                    if i in (15, 35):
-                        base_consumo *= 1.6
-                    base_produccion = max(0, 60 + random.gauss(0, 15))
-                    demanda = 20 + random.gauss(0, 3)
-                    bateria = max(20, min(100, 75 + random.gauss(0, 15)))
-
-                    consumo = ConsumoEnergetico(
-                        empresa_id=empresa.id,
-                        fecha=fecha.replace(hour=23, minute=59),
-                        consumo_kwh=round(max(0, base_consumo), 2),
-                        costo_cop=round(max(0, base_consumo) * empresa.tarifa_kwh, 0),
-                        demanda_pico_kw=round(max(0, demanda), 2),
-                        produccion_solar_kwh=round(base_produccion, 2),
-                        nivel_bateria_pct=round(bateria, 1),
-                        periodo="diario",
-                        escenario="demo",
-                        origen_dato="seed_demo",
-                        confiabilidad=35.0,
-                    )
-                    db.add(consumo)
-                db.commit()
-                print("[OK] 60 registros de consumo creados")
+                print("[INFO] Cargando datos sinteticos de consumo desde JSON...")
+                consumo_file = Path(__file__).parent / "demo_data" / "consumo_demo.json"
+                if consumo_file.exists():
+                    consumo_data = json.loads(consumo_file.read_text(encoding="utf-8"))
+                    for row in consumo_data:
+                        consumo = ConsumoEnergetico(
+                            empresa_id=empresa.id,
+                            fecha=datetime.fromisoformat(row["fecha"]),
+                            consumo_kwh=row["consumo_kwh"],
+                            costo_cop=row["costo_cop"],
+                            demanda_pico_kw=row["demanda_pico_kw"],
+                            produccion_solar_kwh=row["produccion_solar_kwh"],
+                            nivel_bateria_pct=row["nivel_bateria_pct"],
+                            periodo=row.get("periodo", "diario"),
+                            escenario=row.get("escenario", "demo"),
+                            origen_dato="json_demo",
+                            confiabilidad=row.get("confiabilidad", 35.0),
+                        )
+                        db.add(consumo)
+                    db.commit()
+                    print(f"[OK] {len(consumo_data)} registros de consumo cargados")
+                else:
+                    print(f"[WARN] Archivo no encontrado: {consumo_file}")
 
             rad_count = db.query(RadiacionSolar).count()
             if rad_count == 0:
-                print("[INFO] Generando datos sinteticos de radiacion solar (60 dias)...")
-                random.seed(7)
-                ahora = datetime.now()
-                for i in range(60):
-                    fecha = ahora - timedelta(days=i)
-                    ghi = max(2.0, min(7.5, 5.8 + random.gauss(0, 0.7)))
-                    rad = RadiacionSolar(
-                        fecha=fecha.replace(hour=12),
-                        ghi=round(ghi, 2),
-                        dni=round(ghi * 1.3 + random.gauss(0, 0.3), 2),
-                        dhi=round(ghi * 0.4 + random.gauss(0, 0.2), 2),
-                        temperatura=round(28 + random.gauss(0, 2), 1),
-                        nubosidad=round(max(0, min(100, 25 + random.gauss(0, 15))), 1),
-                        fuente="synthetic",
-                        escenario="demo",
-                        origen_dato="seed_demo",
-                        confiabilidad=35.0,
-                        latitud=11.5444,
-                        longitud=-72.9072,
-                    )
-                    db.add(rad)
-                db.commit()
-                print("[OK] 60 registros de radiacion creados")
+                print("[INFO] Cargando datos sinteticos de radiacion solar desde JSON...")
+                radiacion_file = Path(__file__).parent / "demo_data" / "radiacion_demo.json"
+                if radiacion_file.exists():
+                    radiacion_data = json.loads(radiacion_file.read_text(encoding="utf-8"))
+                    for row in radiacion_data:
+                        rad = RadiacionSolar(
+                            fecha=datetime.fromisoformat(row["fecha"]),
+                            ghi=row["ghi"],
+                            dni=row["dni"],
+                            dhi=row["dhi"],
+                            temperatura=row["temperatura"],
+                            nubosidad=row["nubosidad"],
+                            fuente=row.get("fuente", "synthetic"),
+                            escenario=row.get("escenario", "demo"),
+                            origen_dato="json_demo",
+                            confiabilidad=row.get("confiabilidad", 35.0),
+                            latitud=row.get("latitud", 11.5444),
+                            longitud=row.get("longitud", -72.9072),
+                        )
+                        db.add(rad)
+                    db.commit()
+                    print(f"[OK] {len(radiacion_data)} registros de radiacion cargados")
+                else:
+                    print(f"[WARN] Archivo no encontrado: {radiacion_file}")
         else:
             print("[INFO] Seed sin series sinteticas en BD (SEED_PERSIST_SYNTHETIC=0).")
 
