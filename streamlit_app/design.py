@@ -333,6 +333,57 @@ def inject_css() -> None:
         .stTabs [aria-selected="true"] {{
             background: rgba(15, 29, 39, 0.98);
         }}
+        
+        .ag-hero__expand {{
+    margin-top: 0.9rem;
+}}
+.ag-hero__expand summary {{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    list-style: none;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #FFFFFF;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.2s ease;
+    user-select: none;
+}}
+.ag-hero__expand summary:hover {{
+    background: rgba(255, 255, 255, 0.26);
+}}
+.ag-hero__expand summary::-webkit-details-marker {{
+    display: none;
+}}
+.ag-hero__expand summary::after {{
+    content: "▾";
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}}
+.ag-hero__expand[open] summary::after {{
+    transform: rotate(180deg);
+}}
+.ag-hero__expand[open] summary .ag-hero__expand-label::before {{
+    content: "Ver menos";
+}}
+.ag-hero__expand:not([open]) summary .ag-hero__expand-label::before {{
+    content: "Ver más";
+}}
+.ag-hero__expand-content {{
+    margin-top: 0.8rem;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #FFFFFF;
+    opacity: 0.96;
+}}
         """
     )
 
@@ -400,9 +451,20 @@ def render_hero(
     icon: str = "sun",
     eyebrow: str = "",
     tone: str = "brand",
+    expandable_text: str | None = None,
 ) -> None:
-    """Render the main page hero."""
+    """Render the main page hero, con desglose opcional integrado."""
     tone_start, tone_end = TONE_MAP.get(tone, TONE_MAP["brand"])
+
+    expand_html = ""
+    if expandable_text:
+        expand_html = f"""
+            <details class="ag-hero__expand">
+                <summary><span class="ag-hero__expand-label"></span></summary>
+                <div class="ag-hero__expand-content">{escape(expandable_text)}</div>
+            </details>
+        """
+
     render_html_block(
         f"""
         <div class="ag-hero" style="--tone-start: {tone_start}; --tone-end: {tone_end};">
@@ -412,6 +474,7 @@ def render_hero(
             </div>
             <div class="ag-hero__title">{escape(title)}</div>
             <div class="ag-hero__subtitle">{escape(subtitle)}</div>
+            {expand_html}
         </div>
         """
     )
