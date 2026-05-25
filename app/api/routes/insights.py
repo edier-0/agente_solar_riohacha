@@ -165,6 +165,14 @@ async def insights_diario(
         .first()
     )
     ghi_actual = radiacion.ghi if radiacion else None
+    latest_date = radiacion.fecha.date() if radiacion and radiacion.fecha else None
+    if latest_date != ahora.date():
+        try:
+            forecast = await openmeteo_service.get_forecast_diario(days=1, allow_synthetic=False)
+        except Exception:
+            forecast = []
+        if forecast and forecast[0].get("ghi") is not None:
+            ghi_actual = forecast[0]["ghi"]
 
     # ---- Riesgo de apagón (última predicción) ----
     pred_apagon = (

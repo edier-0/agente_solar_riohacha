@@ -92,7 +92,7 @@ class NASAPowerService:
         """Datos de los últimos N días."""
         # NASA POWER tiene delay de ~2 días en datos diarios
         end = datetime.now() - timedelta(days=3)
-        start = end - timedelta(days=days)
+        start = end - timedelta(days=max(days - 1, 0))
         return await self.get_radiation_data(
             start_date=start.strftime("%Y%m%d"),
             end_date=end.strftime("%Y%m%d"),

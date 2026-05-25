@@ -95,6 +95,8 @@ if radiacion:
     df = pd.DataFrame(radiacion)
     df["fecha"] = pd.to_datetime(df["fecha"])
     df = df.sort_values("fecha")
+    if "origen_dato" in df.columns and (df["origen_dato"] == "forecast_api").any():
+        st.caption("Los dias mas recientes se completan con pronostico diario de Open-Meteo mientras el Archive publica el historico definitivo.")
 
     cols = st.columns(4)
     cols[0].metric("Promedio GHI", f"{df['ghi'].mean():.2f} kWh/m2/dia")

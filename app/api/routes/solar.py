@@ -17,11 +17,38 @@ from app.services.demo_data import get_radiacion_demo
 router = APIRouter(prefix="/solar", tags=["Datos Solares"])
 
 
+def _start_of_day_days_ago(days: int) -> datetime:
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    return today - timedelta(days=max(days - 1, 0))
+
+
+def _build_virtual_radiacion_row(item: dict, index: int) -> dict:
+    fecha = item["fecha"]
+    return {
+        "id": 900000 + index,
+        "fecha": fecha,
+        "ghi": item.get("ghi"),
+        "dni": item.get("dni"),
+        "dhi": item.get("dhi"),
+        "temperatura": item.get("temperatura"),
+        "temperatura_max": item.get("temperatura_max"),
+        "temperatura_min": item.get("temperatura_min"),
+        "nubosidad": item.get("nubosidad"),
+        "precipitacion_mm": item.get("precipitacion_mm"),
+        "viento_kmh_max": item.get("viento_kmh_max"),
+        "fuente": item.get("fuente", "open_meteo"),
+        "escenario": item.get("escenario", "real"),
+        "origen_dato": item.get("origen_dato", "forecast_api"),
+        "confiabilidad": item.get("confiabilidad", 75.0),
+        "created_at": datetime.now(),
+    }
+
+
 # ---------------------------------------------------------------------------
 # LECTURA DE BD
 # ---------------------------------------------------------------------------
 @router.get("/radiacion", response_model=List[RadiacionResponse])
-def get_radiacion(
+async def get_radiacion(
     days: int = Query(30, ge=1, le=365),
     fuente: Optional[str] = None,
     escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
@@ -37,17 +64,40 @@ def get_radiacion(
             r.setdefault("id", 200000 + i)
             r.setdefault("created_at", r.get("fecha"))
         return rows
-    since = datetime.now() - timedelta(days=days)
+    since = _start_of_day_days_ago(days)
     q = db.query(RadiacionSolar).filter(RadiacionSolar.fecha >= since)
     if fuente:
         q = q.filter(RadiacionSolar.fuente == fuente)
     if escenario:
         q = q.filter(RadiacionSolar.escenario == escenario)
-    return q.order_by(desc(RadiacionSolar.fecha)).all()
+    rows = q.order_by(desc(RadiacionSolar.fecha)).all()
+
+    should_append_forecast = (escenario in (None, "real")) and fuente in (None, "open_meteo")
+    if not should_append_forecast:
+        return rows
+
+    existing_dates = {r.fecha.date() for r in rows if r.fecha}
+    try:
+        recent_series = await openmeteo_service.get_serie_reciente(days=days)
+    except RuntimeError:
+        return rows
+
+    virtual_rows = []
+    for item in recent_series:
+        fecha = item.get("fecha")
+        if not fecha or fecha.date() in existing_dates:
+            continue
+        if item.get("origen_dato") != "forecast_api":
+            continue
+        virtual_rows.append(_build_virtual_radiacion_row(item, len(virtual_rows)))
+
+    combined = rows + virtual_rows
+    combined.sort(key=lambda r: r["fecha"] if isinstance(r, dict) else r.fecha, reverse=True)
+    return combined
 
 
 @router.get("/radiacion/latest", response_model=Optional[RadiacionResponse])
-def get_radiacion_latest(
+async def get_radiacion_latest(
     escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -64,7 +114,35 @@ def get_radiacion_latest(
     q = db.query(RadiacionSolar)
     if escenario:
         q = q.filter(RadiacionSolar.escenario == escenario)
-    return q.order_by(desc(RadiacionSolar.fecha)).first()
+    latest = q.order_by(desc(RadiacionSolar.fecha)).first()
+
+    should_append_forecast = escenario in (None, "real")
+    if not should_append_forecast:
+        return latest
+
+    latest_date = latest.fecha.date() if latest and latest.fecha else None
+    today = datetime.now().date()
+    if latest_date == today:
+        return latest
+
+    try:
+        recent_series = await openmeteo_service.get_serie_reciente(days=7)
+    except RuntimeError:
+        return latest
+
+    forecast_today = next(
+        (
+            item
+            for item in recent_series
+            if item.get("fecha")
+            and item["fecha"].date() == today
+            and item.get("origen_dato") == "forecast_api"
+        ),
+        None,
+    )
+    if not forecast_today:
+        return latest
+    return _build_virtual_radiacion_row(forecast_today, 0)
 
 
 # ---------------------------------------------------------------------------

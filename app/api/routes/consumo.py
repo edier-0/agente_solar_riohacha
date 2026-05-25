@@ -11,6 +11,7 @@ from app.schemas.schemas import ConsumoCreate, ConsumoMensualCreate, ConsumoResp
 from app.api.deps.auth import get_current_user
 from app.services.consumo_parser import parser
 from app.services.demo_data import get_consumo_demo, get_demo_empresa, get_radiacion_demo
+from app.services.openmeteo import openmeteo_service
 
 router = APIRouter(prefix="/consumo", tags=["Consumo Energético"])
 
@@ -237,7 +238,7 @@ async def upload_consumo_file(
 
 
 @router.get("/kpis/{empresa_id}", response_model=DashboardKPIs)
-def get_dashboard_kpis(
+async def get_dashboard_kpis(
     empresa_id: int,
     escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
@@ -317,9 +318,19 @@ def get_dashboard_kpis(
     if escenario:
         q_rad = q_rad.filter(RadiacionSolar.escenario == escenario)
     rad_actual = q_rad.order_by(desc(RadiacionSolar.fecha)).first()
+    rad_actual_kwh = rad_actual.ghi if rad_actual else None
+    latest_date = rad_actual.fecha.date() if rad_actual and rad_actual.fecha else None
+    today = datetime.now().date()
+    if latest_date != today:
+        try:
+            forecast = await openmeteo_service.get_forecast_diario(days=1, allow_synthetic=False)
+        except RuntimeError:
+            forecast = []
+        if forecast and forecast[0].get("ghi") is not None:
+            rad_actual_kwh = forecast[0]["ghi"]
 
     return DashboardKPIs(
-        radiacion_actual_kwh=rad_actual.ghi if rad_actual else None,
+        radiacion_actual_kwh=rad_actual_kwh,
         consumo_hoy_kwh=consumo_hoy,
         costo_hoy_cop=consumo_hoy * empresa.tarifa_kwh,
         produccion_solar_hoy_kwh=produccion_hoy,

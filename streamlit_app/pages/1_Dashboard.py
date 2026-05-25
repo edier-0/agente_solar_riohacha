@@ -194,6 +194,8 @@ with tab_tecnico:
         df_r = pd.DataFrame(radiacion)
         df_r["fecha"] = pd.to_datetime(df_r["fecha"])
         df_r = df_r.sort_values("fecha")
+        if "origen_dato" in df_r.columns and (df_r["origen_dato"] == "forecast_api").any():
+            st.caption("La cola mas reciente de esta serie usa pronostico diario de Open-Meteo hasta que el historico oficial quede disponible.")
 
         fig = px.line(df_r, x="fecha", y="ghi", labels={"ghi": "Radicación GHI (kWh/m²/día)", "fecha": "Fecha"}, color_discrete_sequence=["#C88A2E"])
         fig.update_traces(mode="lines+markers", line=dict(width=2), fill="tozeroy", fillcolor="rgba(200, 138, 46, 0.1)")
