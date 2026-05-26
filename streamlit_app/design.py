@@ -102,7 +102,7 @@ def inject_css() -> None:
             border-right: 1px solid var(--border);
         }}
         .block-container {{
-            padding-top: 2rem;
+            padding-top: 3rem;
             padding-bottom: 2rem;
         }}
         h1, h2, h3, h4, p, label, div, span {{

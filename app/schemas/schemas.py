@@ -118,6 +118,17 @@ class ConsumoMensualCreate(BaseModel):
     fecha_suspension: Optional[datetime] = None
 
 
+class ConsumoUpdate(BaseModel):
+    empresa_id: Optional[int] = None
+    fecha: Optional[datetime] = None
+    consumo_kwh: Optional[float] = None
+    costo_cop: Optional[float] = None
+    demanda_pico_kw: Optional[float] = None
+    produccion_solar_kwh: Optional[float] = None
+    nivel_bateria_pct: Optional[float] = None
+    periodo: Optional[str] = None
+
+
 class ConsumoResponse(BaseModel):
     id: int
     empresa_id: int
@@ -138,6 +149,38 @@ class ConsumoResponse(BaseModel):
 
 
 # --- Radiación Solar Schemas ---
+class RadiacionCreate(BaseModel):
+    fecha: datetime
+    ghi: Optional[float] = None
+    dni: Optional[float] = None
+    dhi: Optional[float] = None
+    temperatura: Optional[float] = None
+    temperatura_max: Optional[float] = None
+    temperatura_min: Optional[float] = None
+    nubosidad: Optional[float] = None
+    precipitacion_mm: Optional[float] = None
+    viento_kmh_max: Optional[float] = None
+    fuente: Optional[str] = "synthetic"
+    origen_dato: Optional[str] = None
+    confiabilidad: Optional[float] = 35.0
+
+
+class RadiacionUpdate(BaseModel):
+    fecha: Optional[datetime] = None
+    ghi: Optional[float] = None
+    dni: Optional[float] = None
+    dhi: Optional[float] = None
+    temperatura: Optional[float] = None
+    temperatura_max: Optional[float] = None
+    temperatura_min: Optional[float] = None
+    nubosidad: Optional[float] = None
+    precipitacion_mm: Optional[float] = None
+    viento_kmh_max: Optional[float] = None
+    fuente: Optional[str] = None
+    origen_dato: Optional[str] = None
+    confiabilidad: Optional[float] = None
+
+
 class RadiacionResponse(BaseModel):
     id: int
     fecha: datetime
