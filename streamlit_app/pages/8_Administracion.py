@@ -123,7 +123,12 @@ with tab_nuevo:
                 empresa_id = None
                 if role == "empresa" and empresas_disp:
                     opciones = {f"{e['nombre']} (ID:{e['id']})": e["id"] for e in empresas_disp}
-                    seleccion = st.selectbox("Empresa asociada", list(opciones.keys()))
+                    st.markdown("**Empresa asociada**")
+                    seleccion = st.selectbox(
+                        "Empresa asociada",
+                        list(opciones.keys()),
+                        label_visibility="collapsed",
+                    )
                     empresa_id = opciones[seleccion]
 
             if st.form_submit_button("Crear usuario", type="primary"):

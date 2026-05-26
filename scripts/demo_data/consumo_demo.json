@@ -9,7 +9,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100000,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-24T23:59:00",
@@ -21,7 +23,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100001,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-23T23:59:00",
@@ -33,7 +37,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100002,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-22T23:59:00",
@@ -45,7 +51,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100003,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-21T23:59:00",
@@ -57,7 +65,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100004,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-20T23:59:00",
@@ -69,7 +79,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100005,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-19T23:59:00",
@@ -81,7 +93,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100006,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-18T23:59:00",
@@ -93,7 +107,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100007,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-17T23:59:00",
@@ -105,7 +121,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100008,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-16T23:59:00",
@@ -117,7 +135,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100009,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-15T23:59:00",
@@ -129,7 +149,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100010,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-14T23:59:00",
@@ -141,7 +163,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100011,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-13T23:59:00",
@@ -153,7 +177,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100012,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-12T23:59:00",
@@ -165,7 +191,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100013,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-11T23:59:00",
@@ -177,7 +205,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100014,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-10T23:59:00",
@@ -189,7 +219,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100015,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-09T23:59:00",
@@ -201,7 +233,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100016,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-08T23:59:00",
@@ -213,7 +247,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100017,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-07T23:59:00",
@@ -225,7 +261,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100018,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-06T23:59:00",
@@ -237,7 +275,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100019,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-05T23:59:00",
@@ -249,7 +289,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100020,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-04T23:59:00",
@@ -261,7 +303,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100021,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-03T23:59:00",
@@ -273,7 +317,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100022,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-02T23:59:00",
@@ -285,7 +331,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100023,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-01T23:59:00",
@@ -297,7 +345,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100024,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-30T23:59:00",
@@ -309,7 +359,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100025,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-29T23:59:00",
@@ -321,7 +373,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100026,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-28T23:59:00",
@@ -333,7 +387,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100027,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-27T23:59:00",
@@ -345,7 +401,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100028,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-26T23:59:00",
@@ -357,7 +415,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100029,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-25T23:59:00",
@@ -369,7 +429,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100030,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-24T23:59:00",
@@ -381,7 +443,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100031,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-23T23:59:00",
@@ -393,7 +457,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100032,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-22T23:59:00",
@@ -405,7 +471,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100033,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-21T23:59:00",
@@ -417,7 +485,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100034,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-20T23:59:00",
@@ -429,7 +499,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100035,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-19T23:59:00",
@@ -441,7 +513,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100036,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-18T23:59:00",
@@ -453,7 +527,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100037,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-17T23:59:00",
@@ -465,7 +541,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100038,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-16T23:59:00",
@@ -477,7 +555,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100039,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-15T23:59:00",
@@ -489,7 +569,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100040,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-14T23:59:00",
@@ -501,7 +583,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100041,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-13T23:59:00",
@@ -513,7 +597,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100042,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-12T23:59:00",
@@ -525,7 +611,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100043,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-11T23:59:00",
@@ -537,7 +625,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100044,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-10T23:59:00",
@@ -549,7 +639,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100045,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-09T23:59:00",
@@ -561,7 +653,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100046,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-08T23:59:00",
@@ -573,7 +667,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100047,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-07T23:59:00",
@@ -585,7 +681,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100048,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-06T23:59:00",
@@ -597,7 +695,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100049,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-05T23:59:00",
@@ -609,7 +709,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100050,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-04T23:59:00",
@@ -621,7 +723,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100051,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-03T23:59:00",
@@ -633,7 +737,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100052,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-02T23:59:00",
@@ -645,7 +751,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100053,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-04-01T23:59:00",
@@ -657,7 +765,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100054,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-03-31T23:59:00",
@@ -669,7 +779,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100055,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-03-30T23:59:00",
@@ -681,7 +793,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100056,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-03-29T23:59:00",
@@ -693,7 +807,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100057,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-03-28T23:59:00",
@@ -705,7 +821,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100058,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-03-27T23:59:00",
@@ -717,7 +835,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100059,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-26T23:59:00",
@@ -729,7 +849,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100060,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-27T23:59:00",
@@ -741,7 +863,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100061,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-28T23:59:00",
@@ -753,7 +877,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100062,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-29T23:59:00",
@@ -765,7 +891,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100063,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-30T23:59:00",
@@ -777,7 +905,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100064,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-05-31T23:59:00",
@@ -789,7 +919,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100065,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-01T23:59:00",
@@ -801,7 +933,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100066,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-02T23:59:00",
@@ -813,7 +947,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100067,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-03T23:59:00",
@@ -825,7 +961,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100068,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-04T23:59:00",
@@ -837,7 +975,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100069,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-05T23:59:00",
@@ -849,7 +989,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100070,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-06T23:59:00",
@@ -861,7 +1003,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100071,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-07T23:59:00",
@@ -873,7 +1017,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100072,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-08T23:59:00",
@@ -885,7 +1031,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100073,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-09T23:59:00",
@@ -897,7 +1045,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100074,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-10T23:59:00",
@@ -909,7 +1059,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100075,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-11T23:59:00",
@@ -921,7 +1073,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100076,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-12T23:59:00",
@@ -933,7 +1087,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100077,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-13T23:59:00",
@@ -945,7 +1101,9 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100078,
+    "empresa_id": 1
   },
   {
     "fecha": "2026-06-14T23:59:00",
@@ -957,6 +1115,8 @@
     "periodo": "diario",
     "escenario": "demo",
     "origen_dato": "json_demo",
-    "confiabilidad": 35.0
+    "confiabilidad": 35.0,
+    "id": 100079,
+    "empresa_id": 1
   }
 ]

@@ -7,10 +7,23 @@ from datetime import datetime, timedelta
 
 from app.db.session import get_db
 from app.models.models import ConsumoEnergetico, Empresa, User, UserRole, Alerta
-from app.schemas.schemas import ConsumoCreate, ConsumoMensualCreate, ConsumoResponse, DashboardKPIs
+from app.schemas.schemas import (
+    ConsumoCreate,
+    ConsumoMensualCreate,
+    ConsumoUpdate,
+    ConsumoResponse,
+    DashboardKPIs,
+)
 from app.api.deps.auth import get_current_user
 from app.services.consumo_parser import parser
-from app.services.demo_data import get_consumo_demo, get_demo_empresa, get_radiacion_demo
+from app.services.demo_data import (
+    delete_consumo_demo,
+    get_consumo_demo,
+    get_demo_empresa,
+    get_radiacion_demo,
+    save_consumo_demo,
+    update_consumo_demo,
+)
 from app.services.openmeteo import openmeteo_service
 
 router = APIRouter(prefix="/consumo", tags=["Consumo Energético"])
@@ -33,7 +46,12 @@ def create_consumo(
 ):
     """Registrar un consumo manualmente."""
     if escenario == "demo":
-        raise HTTPException(status_code=409, detail="Modo demo es solo lectura (JSON)")
+        demo_empresa = get_demo_empresa()
+        if data.empresa_id != demo_empresa["id"]:
+            raise HTTPException(status_code=404, detail="Empresa demo no encontrada")
+        rec = save_consumo_demo(data.model_dump())
+        rec.setdefault("created_at", rec.get("fecha"))
+        return rec
     _check_acceso_empresa(current_user, data.empresa_id)
     payload = data.model_dump()
     empresa = db.query(Empresa).filter(Empresa.id == data.empresa_id).first()
@@ -195,13 +213,6 @@ async def upload_consumo_file(
     Columnas requeridas: fecha, consumo_kwh
     Columnas opcionales: costo_cop, demanda_pico_kw, produccion_solar_kwh, nivel_bateria_pct, periodo
     """
-    if escenario == "demo":
-        raise HTTPException(status_code=409, detail="Modo demo es solo lectura (JSON)")
-    _check_acceso_empresa(current_user, empresa_id)
-    empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
-    if not empresa:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
-
     contenido = await file.read()
     registros, errores = parser.parse_file(contenido, file.filename or "")
 
@@ -213,6 +224,31 @@ async def upload_consumo_file(
                 "errores": errores,
             },
         )
+
+    if escenario == "demo":
+        demo_empresa = get_demo_empresa()
+        if empresa_id != demo_empresa["id"]:
+            raise HTTPException(status_code=404, detail="Empresa demo no encontrada")
+
+        insertados = 0
+        for r in registros:
+            if "costo_cop" not in r:
+                r["costo_cop"] = r["consumo_kwh"] * demo_empresa["tarifa_kwh"]
+            rec = save_consumo_demo({**r, "empresa_id": empresa_id})
+            if rec:
+                insertados += 1
+
+        return {
+            "mensaje": "Archivo procesado correctamente",
+            "registros_insertados": insertados,
+            "errores": errores,
+            "total_filas": insertados + len(errores),
+        }
+
+    _check_acceso_empresa(current_user, empresa_id)
+    empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
+    if not empresa:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
     # Insertar en BD
     insertados = 0
@@ -341,6 +377,33 @@ async def get_dashboard_kpis(
     )
 
 
+@router.patch("/{consumo_id}", response_model=ConsumoResponse)
+def update_consumo(
+    consumo_id: int,
+    data: ConsumoUpdate,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Actualizar registro de consumo."""
+    if escenario == "demo":
+        record = update_consumo_demo(consumo_id, data.model_dump(exclude_none=True))
+        if not record:
+            raise HTTPException(status_code=404, detail="Registro demo no encontrado")
+        record.setdefault("created_at", record.get("fecha"))
+        return record
+
+    rec = db.query(ConsumoEnergetico).filter(ConsumoEnergetico.id == consumo_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+    _check_acceso_empresa(current_user, rec.empresa_id)
+    for key, value in data.model_dump(exclude_none=True).items():
+        setattr(rec, key, value)
+    db.commit()
+    db.refresh(rec)
+    return rec
+
+
 @router.delete("/{consumo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_consumo(
     consumo_id: int,
@@ -350,7 +413,10 @@ def delete_consumo(
 ):
     """Eliminar registro de consumo."""
     if escenario == "demo":
-        raise HTTPException(status_code=409, detail="Modo demo es solo lectura (JSON)")
+        deleted = delete_consumo_demo(consumo_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Registro demo no encontrado")
+        return
     rec = db.query(ConsumoEnergetico).filter(ConsumoEnergetico.id == consumo_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Registro no encontrado")

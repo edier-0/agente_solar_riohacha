@@ -30,41 +30,35 @@ render_hero(
 
 st.info("Ubicacion: 11.5444 N, 72.9072 W. Referencia historica de GHI: 5.5 a 7.0 kWh/m2/dia.")
 
-render_section_header("Enlace con Fuentes Externas", "upload", "Consulta manual de satélites e inst. meteorológicos.")
-tab_om, tab_nasa, tab_pvgis = st.tabs(["Open-Meteo", "NASA POWER", "PVGIS"])
+render_section_header("Enlace con Fuentes Externas", "upload", "Consulta manual de satelites e inst. meteorologicos.")
+col_sync, col_sources = st.columns([1, 2])
 
-with tab_om:
-    col_a, col_b = st.columns([1, 2])
-    with col_a:
-        days_om = st.number_input("Dias a sincronizar", min_value=7, max_value=365, value=30, key="om_days")
-        if st.button("Sincronizar Open-Meteo", type="primary", key="om_sync"):
-            with st.spinner("Consultando Open-Meteo Archive..."):
-                data = api_post("/solar/sync/openmeteo", params={"days": days_om})
-                if data is not None:
-                    st.success(f"Registros sincronizados: {len(data)}")
-                    st.rerun()
-    with col_b:
-        st.markdown(
-            "**Open-Meteo** entrega GHI, DNI y DHI sin API key.\n\n"
-            "- Forecast horario hasta 16 dias.\n"
-            "- Archivo historico hasta 80 anos.\n"
-            "- Calidad del aire para seguimiento de polvo."
-        )
+with col_sync:
+    days_sync = st.number_input("Dias a sincronizar", min_value=7, max_value=365, value=30, key="historico_days")
+    if st.button("Sincronizar historico solar", type="primary", key="historico_sync"):
+        with st.spinner("Consultando Open-Meteo y NASA POWER..."):
+            data = api_post("/solar/sync/historico", params={"days": days_sync})
+            if data is not None:
+                st.success(
+                    "Sincronizacion completada. "
+                    f"Open-Meteo: {data.get('openmeteo', 0)}, "
+                    f"NASA POWER: {data.get('nasa_power', 0)}, "
+                    f"total: {data.get('total', 0)}."
+                )
+                st.rerun()
+    st.caption("Esta accion actualiza la tabla global de radiacion para Riohacha y funciona igual en demo o real.")
 
-with tab_nasa:
-    col_a, col_b = st.columns([1, 2])
-    with col_a:
-        days_nasa = st.number_input("Dias a sincronizar", min_value=7, max_value=365, value=30, key="nasa_days")
-        if st.button("Sincronizar NASA POWER", key="nasa_sync"):
-            with st.spinner("Consultando NASA POWER..."):
-                data = api_post("/solar/sync/nasa", params={"days": days_nasa})
-                if data is not None:
-                    st.success(f"Registros sincronizados: {len(data)}")
-                    st.rerun()
-    with col_b:
-        st.markdown("NASA POWER se mantiene como respaldo historico y referencia de validacion cruzada.")
+with col_sources:
+    st.markdown(
+        "**Open-Meteo** entrega GHI y variables meteorologicas recientes.\n\n"
+        "- Forecast horario hasta 16 dias.\n"
+        "- Archive historico con retraso corto.\n\n"
+        "**NASA POWER** funciona como respaldo historico y validacion cruzada."
+    )
 
-with tab_pvgis:
+tab_pvgis = st.tabs(["PVGIS"])
+
+with tab_pvgis[0]:
     if st.button("Obtener TMY de Riohacha", key="pvgis_tmy"):
         with st.spinner("Consultando PVGIS..."):
             tmy = api_get("/solar/pvgis/tmy")
@@ -78,11 +72,11 @@ with tab_pvgis:
                 st.warning(tmy.get("motivo", "PVGIS no disponible") if tmy else "Sin respuesta")
 
 st.divider()
-render_section_header("Histórico de Radiación", "chart", "Análisis de la energía captada en el terreno.")
+render_section_header("Historico de Radiacion", "chart", "Analisis de la energia captada en el terreno.")
 
 filtros = st.columns(2)
 with filtros[0]:
-    days_view = st.slider("Periodo de visualización (días)", 7, 365, 60)
+    days_view = st.slider("Periodo de visualizacion (dias)", 7, 365, 60)
 with filtros[1]:
     fuente_filtro = st.selectbox("Filtro de Fuente", options=["(todas)", "open_meteo", "nasa_power"], index=0)
 
@@ -118,7 +112,15 @@ if radiacion:
         )
     )
     if "dni" in df.columns and df["dni"].notna().any():
-        fig.add_trace(go.Scatter(x=df["fecha"], y=df["dni"], name="DNI", mode="lines", line=dict(color="#1E6B5C", width=1.5, dash="dash")))
+        fig.add_trace(
+            go.Scatter(
+                x=df["fecha"],
+                y=df["dni"],
+                name="DNI",
+                mode="lines",
+                line=dict(color="#1E6B5C", width=1.5, dash="dash"),
+            )
+        )
     fig.update_layout(xaxis_title="Fecha", yaxis_title="kWh/m2/dia", height=400, hovermode="x unified")
     st.plotly_chart(fig, use_container_width=True)
 else:
@@ -132,10 +134,34 @@ if forecast_om:
     df_fo["fecha"] = pd.to_datetime(df_fo["fecha"])
 
     fig_om = go.Figure()
-    fig_om.add_trace(go.Scatter(x=df_fo["fecha"], y=df_fo["ghi_w_m2"], name="GHI (W/m2)", line=dict(color="#C88A2E", width=2), fill="tozeroy", fillcolor="rgba(200, 138, 46, 0.2)"))
+    fig_om.add_trace(
+        go.Scatter(
+            x=df_fo["fecha"],
+            y=df_fo["ghi_w_m2"],
+            name="GHI (W/m2)",
+            line=dict(color="#C88A2E", width=2),
+            fill="tozeroy",
+            fillcolor="rgba(200, 138, 46, 0.2)",
+        )
+    )
     if "dni_w_m2" in df_fo.columns:
-        fig_om.add_trace(go.Scatter(x=df_fo["fecha"], y=df_fo["dni_w_m2"], name="DNI (W/m2)", line=dict(color="#1E6B5C", dash="dash")))
-    fig_om.add_trace(go.Scatter(x=df_fo["fecha"], y=df_fo["nubosidad"], name="Nubosidad (%)", line=dict(color="#245C81"), yaxis="y2"))
+        fig_om.add_trace(
+            go.Scatter(
+                x=df_fo["fecha"],
+                y=df_fo["dni_w_m2"],
+                name="DNI (W/m2)",
+                line=dict(color="#1E6B5C", dash="dash"),
+            )
+        )
+    fig_om.add_trace(
+        go.Scatter(
+            x=df_fo["fecha"],
+            y=df_fo["nubosidad"],
+            name="Nubosidad (%)",
+            line=dict(color="#245C81"),
+            yaxis="y2",
+        )
+    )
     fig_om.update_layout(yaxis=dict(title="W/m2"), yaxis2=dict(title="%", overlaying="y", side="right"), height=380, hovermode="x unified")
     st.plotly_chart(fig_om, use_container_width=True)
 
@@ -147,12 +173,11 @@ with col_now:
     weather = api_get("/solar/weather/current")
     if weather:
         wm1, wm2 = st.columns(2)
-        wm1.metric("Temperatura", f"{weather.get('temperatura', 0):.1f} °C")
+        wm1.metric("Temperatura", f"{weather.get('temperatura', 0):.1f} C")
         wm2.metric("Humedad", f"{weather.get('humedad', 0)} %")
         wm1.metric("Nubosidad", f"{weather.get('nubosidad', 0)} %")
         wm2.metric("Viento", f"{weather.get('viento_kmh', 0):.1f} km/h")
-        
-        st.caption(f"{str(weather.get('descripcion', '')).capitalize()} — Fuente: {weather.get('fuente', '?')}")
+        st.caption(f"{str(weather.get('descripcion', '')).capitalize()} - Fuente: {weather.get('fuente', '?')}")
 
 with col_cross:
     st.markdown("**Comparacion entre fuentes**")
@@ -165,35 +190,38 @@ with col_cross:
                     st.success(f"Fuentes consistentes. Delta de temperatura: {delta} C")
                 else:
                     st.warning(f"Discrepancia detectada. Delta de temperatura: {delta} C")
-                
+
                 def _fmt(val, is_int=False):
-                    if not isinstance(val, (int, float)): return "--"
+                    if not isinstance(val, (int, float)):
+                        return "--"
                     return f"{int(val)}" if is_int else f"{val:.1f}"
 
                 om_d = cross.get("open_meteo") or {}
                 ow_d = cross.get("openweather") or {}
 
-                comp_df = pd.DataFrame({
-                    "Métrica": ["Temperatura (°C)", "Humedad (%)", "Nubosidad (%)", "Viento (km/h)"],
-                    "Open-Meteo": [
-                        _fmt(om_d.get("temperatura")), 
-                        _fmt(om_d.get("humedad"), True), 
-                        _fmt(om_d.get("nubosidad"), True), 
-                        _fmt(om_d.get("viento_kmh"))
-                    ],
-                    "OpenWeather": [
-                        _fmt(ow_d.get("temperatura")), 
-                        _fmt(ow_d.get("humedad"), True), 
-                        _fmt(ow_d.get("nubosidad"), True), 
-                        _fmt(ow_d.get("viento_kmh"))
-                    ]
-                })
-                
-                with st.expander("Ver Tabla de Validación Técnica"):
+                comp_df = pd.DataFrame(
+                    {
+                        "Metrica": ["Temperatura (C)", "Humedad (%)", "Nubosidad (%)", "Viento (km/h)"],
+                        "Open-Meteo": [
+                            _fmt(om_d.get("temperatura")),
+                            _fmt(om_d.get("humedad"), True),
+                            _fmt(om_d.get("nubosidad"), True),
+                            _fmt(om_d.get("viento_kmh")),
+                        ],
+                        "OpenWeather": [
+                            _fmt(ow_d.get("temperatura")),
+                            _fmt(ow_d.get("humedad"), True),
+                            _fmt(ow_d.get("nubosidad"), True),
+                            _fmt(ow_d.get("viento_kmh")),
+                        ],
+                    }
+                )
+
+                with st.expander("Ver Tabla de Validacion Tecnica"):
                     st.dataframe(comp_df, hide_index=True, use_container_width=True)
 
     st.markdown(" ")
-    st.markdown("**😷 Calidad del aire**")
+    st.markdown("**Calidad del aire**")
     aqi = api_get("/solar/air-quality")
     if aqi and aqi.get("disponible") and aqi.get("datos"):
         primer = aqi["datos"][0]

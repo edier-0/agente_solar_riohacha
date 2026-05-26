@@ -6,13 +6,18 @@ from datetime import datetime, timedelta
 
 from app.db.session import get_db
 from app.models.models import RadiacionSolar, User
-from app.schemas.schemas import RadiacionResponse
+from app.schemas.schemas import RadiacionCreate, RadiacionResponse, RadiacionUpdate
 from app.api.deps.auth import get_current_user
 from app.services.openmeteo import openmeteo_service
 from app.services.openweather import openweather_service
 from app.services.pvgis import pvgis_service
 from app.services.nasa_power import nasa_service  # legacy / respaldo
-from app.services.demo_data import get_radiacion_demo
+from app.services.demo_data import (
+    get_radiacion_demo,
+    save_radiacion_demo,
+    update_radiacion_demo,
+    delete_radiacion_demo,
+)
 
 router = APIRouter(prefix="/solar", tags=["Datos Solares"])
 
@@ -44,6 +49,29 @@ def _build_virtual_radiacion_row(item: dict, index: int) -> dict:
     }
 
 
+def _sync_summary(openmeteo_items: List[RadiacionSolar], nasa_items: List[RadiacionSolar]) -> dict:
+    return {
+        "openmeteo": len(openmeteo_items),
+        "nasa_power": len(nasa_items),
+        "total": len(openmeteo_items) + len(nasa_items),
+    }
+
+
+def _query_radiacion_bd(
+    db: Session,
+    days: int,
+    fuente: Optional[str] = None,
+    escenario: Optional[str] = None,
+) -> List[RadiacionSolar]:
+    since = _start_of_day_days_ago(days)
+    q = db.query(RadiacionSolar).filter(RadiacionSolar.fecha >= since)
+    if fuente:
+        q = q.filter(RadiacionSolar.fuente == fuente)
+    if escenario:
+        q = q.filter(RadiacionSolar.escenario == escenario)
+    return q.order_by(desc(RadiacionSolar.fecha)).all()
+
+
 # ---------------------------------------------------------------------------
 # LECTURA DE BD
 # ---------------------------------------------------------------------------
@@ -57,6 +85,8 @@ async def get_radiacion(
 ):
     """Obtener histórico de radiación solar almacenado."""
     if escenario == "demo":
+        if fuente in {"open_meteo", "nasa_power"}:
+            return _query_radiacion_bd(db, days=days, fuente=fuente, escenario="real")
         rows = get_radiacion_demo(days=days)
         if fuente:
             rows = [r for r in rows if str(r.get("fuente", "")) == fuente]
@@ -64,13 +94,7 @@ async def get_radiacion(
             r.setdefault("id", 200000 + i)
             r.setdefault("created_at", r.get("fecha"))
         return rows
-    since = _start_of_day_days_ago(days)
-    q = db.query(RadiacionSolar).filter(RadiacionSolar.fecha >= since)
-    if fuente:
-        q = q.filter(RadiacionSolar.fuente == fuente)
-    if escenario:
-        q = q.filter(RadiacionSolar.escenario == escenario)
-    rows = q.order_by(desc(RadiacionSolar.fecha)).all()
+    rows = _query_radiacion_bd(db, days=days, fuente=fuente, escenario=escenario)
 
     should_append_forecast = (escenario in (None, "real")) and fuente in (None, "open_meteo")
     if not should_append_forecast:
@@ -104,6 +128,14 @@ async def get_radiacion_latest(
 ):
     """Último dato de radiación solar registrado."""
     if escenario == "demo":
+        latest_real = (
+            db.query(RadiacionSolar)
+            .filter(RadiacionSolar.escenario == "real")
+            .order_by(desc(RadiacionSolar.fecha))
+            .first()
+        )
+        if latest_real:
+            return latest_real
         rows = get_radiacion_demo(days=365)
         if not rows:
             return None
@@ -143,6 +175,55 @@ async def get_radiacion_latest(
     if not forecast_today:
         return latest
     return _build_virtual_radiacion_row(forecast_today, 0)
+
+
+@router.post("/radiacion", response_model=RadiacionResponse, status_code=201)
+def create_radiacion(
+    data: RadiacionCreate,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Crear un registro demo de radiación solar."""
+    if escenario != "demo":
+        raise HTTPException(status_code=409, detail="Solo se permite crear radiación demo en modo demo")
+    rec = save_radiacion_demo(data.model_dump())
+    rec.setdefault("created_at", rec.get("fecha"))
+    return rec
+
+
+@router.patch("/radiacion/{radiacion_id}", response_model=RadiacionResponse)
+def update_radiacion(
+    radiacion_id: int,
+    data: RadiacionUpdate,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Actualizar un registro demo de radiación solar."""
+    if escenario != "demo":
+        raise HTTPException(status_code=409, detail="Solo se permite actualizar radiación demo en modo demo")
+    rec = update_radiacion_demo(radiacion_id, data.model_dump(exclude_none=True))
+    if not rec:
+        raise HTTPException(status_code=404, detail="Registro demo no encontrado")
+    rec.setdefault("created_at", rec.get("fecha"))
+    return rec
+
+
+@router.delete("/radiacion/{radiacion_id}", status_code=204)
+def delete_radiacion(
+    radiacion_id: int,
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Eliminar un registro demo de radiación solar."""
+    if escenario != "demo":
+        raise HTTPException(status_code=409, detail="Solo se permite eliminar radiación demo en modo demo")
+    deleted = delete_radiacion_demo(radiacion_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Registro demo no encontrado")
+    return
 
 
 # ---------------------------------------------------------------------------
@@ -191,8 +272,6 @@ async def sync_openmeteo(
     current_user: User = Depends(get_current_user),
 ):
     """Sincronizar histórico desde Open-Meteo Archive (NÚCLEO PRINCIPAL)."""
-    if escenario == "demo":
-        raise HTTPException(status_code=409, detail="Modo demo no persiste datos en BD")
     try:
         data = await openmeteo_service.get_ultimos_dias(days=days)
     except RuntimeError as e:
@@ -208,13 +287,30 @@ async def sync_nasa_power(
     current_user: User = Depends(get_current_user),
 ):
     """Sincronizar desde NASA POWER (respaldo / validación cruzada)."""
-    if escenario == "demo":
-        raise HTTPException(status_code=409, detail="Modo demo no persiste datos en BD")
     try:
         data = await nasa_service.get_last_days(days=days)
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     return _upsert_radiacion(db, data)
+
+
+@router.post("/sync/historico")
+async def sync_historico_fuentes(
+    days: int = Query(30, ge=1, le=365),
+    escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Sincroniza las fuentes historicas compartidas del sistema."""
+    try:
+        om_data = await openmeteo_service.get_ultimos_dias(days=days)
+        nasa_data = await nasa_service.get_last_days(days=days)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    om_rows = _upsert_radiacion(db, om_data)
+    nasa_rows = _upsert_radiacion(db, nasa_data)
+    return _sync_summary(om_rows, nasa_rows)
 
 
 # ---------------------------------------------------------------------------
