@@ -49,9 +49,10 @@ PLANTILLAS = {
 }
 
 
-def humanizar_alerta(alerta: Dict) -> Dict:
+def humanizar_alerta(alerta: Dict, tiene_baterias: bool = True, tiene_paneles: bool = True) -> Dict:
     """
-    Toma un dict de alerta crudo (de la BD) y devuelve la versión humanizada.
+    Toma un dict de alerta crudo (de la BD) y devuelve la versión humanizada
+    adaptada dinámicamente al equipamiento de paneles y baterías del usuario.
     No modifica el original.
     """
     tipo = alerta.get("tipo", "")
@@ -61,13 +62,24 @@ def humanizar_alerta(alerta: Dict) -> Dict:
         "accion": "Revisa el detalle y toma la acción que corresponda.",
     })
 
+    accion = plantilla["accion"]
+    if tipo == "riesgo_apagon":
+        if not tiene_baterias:
+            accion = "Prepara iluminación de emergencia y asegura carga de celulares y linternas portátiles."
+        else:
+            accion = "Carga las baterías al máximo y prepara tu plan de contingencia solar de respaldo."
+    elif tipo == "bateria_baja" and not tiene_baterias:
+        accion = "Se sugiere ignorar esta alerta o configurar un banco de almacenamiento en tu perfil."
+    elif tipo == "baja_radiacion" and not tiene_paneles:
+        accion = "Menor brillo solar típico en Riohacha para esta jornada."
+
     return {
         "id": alerta.get("id"),
         "emoji": ICONO_TIPO.get(tipo, "🚨"),
         "nivel": SEVERIDAD_NIVEL.get(severidad, "amarillo"),
         "titulo": plantilla["titulo"],
         "mensaje": alerta.get("mensaje", ""),
-        "accion": plantilla["accion"],
+        "accion": accion,
         "tipo_original": tipo,
         "severidad": severidad,
         "leida": alerta.get("leida", False),
@@ -76,5 +88,5 @@ def humanizar_alerta(alerta: Dict) -> Dict:
     }
 
 
-def humanizar_lote(alertas: list) -> list:
-    return [humanizar_alerta(a) for a in alertas]
+def humanizar_lote(alertas: list, tiene_baterias: bool = True, tiene_paneles: bool = True) -> list:
+    return [humanizar_alerta(a, tiene_baterias=tiene_baterias, tiene_paneles=tiene_paneles) for a in alertas]
