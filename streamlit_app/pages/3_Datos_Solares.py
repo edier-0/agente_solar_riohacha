@@ -185,40 +185,47 @@ with col_cross:
         with st.spinner("Comparando..."):
             cross = api_get("/solar/weather/cross-check")
             if cross:
-                delta = cross.get("delta_temperatura_c")
-                if cross.get("consistente"):
-                    st.success(f"Fuentes consistentes. Delta de temperatura: {delta} C")
-                else:
-                    st.warning(f"Discrepancia detectada. Delta de temperatura: {delta} C")
+                # Guardar resultado en session_state para que persista
+                st.session_state["last_cross_check"] = cross
+                st.success("✓ Datos actualizados")
+    
+    # Mostrar tabla si hay datos en session_state
+    if "last_cross_check" in st.session_state:
+        cross = st.session_state["last_cross_check"]
+        delta = cross.get("delta_temperatura_c")
+        if cross.get("consistente"):
+            st.info(f"Fuentes consistentes. Delta de temperatura: {delta} C")
+        else:
+            st.warning(f"Discrepancia detectada. Delta de temperatura: {delta} C")
 
-                def _fmt(val, is_int=False):
-                    if not isinstance(val, (int, float)):
-                        return "--"
-                    return f"{int(val)}" if is_int else f"{val:.1f}"
+        def _fmt(val, is_int=False):
+            if not isinstance(val, (int, float)):
+                return "--"
+            return f"{int(val)}" if is_int else f"{val:.1f}"
 
-                om_d = cross.get("open_meteo") or {}
-                ow_d = cross.get("openweather") or {}
+        om_d = cross.get("open_meteo") or {}
+        ow_d = cross.get("openweather") or {}
 
-                comp_df = pd.DataFrame(
-                    {
-                        "Metrica": ["Temperatura (C)", "Humedad (%)", "Nubosidad (%)", "Viento (km/h)"],
-                        "Open-Meteo": [
-                            _fmt(om_d.get("temperatura")),
-                            _fmt(om_d.get("humedad"), True),
-                            _fmt(om_d.get("nubosidad"), True),
-                            _fmt(om_d.get("viento_kmh")),
-                        ],
-                        "OpenWeather": [
-                            _fmt(ow_d.get("temperatura")),
-                            _fmt(ow_d.get("humedad"), True),
-                            _fmt(ow_d.get("nubosidad"), True),
-                            _fmt(ow_d.get("viento_kmh")),
-                        ],
-                    }
-                )
+        comp_df = pd.DataFrame(
+            {
+                "Metrica": ["Temperatura (C)", "Humedad (%)", "Nubosidad (%)", "Viento (km/h)"],
+                "Open-Meteo": [
+                    _fmt(om_d.get("temperatura")),
+                    _fmt(om_d.get("humedad"), True),
+                    _fmt(om_d.get("nubosidad"), True),
+                    _fmt(om_d.get("viento_kmh")),
+                ],
+                "OpenWeather": [
+                    _fmt(ow_d.get("temperatura")),
+                    _fmt(ow_d.get("humedad"), True),
+                    _fmt(ow_d.get("nubosidad"), True),
+                    _fmt(ow_d.get("viento_kmh")),
+                ],
+            }
+        )
 
-                with st.expander("Ver Tabla de Validacion Tecnica"):
-                    st.dataframe(comp_df, hide_index=True, use_container_width=True)
+        with st.expander("Ver Tabla de Validacion Tecnica"):
+            st.dataframe(comp_df, hide_index=True, use_container_width=True)
 
     st.markdown(" ")
     st.markdown("**Calidad del aire**")
