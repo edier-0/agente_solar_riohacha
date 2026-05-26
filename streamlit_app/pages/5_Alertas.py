@@ -63,30 +63,49 @@ with stats[2]:
 
 st.markdown("""
 <style>
-/* Bóton Flotante (FAB) para evaluar alertas */
-div[data-testid="stButton"]:has(button[kind="primary"]) {
-    position: fixed !important;
-    bottom: 40px !important;
-    right: 40px !important;
-    width: auto !important;
-    z-index: 9999 !important;
+/* Estilo para banner del Agente Supervisor */
+.supervisor-banner {
+    background: rgba(47, 163, 138, 0.08);
+    border: 1px dashed rgba(47, 163, 138, 0.3);
+    border-radius: 16px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
-div[data-testid="stButton"] button[kind="primary"] {
-    border-radius: 50px !important;
-    padding: 16px 24px !important;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    font-size: 1.05rem !important;
+.supervisor-banner__icon {
+    font-size: 1.8rem;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.9; }
+}
+.supervisor-banner__text {
+    font-size: 0.92rem;
+    color: #9AB0BB;
+    line-height: 1.5;
+}
+.supervisor-banner__title {
+    font-weight: 700;
+    color: #2FA38A;
+    margin-bottom: 0.2rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
-if st.button("Evaluar Alertas Ahora", type="primary", use_container_width=False, help="Forzar escaneo de umbrales en tiempo real"):
-    with st.spinner("Evaluando umbrales y eventos..."):
-        creadas = api_post(f"/alertas/evaluar/{empresa_id}")
-        if creadas is not None:
-            st.success(f"Evaluacion completada. Nuevas alertas: {len(creadas)}")
-            st.rerun()
+# Banner premium indicando supervisión automática en segundo plano
+st.markdown("""
+<div class="supervisor-banner">
+    <div class="supervisor-banner__icon">🤖</div>
+    <div class="supervisor-banner__text">
+        <div class="supervisor-banner__title">Supervisor Energético IA Activo</div>
+        El Agente analiza constantemente tu telemetría histórica y el pronóstico de <b>Open-Meteo</b> para calcular límites dinámicos y generar alertas de forma 100% automática y proactiva. No requieres configurar nada ni presionar botones.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.divider()
 render_section_header("Notificaciones Prioritarias", "alert")
@@ -121,9 +140,9 @@ else:
 
 st.divider()
 
-show_details = st.toggle("Habilitar Umbrales y Modo Desarrollador", key="alertas_detalles", help="Baja nivel al log técnico y ajusta variables duras.")
+show_details = st.toggle("⚙️ Habilitar Parámetros Avanzados y Modo Desarrollador", key="alertas_detalles", help="Baja nivel al log técnico y ajusta variables duras de anulación.")
 if not show_details:
-    st.caption("👈 Activa este interruptor para ajustar reglas de Alertas (Radiación mínima, tope de consumo) y ver tabla JSON de logs.")
+    st.caption("👈 Activa este interruptor para anular umbrales calculados por IA (Radiación, tope de consumo) o ver la tabla técnica de logs.")
     st.stop()
 
 render_section_header("Configuración de Umbrales", "settings")
@@ -137,7 +156,7 @@ with tab_alertas:
         st.info("Sin alertas tecnicas activas.")
 
 with tab_config:
-    st.caption("Referencia: el umbral de radiacion baja ayuda a detectar dias con recurso solar insuficiente; puede apoyarse con GHI historico.")
+    st.info("💡 **Modelo Híbrido Inteligente Activo**: Por defecto, los valores estándar (500 kWh, 20% batería, 2.0 radiación) le indican al supervisor que **calcule automáticamente y adapte dinámicamente los umbrales** basados en tus promedios históricos y en el pronóstico meteorológico de Riohacha. Si configuras un valor diferente, este actuará como una **anulación manual (override)**.")
     config = api_get(f"/alertas/config/{empresa_id}")
     if config:
         with st.form("config_alertas"):
