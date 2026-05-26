@@ -177,7 +177,22 @@ with col_now:
         wm2.metric("Humedad", f"{weather.get('humedad', 0)} %")
         wm1.metric("Nubosidad", f"{weather.get('nubosidad', 0)} %")
         wm2.metric("Viento", f"{weather.get('viento_kmh', 0):.1f} km/h")
-        st.caption(f"{str(weather.get('descripcion', '')).capitalize()} - Fuente: {weather.get('fuente', '?')}")
+
+        descripcion = str(weather.get('descripcion', '')).capitalize()
+        fuente = weather.get('fuente', '?')
+        origen = weather.get('origen_dato', '?')
+        st.caption(f"{descripcion} - Fuente: {fuente} ({origen})")
+
+        if origen == "synthetic_fallback":
+            st.warning(
+                "OpenWeather no está disponible en este entorno; los valores mostrados son un fallback sintético. "
+                "Configura OPENWEATHER_API_KEY para datos reales."
+            )
+    else:
+        st.error(
+            "No se pudo cargar el clima actual de OpenWeather. "
+            "Verifica las credenciales y el estado del servicio."
+        )
 
 with col_cross:
     st.markdown("**Comparacion entre fuentes**")
