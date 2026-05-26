@@ -429,7 +429,21 @@ async def cross_check(
         )
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
-    om_actual = om_horario[0] if om_horario else None
+    # Seleccionar el registro horario más cercano al momento actual (no usar siempre el primero)
+    om_actual = None
+    now = datetime.now().replace(minute=0, second=0, microsecond=0)
+    if om_horario:
+        # Intentar encontrar la hora exacta de la hora actual
+        for item in om_horario:
+            fecha = item.get("fecha")
+            if fecha and getattr(fecha, "date", lambda: None)() == now.date() and getattr(fecha, "hour", None) == now.hour:
+                om_actual = item
+                break
+        # Si no hay coincidencia exacta, tomar el registro con menor diferencia absoluta de tiempo
+        if not om_actual:
+            datetime_items = [it for it in om_horario if isinstance(it.get("fecha"), datetime)]
+            if datetime_items:
+                om_actual = min(datetime_items, key=lambda it: abs(it["fecha"] - now))
 
     delta_temp = None
     if om_actual and om_actual.get("temperatura") is not None and ow_actual.get("temperatura") is not None:
