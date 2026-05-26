@@ -177,6 +177,7 @@ def list_consumo_empresa(
     current_user: User = Depends(get_current_user),
 ):
     """Listar consumo de una empresa (últimos N días)."""
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         if empresa_id != get_demo_empresa()["id"]:
             return []
@@ -281,6 +282,7 @@ async def get_dashboard_kpis(
     current_user: User = Depends(get_current_user),
 ):
     """KPIs principales del dashboard para una empresa."""
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         demo = get_demo_empresa()
         if empresa_id != demo["id"]:

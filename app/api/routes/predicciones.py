@@ -32,6 +32,7 @@ async def generar_predicciones(
     current_user: User = Depends(get_current_user),
 ):
     """Genera predicciones a 24-168h para la empresa."""
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         now = datetime.now().replace(minute=0, second=0, microsecond=0)
         consumos = get_consumo_demo(days=30)
@@ -80,7 +81,7 @@ async def generar_predicciones(
 
 
 @router.get("/{empresa_id}", response_model=List[PrediccionResponse])
-def list_predicciones(
+async def list_predicciones(
     empresa_id: int,
     tipo: Optional[str] = None,
     escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
@@ -88,8 +89,15 @@ def list_predicciones(
     current_user: User = Depends(get_current_user),
 ):
     """Lista predicciones recientes para la empresa."""
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         rows = list_demo_preds(empresa_id, tipo=tipo)
+        if not rows:
+            try:
+                await generar_predicciones(empresa_id, horas_horizonte=72, escenario="demo", db=db, current_user=current_user)
+                rows = list_demo_preds(empresa_id, tipo=tipo)
+            except Exception as e:
+                print(f"[AUTO-PRED DEMO ERROR] {e}")
         return rows
     _check_acceso(current_user, empresa_id)
     desde = datetime.now() - timedelta(hours=12)
@@ -97,9 +105,23 @@ def list_predicciones(
         Prediccion.empresa_id == empresa_id,
         Prediccion.fecha_prediccion >= desde,
         Prediccion.fecha_objetivo >= datetime.now(),
+        Prediccion.escenario == escenario,
     )
     if tipo:
         q = q.filter(Prediccion.tipo == tipo)
-    if escenario:
-        q = q.filter(Prediccion.escenario == escenario)
-    return q.order_by(Prediccion.fecha_objetivo).all()
+    rows = q.order_by(Prediccion.fecha_objetivo).all()
+    if not rows:
+        try:
+            await generar_predicciones(empresa_id, horas_horizonte=72, escenario=escenario, db=db, current_user=current_user)
+            q = db.query(Prediccion).filter(
+                Prediccion.empresa_id == empresa_id,
+                Prediccion.fecha_prediccion >= desde,
+                Prediccion.fecha_objetivo >= datetime.now(),
+                Prediccion.escenario == escenario,
+            )
+            if tipo:
+                q = q.filter(Prediccion.tipo == tipo)
+            rows = q.order_by(Prediccion.fecha_objetivo).all()
+        except Exception as e:
+            print(f"[AUTO-PRED REAL ERROR] {e}")
+    return rows

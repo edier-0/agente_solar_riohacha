@@ -37,6 +37,16 @@ else:
     empresa_sel = opciones[seleccion]
     empresa_id = empresa_sel["id"]
 
+# Inferencia dinámica de equipamiento en caliente basado en el historial de telemetría del usuario
+escenario_actual = user.get("escenario_usuario", "real")
+consumos_recientes = api_get(f"/consumo/empresa/{empresa_id}", params={"days": 30, "escenario": escenario_actual}) or []
+tiene_telemetria_bateria = any(c.get("nivel_bateria_pct") is not None for c in consumos_recientes)
+tiene_telemetria_solar = any((c.get("produccion_solar_kwh") or 0.0) > 0.0 for c in consumos_recientes)
+
+tiene_baterias = ((empresa_sel.get("capacidad_bateria_kwh") or 0.0) > 0.0) or tiene_telemetria_bateria
+tiene_paneles = ((empresa_sel.get("capacidad_paneles_kw") or 0.0) > 0.0) or tiene_telemetria_solar
+
+
 
 def _future_rows(items):
     out = []
@@ -100,30 +110,49 @@ with top[3]:
 
 st.markdown("""
 <style>
-/* Bóton Flotante (FAB) para proyecciones */
-div[data-testid="stButton"]:has(button[kind="primary"]) {
-    position: fixed !important;
-    bottom: 40px !important;
-    right: 40px !important;
-    width: auto !important;
-    z-index: 9999 !important;
+/* Estilo para banner del Motor Predictivo IA */
+.prediction-banner {
+    background: rgba(235, 175, 54, 0.08);
+    border: 1px dashed rgba(235, 175, 54, 0.3);
+    border-radius: 16px;
+    padding: 1rem 1.2rem;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
-div[data-testid="stButton"] button[kind="primary"] {
-    border-radius: 50px !important;
-    padding: 16px 24px !important;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    font-size: 1.05rem !important;
+.prediction-banner__icon {
+    font-size: 1.8rem;
+    animation: bounce-pulse 2.5s infinite ease-in-out;
+}
+@keyframes bounce-pulse {
+    0% { transform: translateY(0) scale(1); opacity: 0.9; }
+    50% { transform: translateY(-4px) scale(1.03); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 0.9; }
+}
+.prediction-banner__text {
+    font-size: 0.92rem;
+    color: #9AB0BB;
+    line-height: 1.5;
+}
+.prediction-banner__title {
+    font-weight: 700;
+    color: #EBAF36;
+    margin-bottom: 0.2rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
-if st.button("Proyectar Escenarios", type="primary", use_container_width=False, help="Calcular proyección de los próximos días"):
-    with st.spinner("Consultando pronósticos y calculando escenarios..."):
-        resultado = api_post(f"/predicciones/generar/{empresa_id}", params={"horas_horizonte": 72})
-        if resultado:
-            st.success(f"Predicciones guardadas: {resultado.get('total_predicciones_guardadas', 0)}")
-            st.rerun()
+# Banner premium indicando motor predictivo y simulación IA activa
+st.markdown("""
+<div class="prediction-banner">
+    <div class="prediction-banner__icon">🔮</div>
+    <div class="prediction-banner__text">
+        <div class="prediction-banner__title">Motor Predictivo y Simulación IA Activa</div>
+        Nuestro agente orquesta y proyecta automáticamente la generación solar fotovoltaica, demanda y riesgos de continuidad en Riohacha para las próximas 24h, 48h y 72h.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.write("")
 render_section_header("Orquestación Autónoma de Respaldo", "spark", "Orquestador inteligente de baterías y excedentes solares ante apagones.")
@@ -144,10 +173,10 @@ sim_riesgo = st.slider(
 )
 
 # Algoritmo de orquestación
-capacidad_bateria = empresa_sel.get("capacidad_bateria_kwh", 0.0)
+capacidad_bateria = empresa_sel.get("capacidad_bateria_kwh", 0.0) or 0.0
 es_hogar = (empresa_sel.get("tipo") == "hogar")
 
-if capacidad_bateria == 0.0:
+if not tiene_baterias:
     st.info(
         "💡 **Simulador Solar Activo:** Actualmente este perfil no posee un banco de baterías físicas "
         "registrado (capacidad = 0 kWh). A continuación se muestra cómo funcionaría el "
@@ -156,7 +185,7 @@ if capacidad_bateria == 0.0:
     )
     bateria_sim = 5.0 if es_hogar else 30.0
 else:
-    bateria_sim = capacidad_bateria
+    bateria_sim = capacidad_bateria if capacidad_bateria > 0.0 else (5.0 if es_hogar else 30.0)
 
 # Lógica del orquestador basado en el slider
 if sim_riesgo >= 40:
@@ -245,15 +274,15 @@ if not show_details:
     st.caption("👈 Activa este interruptor para examinar los gráficos de tendencia, recálculos de horizonte y raw data.")
     st.stop()
 
-render_section_header("Análisis de Tendencias", "chart", "Confianza de la IA, horizontes y desglose tabular.")
-st.caption("ℹ️ DNI representa radiación directa normal; en escenarios solares ayuda a estimar el aporte en orientaciones específicas.")
+render_section_header("Análisis de Tendencias", "chart", "Confianza de la IA, horizontes y desglose de problemáticas clave.")
+st.caption("ℹ️ El motor predictivo evalúa el impacto financiero de las tarifas comerciales (Air-E) y la probabilidad de apagones meteorológicos en Riohacha.")
 
 h_col, hr_btn_col = st.columns([1, 3])
 with h_col:
-    horizonte = st.selectbox("Horizonte a evaluar", [24, 48, 72, 96, 120, 168], index=2, format_func=lambda x: f"Próximas {x}h")
+    # Restricción estricta de horizontes a 24h, 48h y 72h
+    horizonte = st.selectbox("Horizonte a evaluar", [24, 48, 72], index=2, format_func=lambda x: f"Próximas {x}h")
 with hr_btn_col:
     st.markdown("<br>", unsafe_allow_html=True)
-    # Botón en modo secundario (por defecto) para no invocar las reglas de CSS del botón Primario flotante (FAB)
     if st.button("↻ Recalcular con este horizonte", key="btn_recalc_horizont"):
         with st.spinner("⏳ Actualizando motores de predicción..."):
             resultado = api_post(f"/predicciones/generar/{empresa_id}", params={"horas_horizonte": horizonte})
@@ -261,49 +290,172 @@ with hr_btn_col:
                 st.success(f"Predicciones actualizadas: {resultado.get('total_predicciones_guardadas', 0)}")
                 st.rerun()
 
-tipos_disponibles = {
-    "produccion_solar": "Producción solar",
-    "consumo": "Consumo",
-    "costo": "Costo",
-    "riesgo_apagon": "Riesgo de continuidad",
-}
-tabs = st.tabs(list(tipos_disponibles.values()))
-for tab, (tipo_key, tipo_label) in zip(tabs, tipos_disponibles.items()):
-    with tab:
-        preds = api_get(f"/predicciones/{empresa_id}", params={"tipo": tipo_key})
-        if preds:
-            df = pd.DataFrame(preds)
-            df["fecha_objetivo"] = pd.to_datetime(df["fecha_objetivo"])
-            df = df.sort_values("fecha_objetivo")
-            unidad = df["unidad"].iloc[0] if "unidad" in df.columns else ""
-            confianza = df["confianza_pct"].mean() if "confianza_pct" in df.columns else 0
-            metrics = st.columns(3)
-            with metrics[0]:
-                st.metric("Predicciones", len(df))
-            with metrics[1]:
-                st.metric("Confianza promedio", f"{confianza:.0f}%")
-            with metrics[2]:
-                if tipo_key in ("produccion_solar", "consumo", "costo"):
-                    st.metric("Total", f"{df['valor'].sum():,.1f} {unidad}".strip())
+tab1, tab2 = st.tabs([
+    "Continuidad & Resiliencia (Riesgo de Apagón y Banco de Baterías)",
+    "Costos Operativos & Ahorro (Proyecciones de Gasto y Banco de Paneles)"
+])
 
+with tab1:
+    st.markdown("### Proyección de Continuidad y Estado de Baterías")
+    preds = api_get(f"/predicciones/{empresa_id}", params={"tipo": "riesgo_apagon"})
+    if preds:
+        df = pd.DataFrame(preds)
+        df["fecha_objetivo"] = pd.to_datetime(df["fecha_objetivo"])
+        df = df.sort_values("fecha_objetivo")
+        limit_time = pd.Timestamp.now() + pd.Timedelta(hours=horizonte)
+        df_filtered = df[df["fecha_objetivo"] <= limit_time]
+        
+        if not df_filtered.empty:
+            unidad = df_filtered["unidad"].iloc[0] if "unidad" in df_filtered.columns else "%"
+            confianza = df_filtered["confianza_pct"].mean() if "confianza_pct" in df_filtered.columns else 0
+            
+            capacidad_bateria = empresa_sel.get("capacidad_bateria_kwh", 0.0)
+            es_hogar = (empresa_sel.get("tipo") == "hogar")
+            tiene_baterias = (capacidad_bateria > 0.0)
+            
+            m1, m2, m3 = st.columns(3)
+            with m1:
+                st.metric("Puntos Evaluados", len(df_filtered))
+            with m2:
+                st.metric("Confianza IA", f"{confianza:.0f}%")
+            with m3:
+                max_riesgo = df_filtered["valor"].max()
+                st.metric("Riesgo Máximo", f"{max_riesgo:.0f}%")
+                
             fig = go.Figure()
             fig.add_trace(
                 go.Bar(
-                    x=df["fecha_objetivo"],
-                    y=df["valor"],
-                    name=tipo_label,
-                    text=df["valor"].round(1),
+                    x=df_filtered["fecha_objetivo"],
+                    y=df_filtered["valor"],
+                    name="Probabilidad de Apagón",
+                    text=df_filtered["valor"].round(1).astype(str) + "%",
                     textposition="outside",
-                    marker_color={
-                        "produccion_solar": "#C88A2E",
-                        "consumo": "#245C81",
-                        "costo": "#1E6B5C",
-                        "riesgo_apagon": "#B8473F",
-                    }.get(tipo_key, "#5C6F69"),
+                    marker_color="#B8473F"
                 )
             )
-            fig.update_layout(xaxis_title="Fecha", yaxis_title=unidad, height=380)
+            fig.update_layout(xaxis_title="Fecha y Hora", yaxis_title="Riesgo (%)", height=350, yaxis_range=[0, 100])
             st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(df[["fecha_objetivo", "valor", "unidad", "confianza_pct"]], use_container_width=True, hide_index=True)
+            
+            if tiene_baterias:
+                cap_label = f"**{capacidad_bateria:.1f} kWh**" if capacidad_bateria > 0.0 else "**Activo (Inferencia de Historial)**"
+                st.success(
+                    f"🔋 **Respaldo Físico Disponible:** Cuentas con un banco de baterías {cap_label} "
+                    f"que amortigua los riesgos del {max_riesgo:.0f}% proyectados anteriormente. "
+                    f"El orquestador mantendrá una reserva objetivo adecuada al horizonte seleccionado."
+                )
+            else:
+                st.warning(
+                    f"⚠️ **Sin Baterías Físicas:** No registras banco de baterías en tu perfil. "
+                    f"Bajo un apagón en este horizonte de **{horizonte}h**, quedarías sin energía de respaldo. "
+                    f"Recomendamos instalar un almacenamiento de **{5.0 if es_hogar else 30.0} kWh** "
+                    f"para asegurar hasta **{(5.0 if es_hogar else 30.0) / (cons_next/24.0 if cons_next else 1.0):.1f} horas** de continuidad autónoma completa."
+                )
+                
+            st.markdown("**Desglose de Predicción:**")
+            st.dataframe(df_filtered[["fecha_objetivo", "valor", "unidad", "confianza_pct"]], use_container_width=True, hide_index=True)
         else:
-            st.info(f"No hay predicciones registradas para {tipo_label.lower()}.")
+            st.info(f"No hay predicciones de apagones activas para las próximas {horizonte} horas.")
+    else:
+        st.info("No hay predicciones registradas para el riesgo de continuidad.")
+
+with tab2:
+    st.markdown("### Proyección de Costo Operativo y Offset Fotovoltaico")
+    preds_cost = api_get(f"/predicciones/{empresa_id}", params={"tipo": "costo"})
+    preds_solar = api_get(f"/predicciones/{empresa_id}", params={"tipo": "produccion_solar"})
+    
+    if preds_cost:
+        df_cost = pd.DataFrame(preds_cost)
+        df_cost["fecha_objetivo"] = pd.to_datetime(df_cost["fecha_objetivo"])
+        df_cost = df_cost.sort_values("fecha_objetivo")
+        limit_time = pd.Timestamp.now() + pd.Timedelta(hours=horizonte)
+        df_cost_filtered = df_cost[df_cost["fecha_objetivo"] <= limit_time]
+        
+        if not df_cost_filtered.empty:
+            costo_total = df_cost_filtered["valor"].sum()
+            confianza_cost = df_cost_filtered["confianza_pct"].mean() if "confianza_pct" in df_cost_filtered.columns else 0
+            
+            tiene_paneles = (empresa_sel.get("capacidad_paneles_kw", 0.0) > 0.0)
+            solar_total = 0.0
+            
+            if preds_solar:
+                df_solar = pd.DataFrame(preds_solar)
+                df_solar["fecha_objetivo"] = pd.to_datetime(df_solar["fecha_objetivo"])
+                df_solar = df_solar.sort_values("fecha_objetivo")
+                df_solar_filtered = df_solar[df_solar["fecha_objetivo"] <= limit_time]
+                if not df_solar_filtered.empty:
+                    solar_total = df_solar_filtered["valor"].sum()
+            
+            mc1, mc2, mc3 = st.columns(3)
+            with mc1:
+                st.metric("Gasto Estimado de Red", f"${costo_total:,.0f} COP")
+            with mc2:
+                if tiene_paneles:
+                    st.metric("Aporte Solar Previsto", f"{solar_total:,.1f} kWh")
+                else:
+                    st.metric("Aporte Solar Físico", "0.0 kWh")
+            with mc3:
+                tarifa = float(empresa_sel.get("tarifa_kwh", 943.0))
+                gasto_mitigado = solar_total * tarifa
+                st.metric("Ahorro Estimado COP", f"${gasto_mitigado:,.0f} COP")
+                
+            from plotly.subplots import make_subplots
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            
+            fig.add_trace(
+                go.Bar(
+                    x=df_cost_filtered["fecha_objetivo"],
+                    y=df_cost_filtered["valor"],
+                    name="Costo de Red (COP)",
+                    marker_color="#1E6B5C",
+                ),
+                secondary_y=False
+            )
+            
+            if tiene_paneles and solar_total > 0.0:
+                df_solar_aligned = df_solar_filtered[df_solar_filtered["fecha_objetivo"].isin(df_cost_filtered["fecha_objetivo"])]
+                if not df_solar_aligned.empty:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=df_solar_aligned["fecha_objetivo"],
+                            y=df_solar_aligned["valor"],
+                            name="Producción Solar (kWh)",
+                            line=dict(color="#C88A2E", width=3),
+                            mode="lines+markers"
+                        ),
+                        secondary_y=True
+                    )
+            
+            fig.update_layout(
+                title_text="Tendencia de Gasto de Red vs. Aporte Fotovoltaico",
+                height=380,
+                xaxis_title="Fecha y Hora"
+            )
+            fig.update_yaxes(title_text="Costo Operativo (COP)", secondary_y=False)
+            if tiene_paneles:
+                fig.update_yaxes(title_text="Generación Solar (kWh)", secondary_y=True)
+                
+            st.plotly_chart(fig, use_container_width=True)
+            
+            if tiene_paneles:
+                cap_paneles = empresa_sel.get('capacidad_paneles_kw', 0.0) or 0.0
+                cap_paneles_label = f"de **{cap_paneles:.1f} kW**" if cap_paneles > 0.0 else "**Activa (Inferencia de Historial)**"
+                st.success(
+                    f"☀️ **Banco de Paneles Solar Activo:** Tu infraestructura {cap_paneles_label} "
+                    f"reducirá tu consumo de red en **{solar_total:,.1f} kWh**, lo que equivale a un ahorro directo proyectado "
+                    f"de **${gasto_mitigado:,.0f} COP** en este horizonte de {horizonte}h."
+                )
+            else:
+                es_hogar = (empresa_sel.get("tipo") == "hogar")
+                pot_ahorro = (3.0 if es_hogar else 15.0) * 4.5 * 30 * tarifa
+                st.warning(
+                    f"💡 **Recomendación de Banco Solar:** Actualmente este perfil no cuenta con paneles fotovoltaicos activos. "
+                    f"Si decidieras instalar un banco solar estándar de **{3.0 if es_hogar else 15.0} kWp**, "
+                    f"podrías mitigar hasta **${(pot_ahorro / 30.0) * (horizonte / 24.0):,.0f} COP** del costo total de red de este horizonte."
+                )
+                
+            st.markdown("**Desglose de Costo Operativo Proyectado:**")
+            st.dataframe(df_cost_filtered[["fecha_objetivo", "valor", "unidad", "confianza_pct"]], use_container_width=True, hide_index=True)
+        else:
+            st.info(f"No hay predicciones de costos activas para las próximas {horizonte} horas.")
+    else:
+        st.info("No hay predicciones de costos registradas.")
