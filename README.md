@@ -52,24 +52,40 @@ La solución está desarrollada bajo una arquitectura robusta, modular y contene
 
 ```mermaid
 graph TD
-    User([👤 Usuario / Comunidad / PYME]) -->|Visualiza y Registra| Streamlit[🎨 Frontend Streamlit]
+    User([👤 Usuario / Comunidad / PYME]) -->|Interactúa| Streamlit[🎨 Streamlit Frontend - 9 Vistas]
     Streamlit -->|Peticiones HTTP REST| FastAPI[⚡ API FastAPI - Backend]
     
     subgraph FastAPI_Backend [Capa de Lógica - FastAPI]
         FastAPI --> AuthRoute[🔑 Auth & Roles]
-        FastAPI --> ConsumoRoute[📊 Inserción & Interpolación Mensual]
-        FastAPI --> SolarRoute[🌤️ Datos Climáticos & Radiación]
-        FastAPI --> InsightsRoute[💡 Capa de Traducción de Insights]
-        FastAPI --> IARoute[🧠 Agente de Recomendaciones con LLM]
+        FastAPI --> ConsumoRoute[📊 Consumo & Costos]
+        FastAPI --> SolarRoute[🌤️ Clima & Radiación]
+        FastAPI --> InsightsRoute[💡 Traductores de Insights]
+        FastAPI --> IARoute[🧠 Recomendaciones IA]
+        FastAPI --> PredRoute[🔮 Predicciones & Orquestador]
+        FastAPI --> AlertasRoute[🔔 Alertas Proactivas]
+        FastAPI --> RepRoute[📄 Generador de Reportes]
     end
     
-    subgraph Motores_Externos [Orquestación de IA y Datos Abiertos]
-        IARoute -->|Orquestación Asíncrona| Gemini[🧠 Google Gemini-2.5-Flash-Lite]
-        SolarRoute -->|Consumo de Datos Abiertos| OpenMeteo[☁️ Open-Meteo API - Radiación y Polvo]
-        SolarRoute -->|TMY Baseline Climatológico| PVGIS[☀️ PVGIS Climate Data]
+    subgraph Servicios_Agentes [Agentes de IA y Servicios Core]
+        IARoute --> AgRecomendador[🧠 Agente Recomendaciones]
+        PredRoute --> AgPrediccion[🔮 Agente Predicción]
+        AlertasRoute --> AgAlertas[🔔 Agente Alertas]
+        SolarRoute --> AgSolar[🌤️ Agente Solar]
+        ConsumoRoute --> AgConsumo[📊 Agente Consumo]
+        RepRoute --> ServReportes[📄 Servicio Reportes PDF/Excel]
+    end
+
+    subgraph Motores_Externos [Capa de Datos Climáticos e Inteligencia Artificial]
+        AgRecomendador -->|Orquestación Asíncrona| Gemini[🧠 Google Gemini-2.5-Flash-Lite]
+        AgPrediccion -->|Pronóstico 24-72h| OpenMeteo[☁️ Open-Meteo API]
+        AgPrediccion -->|Validación Cruzada| OpenWeather[🌦️ OpenWeather API]
+        AgAlertas -->|Monitoreo de Lluvias/Viento| OpenMeteo
+        AgSolar -->|TMY Baseline Climatológica| PVGIS[☀️ PVGIS Climate Data]
+        SolarRoute -->|Sincronización en Startup/Historial| NasaPower[🛰️ NASA POWER API]
+        SolarRoute -->|Calidad del Aire/Dust| OpenWeather
     end
     
-    FastAPI_Backend -->|ORM SQLAlchemy| DB[(💾 Base de Datos MySQL)]
+    Servicios_Agentes -->|ORM SQLAlchemy| DB[(💾 Base de Datos MySQL 8)]
 ```
 
 ---
@@ -179,9 +195,9 @@ erDiagram
 Para garantizar que cualquier usuario registrado tenga datos reales de Riohacha desde el segundo uno, implementamos un servicio de **Precalentamiento de Datos Climáticos en Startup** (`app/services/startup_sync.py`). 
 Al levantar el contenedor del backend, el sistema de forma no bloqueante (`asyncio.create_task` dentro del `lifespan` de FastAPI):
 1. Descarga e inserta los últimos 30 días de radiación real de **Open-Meteo Archive (ERA5)**.
-2. Descarga y almacena datos históricos de respaldo de la **NASA POWER API**.
+2. Descarga y almacena datos históricos de respaldo de la **NASA POWER API** (usada como fallback histórico principal).
 3. Consulta la baseline climatológica típica de **PVGIS (Año Meteorológico Típico - TMY)**.
-4. Precalienta las condiciones del aire e índice de contaminación de **OpenWeather**.
+4. Precalienta las condiciones del aire e índice de contaminación de **OpenWeather** (incluyendo índice AQI e interpolación térmica).
 
 ### B. Algoritmo del Orquestador Autónomo ante Apagones
 El sistema vincula de forma activa las predicciones de apagón con la configuración técnica del sistema fotovoltaico de la empresa o casa:
@@ -198,6 +214,16 @@ La brisa marina seca y los vientos alisios de La Guajira acumulan grandes capas 
 Dado que La Guajira experimenta cortes de red y DNS constantes, la arquitectura del software está diseñada de forma defensiva frente a fallas de infraestructura:
 * **Capa Principal:** Realiza la consulta asíncrona mediante un hilo no bloqueante (`run_in_executor`) hacia el modelo de lenguaje **Gemini 2.5 Flash Lite** de Google, logrando respuestas personalizadas en tiempo real.
 * **Capa de Contingencia:** En caso de fallas de DNS, latencias extremas o límites de cuota (`429 Resource Exhausted`), un **Motor Heurístico Local basado en Reglas** asume el control del backend de forma no bloqueante. Este motor procesa los datos reales de radiación, consumo y apagones del usuario y redacta automáticamente una narrativa fluida, semaforizada e informativa sumamente coherente, logrando que el sistema **nunca** falle ante el jurado o el usuario final.
+
+### E. Sistema de Monitoreo de Alertas Dinámico y Proactivo
+Conectado directamente a las APIs externas y la telemetría del usuario, el sistema evalúa y dispara notificaciones inteligentes:
+1. **Consumo Diario Alto:** Calcula dinámicamente desviaciones estándar ($promedio + 2\sigma$) sobre los últimos 30 días en vez de usar límites estáticos.
+2. **Resiliencia ante Clima:** Si Open-Meteo pronostica lluvias intensas ($>10\text{mm}$) o radiación baja ($<3.0\text{ kWh/m²/día}$) para el día siguiente, el sistema eleva de forma preventiva el umbral de alerta de batería al $40\%$ para garantizar reserva.
+3. **Controles de Pico de Demanda:** Advierte si la potencia excede en más de un $50\%$ la media histórica para prevenir los cargos por picos en la facturación de Air-E.
+4. **Riesgo Climático de Red:** Alerta ante vientos $>40\text{ km/h}$ o tormentas locales, adaptando el consejo si el perfil cuenta o no con almacenamiento solar físico.
+
+### F. Simulador Interactivo de Orquestación de IA (Predicciones)
+Para demostrar la capacidad autónoma del backend, el panel predictivo de Streamlit incluye un simulador dinámico donde el usuario puede manipular el porcentaje de riesgo de corte eléctrico y observar en tiempo real cómo el Agente de IA altera las métricas de **Modo del Orquestador**, **Objetivo de Carga**, **Flujo Fotovoltaico** y calcula la **Autonomía en horas de respaldo** según los consumos históricos.
 
 ---
 
@@ -272,11 +298,11 @@ Este script creará:
 │   ├── schemas/                  # Validadores y esquemas Pydantic
 │   ├── api/
 │   │   ├── deps/                 # Dependencias inyectables (Auth y DB)
-│   │   └── routes/               # Rutas REST (auth, consumo, solar, ia, reportes)
+│   │   └── routes/               # Rutas REST (auth, consumo, solar, ia, reportes, alertas, predicciones, insights)
 │   └── services/
 │       ├── startup_sync.py       # Sincronización automática de datos en segundo plano al arrancar
-│       ├── openmeteo.py          # Cliente API Open-Meteo (radiación, archivo ERA5 e índice PM10)
-│       ├── openweather.py        # Cliente API OpenWeather (AQI y contraste)
+│       ├── openmeteo.py          # Cliente API Open-Meteo (radiación, pronósticos e índice PM10)
+│       ├── openweather.py        # Cliente API OpenWeather (AQI y contraste meteorológico)
 │       ├── pvgis.py              # Cliente API PVGIS (Baseline meteorológica TMY y simulación fotovoltaica)
 │       ├── reportes.py           # Generador binario de reportes ejecutivos en PDF y Excel
 │       └── agents/               # 5 Agentes de Inteligencia Artificial
@@ -288,7 +314,16 @@ Este script creará:
 ├── streamlit_app/                # Frontend en Streamlit
 │   ├── Home.py                   # Landing page, Login y Registro adaptativo de usuarios
 │   ├── api_client.py             # Cliente HTTP REST centralizado con control de sesiones
-│   └── pages/                    # Páginas del Dashboard, Consumo, IA y Predicciones
+│   └── pages/                    # Páginas y Vistas Interactivas
+│       ├── 0_Mi_Dia.py           # Vista ejecutiva compacta y resumen diario (LLM/Heurístico) con héroe expandible
+│       ├── 1_Dashboard.py        # Detalles técnicos de telemetría y gráficos interactivos de consumo
+│       ├── 2_Consumo.py          # Registro, consulta e importación de consumos y costos de Air-E
+│       ├── 3_Datos_Solares.py    # Historial de radiación local de Riohacha e integración climática
+│       ├── 4_Recomendaciones_IA.py # Recomendador adaptativo y aplicación de acciones de ahorro
+│       ├── 5_Alertas.py          # Monitoreo de alertas críticas y severas del sistema
+│       ├── 6_Predicciones.py     # Panel predictivo y Simulador de Orquestación de Almacenamiento IA
+│       ├── 7_Reportes.py         # Descarga de reportes ejecutivos de alta fidelidad (PDF/Excel)
+│       └── 8_Administracion.py   # Panel de control de usuarios, carga masiva y configuraciones
 ├── scripts/
 │   ├── seed.py                   # Seed de datos demostrativos relacionales
 │   └── init_db.sql               # Inicialización nativa de tablas MySQL
