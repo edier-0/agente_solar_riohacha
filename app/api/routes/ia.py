@@ -52,6 +52,7 @@ def analisis_solar(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         if empresa_id != get_demo_empresa()["id"]:
             raise HTTPException(status_code=404, detail="Empresa demo no encontrada")
@@ -85,6 +86,7 @@ def analisis_consumo(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         if empresa_id != get_demo_empresa()["id"]:
             raise HTTPException(status_code=404, detail="Empresa demo no encontrada")
@@ -120,6 +122,7 @@ async def generar_recomendaciones(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         solar = analisis_solar(empresa_id=empresa_id, escenario="demo", db=db, current_user=current_user)
         consumo = analisis_consumo(empresa_id=empresa_id, escenario="demo", db=db, current_user=current_user)
@@ -147,20 +150,38 @@ async def generar_recomendaciones(
 
 
 @router.get("/recomendaciones/{empresa_id}", response_model=List[RecomendacionResponse])
-def list_recomendaciones(
+async def list_recomendaciones(
     empresa_id: int,
     limit: int = 20,
     escenario: Optional[str] = Query(None, pattern="^(demo|real)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
-        return _demo_recs(empresa_id)[:limit]
+        rows = list_demo_recs(empresa_id)
+        if not rows:
+            # Generar recomendaciones de demostración iniciales de forma proactiva
+            try:
+                rows = await generar_recomendaciones(empresa_id, escenario="demo", db=db, current_user=current_user)
+            except Exception as e:
+                print(f"[AUTO-RECS DEMO ERROR] {e}")
+                rows = _demo_recs(empresa_id)
+        return rows[:limit]
     _check_acceso(current_user, empresa_id)
-    q = db.query(Recomendacion).filter(Recomendacion.empresa_id == empresa_id)
-    if escenario:
-        q = q.filter(Recomendacion.escenario == escenario)
-    return q.order_by(desc(Recomendacion.created_at)).limit(limit).all()
+    q = db.query(Recomendacion).filter(
+        Recomendacion.empresa_id == empresa_id,
+        Recomendacion.escenario == escenario
+    )
+    rows = q.order_by(desc(Recomendacion.created_at)).limit(limit).all()
+    if not rows:
+        # Generar recomendaciones automáticas en tiempo real si la BD está vacía
+        try:
+            rows = await generar_recomendaciones(empresa_id, escenario=escenario, db=db, current_user=current_user)
+        except Exception as e:
+            print(f"[AUTO-RECS REAL ERROR] {e}")
+            rows = []
+    return rows[:limit]
 
 
 @router.patch("/recomendaciones/{rec_id}/aplicar", response_model=RecomendacionResponse)
@@ -170,6 +191,7 @@ def marcar_aplicada(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    escenario = escenario or current_user.escenario_usuario
     if escenario == "demo":
         rec = mark_demo_rec_applied(rec_id)
         if not rec:

@@ -56,30 +56,49 @@ with stats[2]:
 
 st.markdown("""
 <style>
-/* Bóton Flotante (FAB) para generar sugerencias */
-div[data-testid="stButton"]:has(button[kind="primary"]) {
-    position: fixed !important;
-    bottom: 40px !important;
-    right: 40px !important;
-    width: auto !important;
-    z-index: 9999 !important;
+/* Estilo para banner del Asesor de Eficiencia IA */
+.advisor-banner {
+    background: rgba(54, 162, 235, 0.08);
+    border: 1px dashed rgba(54, 162, 235, 0.3);
+    border-radius: 16px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
-div[data-testid="stButton"] button[kind="primary"] {
-    border-radius: 50px !important;
-    padding: 16px 24px !important;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    font-size: 1.05rem !important;
+.advisor-banner__icon {
+    font-size: 1.8rem;
+    animation: rotate-pulse 3s infinite ease-in-out;
+}
+@keyframes rotate-pulse {
+    0% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+    50% { transform: scale(1.05) rotate(10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+}
+.advisor-banner__text {
+    font-size: 0.92rem;
+    color: #9AB0BB;
+    line-height: 1.5;
+}
+.advisor-banner__title {
+    font-weight: 700;
+    color: #36A2EB;
+    margin-bottom: 0.2rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
-if st.button("✨ Sugerencias IA", type="primary", use_container_width=False, help="Inicia sesión de consultoría con Gemini"):
-    with st.spinner("🧠 Analizando datos con Gemini..."):
-        nuevas = api_post(f"/ia/recomendaciones/{empresa_id}")
-        if nuevas:
-            st.success(f"Se generaron {len(nuevas)} recomendaciones.")
-            st.rerun()
+# Banner premium indicando asesoría de eficiencia automática e inteligente
+st.markdown("""
+<div class="advisor-banner">
+    <div class="advisor-banner__icon">🧠</div>
+    <div class="advisor-banner__text">
+        <div class="advisor-banner__title">Copiloto de Ahorro y Eficiencia IA Activo</div>
+        Nuestra inteligencia artificial analiza proactivamente el perfil de tu empresa, tu telemetría de consumo de red y el pronóstico de radiación solar en Riohacha para generar sugerencias accionables de ahorro. No requieres solicitar recomendaciones de forma manual.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 render_section_header("Acciones sugeridas", "spark", "Lista compacta de mayor valor operativo.")
 if not pendientes:
@@ -132,12 +151,22 @@ if not show_details:
 render_section_header("Contexto Analítico IA", "chart", "Métricas base evaluadas por Gemini para emitir los consejos.")
 ia_status = api_get("/ia/status")
 if ia_status:
-    if ia_status.get("gemini_disponible"):
-        modelo = ia_status.get('modelo', 'Gemini')
-        st.success(f"🧠 IA en línea: {modelo} analizando los datos.")
-    else:
-        st.warning(f"⚠️ Modo degradado activo: {ia_status.get('modo')}")
-        st.caption("Sin conexión al LLM, el sistema generará recomendaciones estáticas predecibles.")
+    col_status, col_btn = st.columns([3, 1])
+    with col_status:
+        if ia_status.get("gemini_disponible"):
+            modelo = ia_status.get('modelo', 'Gemini')
+            st.success(f"🧠 IA en línea: {modelo} analizando los datos.")
+        else:
+            st.warning(f"⚠️ Modo degradado activo: {ia_status.get('modo')}")
+            st.caption("Sin conexión al LLM, el sistema generará recomendaciones estáticas predecibles.")
+    with col_btn:
+        st.markdown("<div style='margin-top: 0.2rem;'></div>", unsafe_allow_html=True)
+        if st.button("🔄 Recalcular", key="recalc_manual", use_container_width=True, help="Fuerza un análisis inmediato con Gemini"):
+            with st.spinner("Refrescando análisis..."):
+                nuevas = api_post(f"/ia/recomendaciones/{empresa_id}")
+                if nuevas:
+                    st.success("¡Sugerencias actualizadas!")
+                    st.rerun()
 
 analysis_cols = st.columns(2)
 with analysis_cols[0]:
