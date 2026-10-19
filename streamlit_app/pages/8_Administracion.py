@@ -86,7 +86,7 @@ with tab_nuevo:
                 direccion = st.text_input("Direccion")
                 tarifa = st.number_input("Tarifa (COP/kWh)", min_value=0.0, value=943.0, step=10.0)
             with col_b:
-                ciudad = st.text_input("Ciudad", value="Riohacha")
+                ciudad = st.text_input("Ciudad", value="Fonseca")
                 departamento = st.text_input("Departamento", value="La Guajira")
                 paneles = st.number_input("Capacidad paneles (kW)", min_value=0.0, value=0.0, step=0.5)
                 bateria = st.number_input("Capacidad bateria (kWh)", min_value=0.0, value=0.0, step=0.5)

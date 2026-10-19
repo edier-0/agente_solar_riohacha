@@ -51,7 +51,7 @@ class Empresa(Base):
     nombre = Column(String(255), nullable=False)
     tipo = Column(String(100))  # hotel, hielera, retail, pyme, comunidad
     direccion = Column(String(500))
-    ciudad = Column(String(100), default="Riohacha")
+    ciudad = Column(String(100), default="Fonseca")
     departamento = Column(String(100), default="La Guajira")
     tarifa_kwh = Column(Float, default=943.0)  # COP/kWh
     capacidad_paneles_kw = Column(Float, default=0.0)

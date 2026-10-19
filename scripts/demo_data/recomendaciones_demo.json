@@ -1,1 +1,67 @@
-[]
+[
+  {
+    "id": 1792377792,
+    "empresa_id": 1,
+    "texto": "Programe el preenfriamiento de las habitaciones vac\u00edas con aire acondicionado entre las 11:00 y las 14:00 horas aprovechando el pico de radiaci\u00f3n solar (5.85 kWh/m\u00b2/d\u00eda).",
+    "tipo": "redistribucion",
+    "impacto_estimado_cop": 1450000.0,
+    "confianza_pct": 90.0,
+    "escenario": "demo",
+    "origen_dato": "json_demo",
+    "confiabilidad_datos": 55.0,
+    "aplicada": false,
+    "created_at": "2026-10-19T02:43:12"
+  },
+  {
+    "id": 1792377793,
+    "empresa_id": 1,
+    "texto": "Instale variadores de frecuencia en las bombas hidroneum\u00e1ticas de la piscina para reducir la demanda pico de 29.99 kW durante las horas de mayor ocupaci\u00f3n hotelera.",
+    "tipo": "ahorro",
+    "impacto_estimado_cop": 2100000.0,
+    "confianza_pct": 88.0,
+    "escenario": "demo",
+    "origen_dato": "json_demo",
+    "confiabilidad_datos": 55.0,
+    "aplicada": false,
+    "created_at": "2026-10-19T02:43:12"
+  },
+  {
+    "id": 1792377794,
+    "empresa_id": 1,
+    "texto": "Establezca un lavado bimensual de los paneles solares de 15.0 kW para mitigar la p\u00e9rdida de eficiencia del 10% causada por la acumulaci\u00f3n de polvo y arena del desierto guajiro.",
+    "tipo": "mantenimiento",
+    "impacto_estimado_cop": 980000.0,
+    "confianza_pct": 92.0,
+    "escenario": "demo",
+    "origen_dato": "json_demo",
+    "confiabilidad_datos": 55.0,
+    "aplicada": false,
+    "created_at": "2026-10-19T02:43:12"
+  },
+  {
+    "id": 1792377795,
+    "empresa_id": 1,
+    "texto": "Implemente un sistema de respaldo con bater\u00edas para mitigar los apagones frecuentes, evitando el uso costoso de plantas di\u00e9sel y protegiendo los equipos de refrigeraci\u00f3n.",
+    "tipo": "contingencia",
+    "impacto_estimado_cop": 1800000.0,
+    "confianza_pct": 85.0,
+    "escenario": "demo",
+    "origen_dato": "json_demo",
+    "confiabilidad_datos": 55.0,
+    "aplicada": false,
+    "created_at": "2026-10-19T02:43:12"
+  },
+  {
+    "id": 1792377796,
+    "empresa_id": 1,
+    "texto": "Desplace el ciclo de lavado de lavander\u00eda y planchado masivo al horario de 10:00 a 14:00 para auto-consumir la energ\u00eda solar directa y reducir la factura a la tarifa de 943 COP/kWh.",
+    "tipo": "redistribucion",
+    "impacto_estimado_cop": 1650000.0,
+    "confianza_pct": 90.0,
+    "escenario": "demo",
+    "origen_dato": "json_demo",
+    "confiabilidad_datos": 55.0,
+    "aplicada": false,
+    "created_at": "2026-10-19T02:43:12"
+  }
+]

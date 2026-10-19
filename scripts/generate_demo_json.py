@@ -92,8 +92,8 @@ def build_radiacion(days_past: int = 60, days_future: int = 20) -> list[dict]:
                 "escenario": "demo",
                 "origen_dato": "json_demo",
                 "confiabilidad": 35.0,
-                "latitud": 11.5444,
-                "longitud": -72.9072,
+                "latitud": 10.8858,
+                "longitud": -72.8481,
             }
         )
     
@@ -113,8 +113,8 @@ def build_radiacion(days_past: int = 60, days_future: int = 20) -> list[dict]:
                 "escenario": "demo",
                 "origen_dato": "json_demo",
                 "confiabilidad": 35.0,
-                "latitud": 11.5444,
-                "longitud": -72.9072,
+                "latitud": 10.8858,
+                "longitud": -72.8481,
             }
         )
     return rows

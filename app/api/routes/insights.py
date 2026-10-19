@@ -52,14 +52,14 @@ def _generar_narrativa_fallback(resumen: dict, empresa_nombre: str, empresa_tipo
     
     if es_hogar:
         narrativa = (
-            f"¡Hola! Analizamos los datos de tu hogar para el día de hoy. En cuanto a las condiciones climáticas de Riohacha, {dia_solar} "
+            f"¡Hola! Analizamos los datos de tu hogar para el día de hoy. En cuanto a las condiciones climáticas de Fonseca, {dia_solar} "
             f"Con respecto al comportamiento de tu casa, {consumo} Adicionalmente, sobre la autogeneración solar, {produccion}\n\n"
             f"Para mantener tu hogar seguro hoy, {riesgo} En cuanto al almacenamiento de energía en tu casa, {bateria} "
             f"¡Que tengas un gran día con tu familia en {empresa_nombre}!"
         )
     else:
         narrativa = (
-            f"Informe de análisis operativo diario para {empresa_nombre}. Respecto a las condiciones de radiación solar en Riohacha, {dia_solar} "
+            f"Informe de análisis operativo diario para {empresa_nombre}. Respecto a las condiciones de radiación solar en Fonseca, {dia_solar} "
             f"En términos de demanda y costos energéticos, {consumo} Sobre la capacidad de generación propia distribuida, {produccion}\n\n"
             f"En la dimensión de resiliencia operativa y riesgos de red, {riesgo} Los sistemas de almacenamiento local reportan que {bateria} "
             f"Se sugiere mantener el seguimiento de estas métricas operativas para optimizar la eficiencia y rentabilidad hoy."
@@ -224,13 +224,13 @@ Datos del día: {resumen}
 
 Da un consejo corto de cierre."""
         
-        system_instruction = "Eres un asistente virtual de análisis energético de Riohacha. Hablas de forma familiar, concisa y optimista hoy." if empresa.tipo == "hogar" else "Eres un asistente virtual de análisis energético de Riohacha. Hablas de forma ejecutiva, concisa y optimista."
+        system_instruction = "Eres un asistente virtual de análisis energético de Fonseca, La Guajira. Hablas de forma familiar, concisa y optimista hoy." if empresa.tipo == "hogar" else "Eres un asistente virtual de análisis energético de Fonseca, La Guajira. Hablas de forma ejecutiva, concisa y optimista."
         
         try:
             resumen_llm = await obtener_respuesta_gemini(
                 prompt=prompt,
                 system_instruction=system_instruction,
-                model_name="gemini-2.5-flash-lite"
+                model_name="gemini-3.5-flash-lite"
             )
             if resumen_llm:
                 fuente = "gemini"

@@ -71,7 +71,7 @@ def humanizar_alerta(alerta: Dict, tiene_baterias: bool = True, tiene_paneles: b
     elif tipo == "bateria_baja" and not tiene_baterias:
         accion = "Se sugiere ignorar esta alerta o configurar un banco de almacenamiento en tu perfil."
     elif tipo == "baja_radiacion" and not tiene_paneles:
-        accion = "Menor brillo solar típico en Riohacha para esta jornada."
+        accion = "Menor brillo solar típico en Fonseca para esta jornada."
 
     return {
         "id": alerta.get("id"),

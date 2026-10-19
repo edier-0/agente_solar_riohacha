@@ -55,7 +55,7 @@ if es_simulado:
     st.info(
         f"💡 **Simulación Solar Activa:** Tu perfil no tiene paneles registrados en la base de datos. "
         f"Simulamos el potencial de generación y ahorro para un sistema estándar recomendado de "
-        f"**{simulated_capacity} kWp** para tu consumo en Riohacha, utilizando radiación real."
+        f"**{simulated_capacity} kWp** para tu consumo en Fonseca, utilizando radiación real."
     )
 
 kpis = api_get(f"/consumo/kpis/{empresa_id}")

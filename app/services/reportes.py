@@ -169,7 +169,7 @@ class ReporteService:
         story.append(Paragraph(
             f"Período: últimos {days} días | "
             f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M')} | "
-            f"Riohacha, La Guajira",
+            f"{empresa.ciudad or 'Fonseca'}, La Guajira",
             styles["Normal"],
         ))
         story.append(Spacer(1, 0.5 * cm))
@@ -271,7 +271,7 @@ class ReporteService:
         story.append(Spacer(1, 1 * cm))
         story.append(Paragraph(
             "<i>Reporte generado automáticamente por Agente Solar Inteligente — "
-            "Dashboard Solar con IA para Ahorro Energético en Riohacha</i>",
+            "Dashboard Solar con IA para Ahorro Energético en Fonseca, La Guajira</i>",
             ParagraphStyle("Footer", parent=styles["Normal"], fontSize=8, alignment=TA_CENTER),
         ))
 
