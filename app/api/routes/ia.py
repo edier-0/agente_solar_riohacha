@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -37,11 +38,14 @@ def _demo_recs(empresa_id: int) -> list[dict]:
 
 @router.get("/status")
 async def get_ia_status():
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    is_valid = bool(api_key and not api_key.startswith("tu_api_key"))
+    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
     return {
-        "gemini_disponible": True,
-        "modelo": "gemini-2.5-flash-lite",
-        "api": "Google GenAI",
-        "modo": "LLM Gemini",
+        "gemini_disponible": is_valid,
+        "modelo": model if is_valid else "Heurístico Local (Reglas)",
+        "api": "Google GenAI" if is_valid else "Motor Local",
+        "modo": f"LLM Gemini ({model})" if is_valid else "Heurístico Local (Reglas)",
     }
 
 
@@ -130,6 +134,8 @@ async def generar_recomendaciones(
             id=empresa_id,
             nombre=get_demo_empresa()["nombre"],
             tipo=get_demo_empresa()["tipo"],
+            ciudad=get_demo_empresa()["ciudad"],
+            departamento=get_demo_empresa()["departamento"],
             tarifa_kwh=get_demo_empresa()["tarifa_kwh"],
             capacidad_paneles_kw=get_demo_empresa()["capacidad_paneles_kw"],
             capacidad_bateria_kwh=get_demo_empresa()["capacidad_bateria_kwh"],

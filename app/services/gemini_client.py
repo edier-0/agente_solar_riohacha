@@ -20,12 +20,13 @@ def _llamar_gemini_sync(api_key: str, model_name: str, prompt: str, config) -> s
 async def obtener_respuesta_gemini(
     prompt: str,
     system_instruction: str = None,
-    model_name: str = "gemini-2.5-flash-lite",
+    model_name: str = None,
 ) -> str:
     """
     Llama a Gemini de forma no bloqueante usando run_in_executor.
     Evita depender de aiohttp (client.aio) cuya compatibilidad es inestable.
     """
+    model_name = model_name or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY no está configurada")
