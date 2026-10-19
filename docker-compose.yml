@@ -1,0 +1,78 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: agente_solar_mysql_2
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: agente_solar_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: agente_solar_api_2
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: agente_solar_db
+      SECRET_KEY: ${SECRET_KEY:-cambiar-en-produccion-2026}
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ENVIRONMENT: development
+      WATCHFILES_FORCE_POLLING: "true"
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./app:/app/app
+      - ./scripts:/app/scripts
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: agente_solar_streamlit_2
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_BASE_URL: http://api:8000
+    ports:
+      - "8502:8501"
+    volumes:
+      - ./streamlit_app:/app/streamlit_app
+    command:
+      - streamlit
+      - run
+      - streamlit_app/Home.py
+      - --server.port=8501
+      - --server.address=0.0.0.0
+      - --server.headless=true
+      - --browser.gatherUsageStats=false
+      - --server.runOnSave=true
+      - --server.fileWatcherType=poll
+
+volumes:
+  mysql_data:

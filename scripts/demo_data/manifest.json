@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-10-19T00:48:27.253267",
+  "files": [
+    "consumo_demo.json",
+    "radiacion_demo.json",
+    "predicciones_demo.json",
+    "alertas_demo.json",
+    "recomendaciones_demo.json"
+  ],
+  "records": {
+    "consumo_demo": 80,
+    "radiacion_demo": 80
+  }
+}

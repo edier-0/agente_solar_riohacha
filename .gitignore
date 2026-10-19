@@ -1,19 +1,44 @@
-/.phpunit.cache
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/vendor
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Virtualenvs
+venv/
+env/
+.venv/
+ENV/
+
+# Environment
 .env
-.env.backup
-.env.production
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-/.fleet
-/.idea
-/.vscode
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project
+data/
+*.db
+*.sqlite
+unpacked/
+requisitos.md
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Logs
+*.log
+logs/
