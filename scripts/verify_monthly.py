@@ -20,7 +20,7 @@ def verify():
 
     try:
         # 1. Obtener una empresa de prueba (o crearla)
-        empresa = db.query(Empresa).filter(Empresa.nombre == "Hotel Solar Riohacha").first()
+        empresa = db.query(Empresa).filter(Empresa.nombre.in_(["Hotel Solar Fonseca", "Hotel Solar Riohacha"])).first()
         if not empresa:
             print("[ERROR] No se encontró la empresa demo. Por favor corre el seed primero.")
             return

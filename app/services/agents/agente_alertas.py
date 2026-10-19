@@ -124,7 +124,7 @@ class AgenteAlertas:
                             umbral_bateria = 40.0
                             motivo_bateria = (
                                 f"elevado preventivamente a {umbral_bateria:.0f}% debido a pronóstico de baja radiación "
-                                f"({ghi_mañana:.1f} kWh/m²/día) o lluvias en Riohacha para mañana"
+                                f"({ghi_mañana:.1f} kWh/m²/día) o lluvias en Fonseca para mañana"
                             )
                 except Exception:
                     pass
@@ -169,11 +169,11 @@ class AgenteAlertas:
             umbral_radiacion = config.umbral_radiacion_baja
             motivo_radiacion = "límite manual"
 
-            # Si está en el valor por defecto (2.0), calculamos dinámicamente. La radiación típica de Riohacha es excelente,
+            # Si está en el valor por defecto (2.0), calculamos dinámicamente. La radiación típica de Fonseca es excelente,
             # así que definimos recurso bajo si está por debajo del 60% de la media habitual (~3.5 kWh/m²/día).
             if config.umbral_radiacion_baja == 2.0:
                 umbral_radiacion = 3.5
-                motivo_radiacion = "calculado dinámicamente según la media climatológica de Riohacha"
+                motivo_radiacion = "calculado dinámicamente según la media climatológica de Fonseca"
 
             if (
                 rad_reciente
@@ -185,7 +185,7 @@ class AgenteAlertas:
                     empresa.id,
                     tipo="baja_radiacion",
                     mensaje=(
-                        f"Recurso solar actual bajo en Riohacha ({rad_reciente.ghi:.2f} kWh/m²/día, "
+                        f"Recurso solar actual bajo en Fonseca ({rad_reciente.ghi:.2f} kWh/m²/día, "
                         f"umbral dinámico: {umbral_radiacion:.1f} kWh/m²/día, {motivo_radiacion}). "
                         "Pre-cargue baterías desde la red y posponga consumos de alta potencia."
                     ),
@@ -256,7 +256,7 @@ class AgenteAlertas:
                         tipo="riesgo_apagon",
                         mensaje=(
                             f"Alerta climática de Red: Pronóstico de vientos fuertes ({viento_max:.1f} km/h) "
-                            f"o lluvias ({lluvia:.1f} mm) en Riohacha. Estos factores aumentan en un 70% la probabilidad "
+                            f"o lluvias ({lluvia:.1f} mm) en Fonseca. Estos factores aumentan en un 70% la probabilidad "
                             f"de cortes eléctricos y caída del suministro local. {consejo_apagon}"
                         ),
                         severidad="critica",

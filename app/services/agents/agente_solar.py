@@ -68,7 +68,7 @@ class AgenteAnalisisSolar:
             "ahorro_estimado_mensual_cop": round(ahorro_mensual, 0),
             "dias_analizados": len(datos),
             "mensaje": (
-                f"Riohacha tiene radiación excelente: promedio de {promedio_ghi:.2f} kWh/m²/día. "
+                f"{getattr(empresa, 'ciudad', None) or 'Fonseca'} tiene radiación excelente: promedio de {promedio_ghi:.2f} kWh/m²/día. "
                 f"Con {empresa.capacidad_paneles_kw} kW instalados, podría generar "
                 f"~{prod_diaria:.1f} kWh/día."
             ),

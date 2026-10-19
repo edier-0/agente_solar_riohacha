@@ -63,7 +63,7 @@ def traducir_radiacion(ghi: Optional[float], tipo_empresa: str = "pyme") -> Dict
         return _pkg("🌥️", NIVEL_AMARILLO, "Día solar regular", msg, action)
         
     msg = (
-        "Muy poca radiación hoy en Riohacha (≈{:.1f} kWh/m²). Tu hogar consumirá principalmente de la red eléctrica general de Air-E."
+        "Muy poca radiación hoy en Fonseca (≈{:.1f} kWh/m²). Tu hogar consumirá principalmente de la red eléctrica general de Air-E."
         if es_hogar else
         f"Muy poca radiación hoy (≈{ghi:.1f} kWh/m²). Prioriza consumir desde batería o red."
     )
@@ -204,18 +204,18 @@ def traducir_polvo(
     
     if capacidad_paneles_kw == 0.0:
         if valor is None:
-            return _pkg("🍃", NIVEL_VERDE, "Calidad del Aire", "El aire de Riohacha está agradable y limpio hoy.", None)
+            return _pkg("🍃", NIVEL_VERDE, "Calidad del Aire", "El aire de Fonseca está agradable y limpio hoy.", None)
         if valor >= 80:
             return _pkg(
                 "💨", NIVEL_AMARILLO,
-                "Polvo moderado en Riohacha",
+                "Polvo moderado en Fonseca",
                 f"PM10/polvo en {valor:.0f} µg/m³. Se siente algo de brisa seca en tu sector residencial.",
                 None
             )
         return _pkg(
             "🍃", NIVEL_VERDE,
             "Aire agradable",
-            f"Buena calidad del aire hoy en Riohacha ({valor:.0f} µg/m³). Un ambiente fresco para tu familia.",
+            f"Buena calidad del aire hoy en Fonseca ({valor:.0f} µg/m³). Un ambiente fresco para tu familia.",
             None
         )
         

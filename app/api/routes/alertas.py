@@ -78,7 +78,7 @@ def _evaluar_demo_internamente(empresa_id: int) -> List[dict]:
         "id": int(datetime.now().timestamp()) + 4,
         "empresa_id": empresa_id,
         "tipo": "riesgo_apagon",
-        "mensaje": "Alerta climática de Red (Demo): Pronóstico de tormenta y vientos de 42 km/h en Riohacha. Se sugiere activar Carga Máxima Preventiva en tus baterías.",
+        "mensaje": "Alerta climática de Red (Demo): Pronóstico de tormenta y vientos de 42 km/h en Fonseca. Se sugiere activar Carga Máxima Preventiva en tus baterías.",
         "severidad": "critica",
         "leida": False,
         "created_at": now

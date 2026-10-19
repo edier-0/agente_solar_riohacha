@@ -10,9 +10,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100000
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-18T12:00:00",
@@ -25,9 +24,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100001
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-17T12:00:00",
@@ -40,9 +38,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100002
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-16T12:00:00",
@@ -55,9 +52,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100003
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-15T12:00:00",
@@ -70,9 +66,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100004
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-14T12:00:00",
@@ -85,9 +80,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100005
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-13T12:00:00",
@@ -100,9 +94,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100006
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-12T12:00:00",
@@ -115,9 +108,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100007
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-11T12:00:00",
@@ -130,9 +122,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100008
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-10T12:00:00",
@@ -145,9 +136,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100009
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-09T12:00:00",
@@ -160,9 +150,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100010
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-08T12:00:00",
@@ -175,9 +164,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100011
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-07T12:00:00",
@@ -190,9 +178,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100012
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-06T12:00:00",
@@ -205,9 +192,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100013
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-05T12:00:00",
@@ -220,9 +206,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100014
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-04T12:00:00",
@@ -235,9 +220,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100015
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-03T12:00:00",
@@ -250,9 +234,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100016
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-02T12:00:00",
@@ -265,9 +248,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100017
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-01T12:00:00",
@@ -280,9 +262,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100018
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-30T12:00:00",
@@ -295,9 +276,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100019
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-29T12:00:00",
@@ -310,9 +290,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100020
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-28T12:00:00",
@@ -325,9 +304,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100021
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-27T12:00:00",
@@ -340,9 +318,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100022
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-26T12:00:00",
@@ -355,9 +332,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100023
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-25T12:00:00",
@@ -370,9 +346,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100024
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-24T12:00:00",
@@ -385,9 +360,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100025
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-23T12:00:00",
@@ -400,9 +374,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100026
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-22T12:00:00",
@@ -415,9 +388,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100027
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-21T12:00:00",
@@ -430,9 +402,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100028
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-20T12:00:00",
@@ -445,9 +416,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100029
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-19T12:00:00",
@@ -460,9 +430,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100030
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-18T12:00:00",
@@ -475,9 +444,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100031
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-17T12:00:00",
@@ -490,9 +458,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100032
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-16T12:00:00",
@@ -505,9 +472,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100033
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-15T12:00:00",
@@ -520,9 +486,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100034
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-14T12:00:00",
@@ -535,9 +500,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100035
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-13T12:00:00",
@@ -550,9 +514,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100036
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-12T12:00:00",
@@ -565,9 +528,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100037
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-11T12:00:00",
@@ -580,9 +542,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100038
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-10T12:00:00",
@@ -595,9 +556,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100039
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-09T12:00:00",
@@ -610,9 +570,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100040
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-08T12:00:00",
@@ -625,9 +584,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100041
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-07T12:00:00",
@@ -640,9 +598,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100042
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-06T12:00:00",
@@ -655,9 +612,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100043
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-05T12:00:00",
@@ -670,9 +626,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100044
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-04T12:00:00",
@@ -685,9 +640,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100045
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-03T12:00:00",
@@ -700,9 +654,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100046
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-02T12:00:00",
@@ -715,9 +668,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100047
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-09-01T12:00:00",
@@ -730,9 +682,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100048
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-31T12:00:00",
@@ -745,9 +696,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100049
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-30T12:00:00",
@@ -760,9 +710,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100050
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-29T12:00:00",
@@ -775,9 +724,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100051
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-28T12:00:00",
@@ -790,9 +738,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100052
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-27T12:00:00",
@@ -805,9 +752,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100053
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-26T12:00:00",
@@ -820,9 +766,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100054
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-25T12:00:00",
@@ -835,9 +780,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100055
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-24T12:00:00",
@@ -850,9 +794,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100056
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-23T12:00:00",
@@ -865,9 +808,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100057
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-22T12:00:00",
@@ -880,9 +822,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100058
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-08-21T12:00:00",
@@ -895,9 +836,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100059
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-20T12:00:00",
@@ -910,9 +850,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100060
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-21T12:00:00",
@@ -925,9 +864,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100061
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-22T12:00:00",
@@ -940,9 +878,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100062
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-23T12:00:00",
@@ -955,9 +892,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100063
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-24T12:00:00",
@@ -970,9 +906,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100064
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-25T12:00:00",
@@ -985,9 +920,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100065
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-26T12:00:00",
@@ -1000,9 +934,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100066
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-27T12:00:00",
@@ -1015,9 +948,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100067
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-28T12:00:00",
@@ -1030,9 +962,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100068
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-29T12:00:00",
@@ -1045,9 +976,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100069
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-30T12:00:00",
@@ -1060,9 +990,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100070
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-10-31T12:00:00",
@@ -1075,9 +1004,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100071
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-01T12:00:00",
@@ -1090,9 +1018,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100072
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-02T12:00:00",
@@ -1105,9 +1032,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100073
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-03T12:00:00",
@@ -1120,9 +1046,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100074
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-04T12:00:00",
@@ -1135,9 +1060,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100075
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-05T12:00:00",
@@ -1150,9 +1074,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100076
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-06T12:00:00",
@@ -1165,9 +1088,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100077
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-07T12:00:00",
@@ -1180,9 +1102,8 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100078
+    "latitud": 10.8858,
+    "longitud": -72.8481
   },
   {
     "fecha": "2026-11-08T12:00:00",
@@ -1195,8 +1116,7 @@
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad": 35.0,
-    "latitud": 11.5444,
-    "longitud": -72.9072,
-    "id": 100079
+    "latitud": 10.8858,
+    "longitud": -72.8481
   }
 ]

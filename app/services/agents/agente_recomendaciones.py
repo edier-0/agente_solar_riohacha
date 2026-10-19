@@ -14,9 +14,9 @@ from app.services.gemini_client import obtener_respuesta_gemini
 class AgenteRecomendaciones:
     """Genera recomendaciones de ahorro energético."""
 
-    SYSTEM_PROMPT = """Eres un experto en eficiencia energética y energía solar en Riohacha, La Guajira, Colombia.
+    SYSTEM_PROMPT = """Eres un experto en eficiencia energética y energía solar en Fonseca, La Guajira, Colombia.
 Conoces que:
-- Riohacha tiene radiación solar excelente (hasta 7.0 kWh/m²/día).
+- Fonseca tiene radiación solar excelente (hasta 7.0 kWh/m²/día).
 - La tarifa eléctrica promedio es de 943 COP/kWh.
 - Hay apagones frecuentes (~60h/año).
 - Las empresas locales (hoteles, hieleras, retail, PYMES) pagan hasta 33% de OpEx en energía.
@@ -91,7 +91,8 @@ Cada recomendación debe tener un impacto económico estimado claro."""
             "maquinaria y retorno de inversión."
         )
 
-        prompt = f"""Genera EXACTAMENTE 5 recomendaciones de ahorro energético para el cliente "{empresa.nombre}" (perfil: {desc_tipo}) en Riohacha, La Guajira.
+        ciudad_cliente = empresa.ciudad or "Fonseca"
+        prompt = f"""Genera EXACTAMENTE 5 recomendaciones de ahorro energético para el cliente "{empresa.nombre}" (perfil: {desc_tipo}) en {ciudad_cliente}, La Guajira.
 {contexto_adicional}
 
 Datos solares (últimos 30 días):
@@ -115,7 +116,7 @@ Responde EXCLUSIVAMENTE con un JSON válido con este formato (sin texto adiciona
         respuesta = await obtener_respuesta_gemini(
             prompt=prompt,
             system_instruction=self.SYSTEM_PROMPT,
-            model_name="gemini-2.5-flash-lite"
+            model_name="gemini-3.5-flash-lite"
         )
 
         if not respuesta:
@@ -148,15 +149,17 @@ Responde EXCLUSIVAMENTE con un JSON válido con este formato (sin texto adiciona
         num_anomalias = (consumo.get("num_anomalias") or 0) if consumo else 0
         es_hogar = (empresa and empresa.tipo == "hogar")
 
+        ciudad_cliente = (empresa.ciudad or "Fonseca") if empresa else "Fonseca"
+
         # 1. Aprovechar horario solar pico
         if promedio_ghi > 4.5:
             ahorro = round(promedio_kwh * 0.2 * tarifa, 0)
             texto_rec = (
                 "Lave, planche o encienda los electrodomésticos de mayor consumo de su casa entre 10 AM y 2 PM, "
-                "aprovechando las horas de máxima radiación solar en Riohacha para reducir lo comprado a Air-E."
+                f"aprovechando las horas de máxima radiación solar en {ciudad_cliente} para reducir lo comprado a Air-E."
                 if es_hogar else
                 "Concentre operaciones de alto consumo (refrigeración intensa, bombas, procesos) entre 10 AM y 2 PM "
-                "cuando la radiación solar es máxima en Riohacha. Puede ahorrar hasta 20% en costos diurnos."
+                f"cuando la radiación solar es máxima en {ciudad_cliente}. Puede ahorrar hasta 20% en costos diurnos."
             )
             recomendaciones.append({
                 "texto": texto_rec,
@@ -217,9 +220,9 @@ Responde EXCLUSIVAMENTE con un JSON válido con este formato (sin texto adiciona
         if empresa and empresa.capacidad_bateria_kwh == 0:
             texto_rec = (
                 "Considere equipar su hogar con un banco de baterías básico (ej. 5 kWh). "
-                "Evitará que los frecuentes apagones de Riohacha apaguen sus luces y dañen los alimentos de su nevera."
+                f"Evitará que los frecuentes apagones de {ciudad_cliente} apaguen sus luces y dañen los alimentos de su nevera."
                 if es_hogar else
-                "Considere instalar un sistema de respaldo con baterías. Riohacha tiene ~60h de apagones al año; con baterías evitaría pérdidas operativas y costos de plantas diésel."
+                f"Considere instalar un sistema de respaldo con baterías. {ciudad_cliente} tiene ~60h de apagones al año; con baterías evitaría pérdidas operativas y costos de plantas diésel."
             )
             recomendaciones.append({
                 "texto": texto_rec,

@@ -38,13 +38,13 @@ def seed() -> None:
     persistir_sinteticos = os.getenv("SEED_PERSIST_SYNTHETIC", "0").strip().lower() in ("1", "true", "yes")
 
     try:
-        empresa = db.query(Empresa).filter(Empresa.nombre == "Hotel Solar Riohacha").first()
+        empresa = db.query(Empresa).filter(Empresa.nombre.in_(["Hotel Solar Fonseca", "Hotel Solar Riohacha"])).first()
         if not empresa:
             empresa = Empresa(
-                nombre="Hotel Solar Riohacha",
+                nombre="Hotel Solar Fonseca",
                 tipo="hotel",
-                direccion="Av. La Marina #5-15, Riohacha",
-                ciudad="Riohacha",
+                direccion="Calle 13 #18-40, Fonseca",
+                ciudad="Fonseca",
                 departamento="La Guajira",
                 tarifa_kwh=943.0,
                 capacidad_paneles_kw=15.0,
@@ -55,6 +55,14 @@ def seed() -> None:
             db.commit()
             db.refresh(empresa)
             print(f"[OK] Empresa demo creada: {empresa.nombre} (ID {empresa.id})")
+        else:
+            if empresa.ciudad != "Fonseca" or empresa.nombre == "Hotel Solar Riohacha":
+                empresa.nombre = "Hotel Solar Fonseca"
+                empresa.ciudad = "Fonseca"
+                empresa.direccion = "Calle 13 #18-40, Fonseca"
+                db.commit()
+                db.refresh(empresa)
+                print(f"[OK] Empresa demo actualizada a: {empresa.nombre} (Ciudad: {empresa.ciudad})")
 
             config = ConfiguracionAlerta(
                 empresa_id=empresa.id,
@@ -64,8 +72,6 @@ def seed() -> None:
             )
             db.add(config)
             db.commit()
-        else:
-            print(f"[SKIP] Empresa demo ya existe (ID {empresa.id})")
 
         usuarios_demo = [
             {
@@ -168,8 +174,8 @@ def seed() -> None:
                         escenario=row.get("escenario", "demo"),
                         origen_dato="json_demo",
                         confiabilidad=row.get("confiabilidad", 35.0),
-                        latitud=row.get("latitud", 11.5444),
-                        longitud=row.get("longitud", -72.9072),
+                        latitud=row.get("latitud", 10.8858),
+                        longitud=row.get("longitud", -72.8481),
                     )
                     db.add(rad)
                 db.commit()

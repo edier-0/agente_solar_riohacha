@@ -33,9 +33,16 @@ class Settings(BaseSettings):
     # --- LEGACY: NASA POWER (se mantiene como respaldo histórico) ---
     NASA_POWER_BASE_URL: str = "https://power.larc.nasa.gov/api/temporal/daily/point"
 
-    # Coordenadas Riohacha
-    RIOHACHA_LAT: float = 11.5444
-    RIOHACHA_LON: float = -72.9072
+    # Coordenadas y Ubicación (Fonseca, La Guajira, Colombia)
+    LOCATION_NAME: str = "Fonseca, La Guajira"
+    LOCATION_LAT: float = 10.8858
+    LOCATION_LON: float = -72.8481
+    RIOHACHA_LAT: float = 10.8858
+    RIOHACHA_LON: float = -72.8481
+
+    # Gemini LLM
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.5-flash-lite"
 
     # App
     ENVIRONMENT: str = "development"

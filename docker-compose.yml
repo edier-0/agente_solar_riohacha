@@ -38,6 +38,12 @@ services:
       SECRET_KEY: ${SECRET_KEY:-cambiar-en-produccion-2026}
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      LOCATION_NAME: ${LOCATION_NAME:-Fonseca, La Guajira}
+      LOCATION_LAT: ${LOCATION_LAT:-10.8858}
+      LOCATION_LON: ${LOCATION_LON:--72.8481}
+      RIOHACHA_LAT: ${RIOHACHA_LAT:-10.8858}
+      RIOHACHA_LON: ${RIOHACHA_LON:--72.8481}
       ENVIRONMENT: development
       WATCHFILES_FORCE_POLLING: "true"
     ports:
