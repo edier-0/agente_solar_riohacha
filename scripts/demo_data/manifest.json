@@ -1,8 +1,11 @@
 {
-  "generated_at": "2026-05-25T15:34:50.800443",
+  "generated_at": "2026-10-19T00:48:27.253267",
   "files": [
     "consumo_demo.json",
-    "radiacion_demo.json"
+    "radiacion_demo.json",
+    "predicciones_demo.json",
+    "alertas_demo.json",
+    "recomendaciones_demo.json"
   ],
   "records": {
     "consumo_demo": 80,
