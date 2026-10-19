@@ -149,7 +149,7 @@ st.markdown("""
     <div class="prediction-banner__icon">🔮</div>
     <div class="prediction-banner__text">
         <div class="prediction-banner__title">Motor Predictivo y Simulación IA Activa</div>
-        Nuestro agente orquesta y proyecta automáticamente la generación solar fotovoltaica, demanda y riesgos de continuidad en Riohacha para las próximas 24h, 48h y 72h.
+        Nuestro agente orquesta y proyecta automáticamente la generación solar fotovoltaica, demanda y riesgos de continuidad en Fonseca para las próximas 24h, 48h y 72h.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -158,7 +158,7 @@ st.write("")
 render_section_header("Orquestación Autónoma de Respaldo", "spark", "Orquestador inteligente de baterías y excedentes solares ante apagones.")
 
 st.markdown(
-    "El Agente Solar de Riohacha implementa un **algoritmo de orquestación proactiva** "
+    "El Agente Solar de Fonseca implementa un **algoritmo de orquestación proactiva** "
     "que vincula las predicciones de apagones con el control físico del banco de baterías "
     "y los excedentes fotovoltaicos. Ajusta el simulador de abajo para ver cómo responde la IA:"
 )
@@ -275,7 +275,7 @@ if not show_details:
     st.stop()
 
 render_section_header("Análisis de Tendencias", "chart", "Confianza de la IA, horizontes y desglose de problemáticas clave.")
-st.caption("ℹ️ El motor predictivo evalúa el impacto financiero de las tarifas comerciales (Air-E) y la probabilidad de apagones meteorológicos en Riohacha.")
+st.caption("ℹ️ El motor predictivo evalúa el impacto financiero de las tarifas comerciales (Air-E) y la probabilidad de apagones meteorológicos en Fonseca.")
 
 h_col, hr_btn_col = st.columns([1, 3])
 with h_col:
