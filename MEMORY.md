@@ -13,6 +13,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - **Flujo Git estricto por ramas**: Evitar tocar `develop`/`main` directo y esperar orden para PRs.
 - **Desacoplamiento FastAPI/Streamlit**: Permite escalar API y frontend de forma independiente.
 - **Regla <= 50 líneas**: Modularizar detalles en [docs/memory/decisions.md](file:///docs/memory/decisions.md) y [docs/memory/system-patterns.md](file:///docs/memory/system-patterns.md).
+- **Autoría del Proyecto**: Asignada formalmente al equipo Code Masters y sus 4 integrantes en LICENSE y AUTHORS.md.
 
 ## Aprendizajes y errores a evitar
 - No hardcodear `GEMINI_API_KEY` ni asumir conexión permanente a internet en La Guajira.
