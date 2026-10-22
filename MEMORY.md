@@ -6,7 +6,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - Datos y modelos migrados a Fonseca y Riohacha (La Guajira), radiación pico ~5.85 kWh/m²/día.
 - Motor dual activo: Google GenAI (`gemini-2.5/3.5-flash-lite`) + fallback heurístico local.
 - Perfiles adaptativos funcionando: Residencial (hogar/comunidad) y Comercial (PYME).
-- Rama base de desarrollo: `develop`. Rama actual: `feature/agent-rules-memory-constitution`.
+- Rama base de desarrollo: `develop` (al día y sincronizada con `main`).
 
 ## Decisiones (y por qué)
 - **Motor dual IA + Heurística**: Asegurar operación continua offline durante cortes o sin API Key.
@@ -22,4 +22,3 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 ## Próximos pasos
 - Afinar calibración del orquestador autónomo de baterías ante simulaciones de apagón.
 - Robustecer suite de tests unitarios y de integración para endpoints clave.
-- Esperar orden del usuario para definir rama destino de PR de esta feature.
