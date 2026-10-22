@@ -1,6 +1,6 @@
 """
 Agente Solar Inteligente — API FastAPI
-Dashboard Solar con IA para Ahorro Energético en Riohacha, La Guajira.
+Dashboard Solar con IA para Ahorro Energético en Fonseca, La Guajira.
 """
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Agente Solar Inteligente API",
     description=(
-        "API REST para el Dashboard Solar con IA para Ahorro Energético en Riohacha, La Guajira. "
+        "API REST para el Dashboard Solar con IA para Ahorro Energético en Fonseca, La Guajira. "
         "Diseñada para ser consumida desde el frontend Streamlit y aplicaciones móviles."
     ),
     version="1.1.0",
@@ -93,7 +93,7 @@ def root():
     return {
         "app": "Agente Solar Inteligente API",
         "version": "1.1.0",
-        "ubicacion": "Riohacha, La Guajira, Colombia",
+        "ubicacion": f"{settings.LOCATION_NAME}, Colombia",
         "docs": "/docs",
         "health": "/health",
     }

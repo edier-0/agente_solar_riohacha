@@ -1,6 +1,6 @@
 [
   {
-    "fecha": "2026-05-25T23:59:00",
+    "fecha": "2026-10-19T23:59:00",
     "consumo_kwh": 375.68,
     "costo_cop": 354266.0,
     "demanda_pico_kw": 19.67,
@@ -14,7 +14,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-24T23:59:00",
+    "fecha": "2026-10-18T23:59:00",
     "consumo_kwh": 376.17,
     "costo_cop": 354728.0,
     "demanda_pico_kw": 21.0,
@@ -28,7 +28,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-23T23:59:00",
+    "fecha": "2026-10-17T23:59:00",
     "consumo_kwh": 373.49,
     "costo_cop": 352201.0,
     "demanda_pico_kw": 20.7,
@@ -42,7 +42,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-22T23:59:00",
+    "fecha": "2026-10-16T23:59:00",
     "consumo_kwh": 399.7,
     "costo_cop": 376917.0,
     "demanda_pico_kw": 17.79,
@@ -56,7 +56,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-21T23:59:00",
+    "fecha": "2026-10-15T23:59:00",
     "consumo_kwh": 387.39,
     "costo_cop": 365309.0,
     "demanda_pico_kw": 20.12,
@@ -70,7 +70,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-20T23:59:00",
+    "fecha": "2026-10-14T23:59:00",
     "consumo_kwh": 395.95,
     "costo_cop": 373381.0,
     "demanda_pico_kw": 19.06,
@@ -84,7 +84,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-19T23:59:00",
+    "fecha": "2026-10-13T23:59:00",
     "consumo_kwh": 406.2,
     "costo_cop": 383047.0,
     "demanda_pico_kw": 21.13,
@@ -98,7 +98,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-18T23:59:00",
+    "fecha": "2026-10-12T23:59:00",
     "consumo_kwh": 403.47,
     "costo_cop": 380472.0,
     "demanda_pico_kw": 21.7,
@@ -112,7 +112,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-17T23:59:00",
+    "fecha": "2026-10-11T23:59:00",
     "consumo_kwh": 301.4,
     "costo_cop": 284220.0,
     "demanda_pico_kw": 17.25,
@@ -126,7 +126,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-16T23:59:00",
+    "fecha": "2026-10-10T23:59:00",
     "consumo_kwh": 399.93,
     "costo_cop": 377134.0,
     "demanda_pico_kw": 22.54,
@@ -140,7 +140,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-15T23:59:00",
+    "fecha": "2026-10-09T23:59:00",
     "consumo_kwh": 377.41,
     "costo_cop": 355898.0,
     "demanda_pico_kw": 20.34,
@@ -154,7 +154,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-14T23:59:00",
+    "fecha": "2026-10-08T23:59:00",
     "consumo_kwh": 399.15,
     "costo_cop": 376398.0,
     "demanda_pico_kw": 21.95,
@@ -168,7 +168,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-13T23:59:00",
+    "fecha": "2026-10-07T23:59:00",
     "consumo_kwh": 361.19,
     "costo_cop": 340602.0,
     "demanda_pico_kw": 18.59,
@@ -182,7 +182,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-12T23:59:00",
+    "fecha": "2026-10-06T23:59:00",
     "consumo_kwh": 372.5,
     "costo_cop": 351268.0,
     "demanda_pico_kw": 17.54,
@@ -196,7 +196,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-11T23:59:00",
+    "fecha": "2026-10-05T23:59:00",
     "consumo_kwh": 403.05,
     "costo_cop": 380076.0,
     "demanda_pico_kw": 21.52,
@@ -210,7 +210,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-10T23:59:00",
+    "fecha": "2026-10-04T23:59:00",
     "consumo_kwh": 676.46,
     "costo_cop": 637902.0,
     "demanda_pico_kw": 15.73,
@@ -224,7 +224,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-09T23:59:00",
+    "fecha": "2026-10-03T23:59:00",
     "consumo_kwh": 408.59,
     "costo_cop": 385300.0,
     "demanda_pico_kw": 20.1,
@@ -238,7 +238,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-08T23:59:00",
+    "fecha": "2026-10-02T23:59:00",
     "consumo_kwh": 370.53,
     "costo_cop": 349410.0,
     "demanda_pico_kw": 21.74,
@@ -252,7 +252,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-07T23:59:00",
+    "fecha": "2026-10-01T23:59:00",
     "consumo_kwh": 398.6,
     "costo_cop": 375880.0,
     "demanda_pico_kw": 18.31,
@@ -266,7 +266,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-06T23:59:00",
+    "fecha": "2026-09-30T23:59:00",
     "consumo_kwh": 408.57,
     "costo_cop": 385282.0,
     "demanda_pico_kw": 19.79,
@@ -280,7 +280,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-05T23:59:00",
+    "fecha": "2026-09-29T23:59:00",
     "consumo_kwh": 358.3,
     "costo_cop": 337877.0,
     "demanda_pico_kw": 14.48,
@@ -294,7 +294,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-04T23:59:00",
+    "fecha": "2026-09-28T23:59:00",
     "consumo_kwh": 362.97,
     "costo_cop": 342281.0,
     "demanda_pico_kw": 23.58,
@@ -308,7 +308,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-03T23:59:00",
+    "fecha": "2026-09-27T23:59:00",
     "consumo_kwh": 387.84,
     "costo_cop": 365733.0,
     "demanda_pico_kw": 23.25,
@@ -322,7 +322,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-02T23:59:00",
+    "fecha": "2026-09-26T23:59:00",
     "consumo_kwh": 388.21,
     "costo_cop": 366082.0,
     "demanda_pico_kw": 22.71,
@@ -336,7 +336,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-01T23:59:00",
+    "fecha": "2026-09-25T23:59:00",
     "consumo_kwh": 416.81,
     "costo_cop": 393052.0,
     "demanda_pico_kw": 25.86,
@@ -350,7 +350,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-30T23:59:00",
+    "fecha": "2026-09-24T23:59:00",
     "consumo_kwh": 427.79,
     "costo_cop": 403406.0,
     "demanda_pico_kw": 18.45,
@@ -364,7 +364,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-29T23:59:00",
+    "fecha": "2026-09-23T23:59:00",
     "consumo_kwh": 375.47,
     "costo_cop": 354068.0,
     "demanda_pico_kw": 22.45,
@@ -378,7 +378,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-28T23:59:00",
+    "fecha": "2026-09-22T23:59:00",
     "consumo_kwh": 308.72,
     "costo_cop": 291123.0,
     "demanda_pico_kw": 21.67,
@@ -392,7 +392,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-27T23:59:00",
+    "fecha": "2026-09-21T23:59:00",
     "consumo_kwh": 361.18,
     "costo_cop": 340593.0,
     "demanda_pico_kw": 25.17,
@@ -406,7 +406,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-26T23:59:00",
+    "fecha": "2026-09-20T23:59:00",
     "consumo_kwh": 367.17,
     "costo_cop": 346241.0,
     "demanda_pico_kw": 18.66,
@@ -420,7 +420,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-25T23:59:00",
+    "fecha": "2026-09-19T23:59:00",
     "consumo_kwh": 382.93,
     "costo_cop": 361103.0,
     "demanda_pico_kw": 20.66,
@@ -434,7 +434,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-24T23:59:00",
+    "fecha": "2026-09-18T23:59:00",
     "consumo_kwh": 406.56,
     "costo_cop": 383386.0,
     "demanda_pico_kw": 26.85,
@@ -448,7 +448,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-23T23:59:00",
+    "fecha": "2026-09-17T23:59:00",
     "consumo_kwh": 420.97,
     "costo_cop": 396975.0,
     "demanda_pico_kw": 19.63,
@@ -462,7 +462,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-22T23:59:00",
+    "fecha": "2026-09-16T23:59:00",
     "consumo_kwh": 432.37,
     "costo_cop": 407725.0,
     "demanda_pico_kw": 22.97,
@@ -476,7 +476,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-21T23:59:00",
+    "fecha": "2026-09-15T23:59:00",
     "consumo_kwh": 426.01,
     "costo_cop": 401727.0,
     "demanda_pico_kw": 20.16,
@@ -490,7 +490,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-20T23:59:00",
+    "fecha": "2026-09-14T23:59:00",
     "consumo_kwh": 548.09,
     "costo_cop": 516849.0,
     "demanda_pico_kw": 19.42,
@@ -504,7 +504,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-19T23:59:00",
+    "fecha": "2026-09-13T23:59:00",
     "consumo_kwh": 361.67,
     "costo_cop": 341055.0,
     "demanda_pico_kw": 15.29,
@@ -518,7 +518,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-18T23:59:00",
+    "fecha": "2026-09-12T23:59:00",
     "consumo_kwh": 387.83,
     "costo_cop": 365724.0,
     "demanda_pico_kw": 24.34,
@@ -532,7 +532,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-17T23:59:00",
+    "fecha": "2026-09-11T23:59:00",
     "consumo_kwh": 346.48,
     "costo_cop": 326731.0,
     "demanda_pico_kw": 21.55,
@@ -546,7 +546,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-16T23:59:00",
+    "fecha": "2026-09-10T23:59:00",
     "consumo_kwh": 358.99,
     "costo_cop": 338528.0,
     "demanda_pico_kw": 20.26,
@@ -560,7 +560,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-15T23:59:00",
+    "fecha": "2026-09-09T23:59:00",
     "consumo_kwh": 418.22,
     "costo_cop": 394381.0,
     "demanda_pico_kw": 20.86,
@@ -574,7 +574,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-14T23:59:00",
+    "fecha": "2026-09-08T23:59:00",
     "consumo_kwh": 387.31,
     "costo_cop": 365233.0,
     "demanda_pico_kw": 20.34,
@@ -588,7 +588,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-13T23:59:00",
+    "fecha": "2026-09-07T23:59:00",
     "consumo_kwh": 383.56,
     "costo_cop": 361697.0,
     "demanda_pico_kw": 23.59,
@@ -602,7 +602,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-12T23:59:00",
+    "fecha": "2026-09-06T23:59:00",
     "consumo_kwh": 328.2,
     "costo_cop": 309493.0,
     "demanda_pico_kw": 20.69,
@@ -616,7 +616,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-11T23:59:00",
+    "fecha": "2026-09-05T23:59:00",
     "consumo_kwh": 406.13,
     "costo_cop": 382981.0,
     "demanda_pico_kw": 17.02,
@@ -630,7 +630,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-10T23:59:00",
+    "fecha": "2026-09-04T23:59:00",
     "consumo_kwh": 374.12,
     "costo_cop": 352795.0,
     "demanda_pico_kw": 21.36,
@@ -644,7 +644,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-09T23:59:00",
+    "fecha": "2026-09-03T23:59:00",
     "consumo_kwh": 357.64,
     "costo_cop": 337255.0,
     "demanda_pico_kw": 21.46,
@@ -658,7 +658,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-08T23:59:00",
+    "fecha": "2026-09-02T23:59:00",
     "consumo_kwh": 392.01,
     "costo_cop": 369665.0,
     "demanda_pico_kw": 17.86,
@@ -672,7 +672,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-07T23:59:00",
+    "fecha": "2026-09-01T23:59:00",
     "consumo_kwh": 380.08,
     "costo_cop": 358415.0,
     "demanda_pico_kw": 14.41,
@@ -686,7 +686,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-06T23:59:00",
+    "fecha": "2026-08-31T23:59:00",
     "consumo_kwh": 370.81,
     "costo_cop": 349674.0,
     "demanda_pico_kw": 25.7,
@@ -700,7 +700,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-05T23:59:00",
+    "fecha": "2026-08-30T23:59:00",
     "consumo_kwh": 447.23,
     "costo_cop": 421738.0,
     "demanda_pico_kw": 21.05,
@@ -714,7 +714,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-04T23:59:00",
+    "fecha": "2026-08-29T23:59:00",
     "consumo_kwh": 359.28,
     "costo_cop": 338801.0,
     "demanda_pico_kw": 19.15,
@@ -728,7 +728,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-03T23:59:00",
+    "fecha": "2026-08-28T23:59:00",
     "consumo_kwh": 316.85,
     "costo_cop": 298790.0,
     "demanda_pico_kw": 19.5,
@@ -742,7 +742,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-02T23:59:00",
+    "fecha": "2026-08-27T23:59:00",
     "consumo_kwh": 349.79,
     "costo_cop": 329852.0,
     "demanda_pico_kw": 29.49,
@@ -756,7 +756,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-04-01T23:59:00",
+    "fecha": "2026-08-26T23:59:00",
     "consumo_kwh": 335.14,
     "costo_cop": 316037.0,
     "demanda_pico_kw": 21.42,
@@ -770,7 +770,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-03-31T23:59:00",
+    "fecha": "2026-08-25T23:59:00",
     "consumo_kwh": 418.71,
     "costo_cop": 394844.0,
     "demanda_pico_kw": 15.19,
@@ -784,7 +784,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-03-30T23:59:00",
+    "fecha": "2026-08-24T23:59:00",
     "consumo_kwh": 417.21,
     "costo_cop": 393429.0,
     "demanda_pico_kw": 14.13,
@@ -798,7 +798,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-03-29T23:59:00",
+    "fecha": "2026-08-23T23:59:00",
     "consumo_kwh": 421.95,
     "costo_cop": 397899.0,
     "demanda_pico_kw": 21.69,
@@ -812,7 +812,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-03-28T23:59:00",
+    "fecha": "2026-08-22T23:59:00",
     "consumo_kwh": 342.79,
     "costo_cop": 323251.0,
     "demanda_pico_kw": 20.14,
@@ -826,7 +826,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-03-27T23:59:00",
+    "fecha": "2026-08-21T23:59:00",
     "consumo_kwh": 397.41,
     "costo_cop": 374758.0,
     "demanda_pico_kw": 16.54,
@@ -840,7 +840,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-26T23:59:00",
+    "fecha": "2026-10-20T23:59:00",
     "consumo_kwh": 345.29,
     "costo_cop": 325608.0,
     "demanda_pico_kw": 13.06,
@@ -854,7 +854,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-27T23:59:00",
+    "fecha": "2026-10-21T23:59:00",
     "consumo_kwh": 393.5,
     "costo_cop": 371070.0,
     "demanda_pico_kw": 20.21,
@@ -868,7 +868,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-28T23:59:00",
+    "fecha": "2026-10-22T23:59:00",
     "consumo_kwh": 368.03,
     "costo_cop": 347052.0,
     "demanda_pico_kw": 17.98,
@@ -882,7 +882,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-29T23:59:00",
+    "fecha": "2026-10-23T23:59:00",
     "consumo_kwh": 409.83,
     "costo_cop": 386470.0,
     "demanda_pico_kw": 29.99,
@@ -896,7 +896,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-30T23:59:00",
+    "fecha": "2026-10-24T23:59:00",
     "consumo_kwh": 458.4,
     "costo_cop": 432271.0,
     "demanda_pico_kw": 19.33,
@@ -910,7 +910,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-05-31T23:59:00",
+    "fecha": "2026-10-25T23:59:00",
     "consumo_kwh": 488.98,
     "costo_cop": 461108.0,
     "demanda_pico_kw": 18.8,
@@ -924,7 +924,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-01T23:59:00",
+    "fecha": "2026-10-26T23:59:00",
     "consumo_kwh": 403.5,
     "costo_cop": 380500.0,
     "demanda_pico_kw": 13.23,
@@ -938,7 +938,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-02T23:59:00",
+    "fecha": "2026-10-27T23:59:00",
     "consumo_kwh": 377.87,
     "costo_cop": 356331.0,
     "demanda_pico_kw": 21.04,
@@ -952,7 +952,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-03T23:59:00",
+    "fecha": "2026-10-28T23:59:00",
     "consumo_kwh": 343.27,
     "costo_cop": 323704.0,
     "demanda_pico_kw": 20.99,
@@ -966,7 +966,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-04T23:59:00",
+    "fecha": "2026-10-29T23:59:00",
     "consumo_kwh": 409.79,
     "costo_cop": 386432.0,
     "demanda_pico_kw": 19.43,
@@ -980,7 +980,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-05T23:59:00",
+    "fecha": "2026-10-30T23:59:00",
     "consumo_kwh": 375.91,
     "costo_cop": 354483.0,
     "demanda_pico_kw": 18.44,
@@ -994,7 +994,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-06T23:59:00",
+    "fecha": "2026-10-31T23:59:00",
     "consumo_kwh": 362.28,
     "costo_cop": 341630.0,
     "demanda_pico_kw": 20.75,
@@ -1008,7 +1008,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-07T23:59:00",
+    "fecha": "2026-11-01T23:59:00",
     "consumo_kwh": 412.37,
     "costo_cop": 388865.0,
     "demanda_pico_kw": 25.15,
@@ -1022,7 +1022,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-08T23:59:00",
+    "fecha": "2026-11-02T23:59:00",
     "consumo_kwh": 364.77,
     "costo_cop": 343978.0,
     "demanda_pico_kw": 19.79,
@@ -1036,7 +1036,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-09T23:59:00",
+    "fecha": "2026-11-03T23:59:00",
     "consumo_kwh": 376.24,
     "costo_cop": 354794.0,
     "demanda_pico_kw": 25.53,
@@ -1050,7 +1050,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-10T23:59:00",
+    "fecha": "2026-11-04T23:59:00",
     "consumo_kwh": 411.02,
     "costo_cop": 387592.0,
     "demanda_pico_kw": 22.01,
@@ -1064,7 +1064,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-11T23:59:00",
+    "fecha": "2026-11-05T23:59:00",
     "consumo_kwh": 389.36,
     "costo_cop": 367166.0,
     "demanda_pico_kw": 17.7,
@@ -1078,7 +1078,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-12T23:59:00",
+    "fecha": "2026-11-06T23:59:00",
     "consumo_kwh": 397.02,
     "costo_cop": 374390.0,
     "demanda_pico_kw": 21.66,
@@ -1092,7 +1092,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-13T23:59:00",
+    "fecha": "2026-11-07T23:59:00",
     "consumo_kwh": 437.05,
     "costo_cop": 412138.0,
     "demanda_pico_kw": 21.17,
@@ -1106,7 +1106,7 @@
     "empresa_id": 1
   },
   {
-    "fecha": "2026-06-14T23:59:00",
+    "fecha": "2026-11-08T23:59:00",
     "consumo_kwh": 397.04,
     "costo_cop": 374409.0,
     "demanda_pico_kw": 23.9,

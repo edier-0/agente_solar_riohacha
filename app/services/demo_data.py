@@ -157,10 +157,10 @@ def delete_radiacion_demo(radiacion_id: int) -> bool:
 def get_demo_empresa() -> Dict[str, Any]:
     return {
         "id": DEMO_EMPRESA_ID,
-        "nombre": "Hotel Solar Riohacha (Demo)",
+        "nombre": "Hotel Solar Fonseca (Demo)",
         "tipo": "hotel",
-        "direccion": "Av. La Marina #5-15, Riohacha",
-        "ciudad": "Riohacha",
+        "direccion": "Calle 13 #18-40, Fonseca",
+        "ciudad": "Fonseca",
         "departamento": "La Guajira",
         "tarifa_kwh": 943.0,
         "capacidad_paneles_kw": 15.0,

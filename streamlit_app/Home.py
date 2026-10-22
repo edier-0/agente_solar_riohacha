@@ -40,7 +40,7 @@ render_hero(
     "Agente Solar Inteligente",
     "Monitorea consumo, produccion solar, alertas y recomendaciones con una experiencia mas clara y menos cargada.",
     icon="sun",
-    eyebrow="Riohacha · gestion energetica asistida",
+    eyebrow="Fonseca · gestion energetica asistida",
     tone="brand",
 )
 
@@ -113,10 +113,10 @@ if not is_authenticated():
                 
                 if perfil == "Hogar / Persona Natural (Comunidad)":
                     nombre_empresa = st.text_input("Nombre de tu Hogar / Familia", placeholder="Familia Pérez Losada", help="Escribe un identificador para tu casa.", key="reg_nombre_empresa")
-                    tarifa = st.number_input("Tarifa de energía (COP/kWh)", min_value=100.0, max_value=5000.0, value=943.0, step=10.0, key="reg_tarifa", help="Busca en tu recibo de luz el costo por kWh (en Riohacha ronda los $943 COP).")
+                    tarifa = st.number_input("Tarifa de energía (COP/kWh)", min_value=100.0, max_value=5000.0, value=943.0, step=10.0, key="reg_tarifa", help="Busca en tu recibo de luz el costo por kWh (en Fonseca ronda los $943 COP).")
                     tipo_empresa = "hogar"
                 else:
-                    nombre_empresa = st.text_input("Nombre de la empresa", placeholder="Hielera Riohacha o Minimarket", help="Escribe el nombre comercial de tu negocio.", key="reg_nombre_empresa")
+                    nombre_empresa = st.text_input("Nombre de la empresa", placeholder="Hielera Fonseca o Minimarket", help="Escribe el nombre comercial de tu negocio.", key="reg_nombre_empresa")
                     tarifa = st.number_input("Tarifa comercial (COP/kWh)", min_value=100.0, max_value=5000.0, value=943.0, step=10.0, key="reg_tarifa")
                     tipo_empresa = st.selectbox(
                         "Giro / Tipo Comercial",

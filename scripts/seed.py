@@ -38,13 +38,13 @@ def seed() -> None:
     persistir_sinteticos = os.getenv("SEED_PERSIST_SYNTHETIC", "0").strip().lower() in ("1", "true", "yes")
 
     try:
-        empresa = db.query(Empresa).filter(Empresa.nombre == "Hotel Solar Riohacha").first()
+        empresa = db.query(Empresa).filter(Empresa.nombre.in_(["Hotel Solar Fonseca", "Hotel Solar Riohacha"])).first()
         if not empresa:
             empresa = Empresa(
-                nombre="Hotel Solar Riohacha",
+                nombre="Hotel Solar Fonseca",
                 tipo="hotel",
-                direccion="Av. La Marina #5-15, Riohacha",
-                ciudad="Riohacha",
+                direccion="Calle 13 #18-40, Fonseca",
+                ciudad="Fonseca",
                 departamento="La Guajira",
                 tarifa_kwh=943.0,
                 capacidad_paneles_kw=15.0,
@@ -55,6 +55,14 @@ def seed() -> None:
             db.commit()
             db.refresh(empresa)
             print(f"[OK] Empresa demo creada: {empresa.nombre} (ID {empresa.id})")
+        else:
+            if empresa.ciudad != "Fonseca" or empresa.nombre == "Hotel Solar Riohacha":
+                empresa.nombre = "Hotel Solar Fonseca"
+                empresa.ciudad = "Fonseca"
+                empresa.direccion = "Calle 13 #18-40, Fonseca"
+                db.commit()
+                db.refresh(empresa)
+                print(f"[OK] Empresa demo actualizada a: {empresa.nombre} (Ciudad: {empresa.ciudad})")
 
             config = ConfiguracionAlerta(
                 empresa_id=empresa.id,
@@ -64,8 +72,6 @@ def seed() -> None:
             )
             db.add(config)
             db.commit()
-        else:
-            print(f"[SKIP] Empresa demo ya existe (ID {empresa.id})")
 
         usuarios_demo = [
             {
@@ -112,62 +118,70 @@ def seed() -> None:
                 print(f"[SKIP] Usuario ya existe: {u_data['email']}")
 
         if persistir_sinteticos:
-            consumo_count = (
-                db.query(ConsumoEnergetico)
-                .filter(ConsumoEnergetico.empresa_id == empresa.id)
-                .count()
-            )
-            if consumo_count == 0:
-                print("[INFO] Cargando datos sinteticos de consumo desde JSON...")
-                consumo_file = Path(__file__).parent / "demo_data" / "consumo_demo.json"
-                if consumo_file.exists():
-                    consumo_data = json.loads(consumo_file.read_text(encoding="utf-8"))
-                    for row in consumo_data:
-                        consumo = ConsumoEnergetico(
-                            empresa_id=empresa.id,
-                            fecha=datetime.fromisoformat(row["fecha"]),
-                            consumo_kwh=row["consumo_kwh"],
-                            costo_cop=row["costo_cop"],
-                            demanda_pico_kw=row["demanda_pico_kw"],
-                            produccion_solar_kwh=row["produccion_solar_kwh"],
-                            nivel_bateria_pct=row["nivel_bateria_pct"],
-                            periodo=row.get("periodo", "diario"),
-                            escenario=row.get("escenario", "demo"),
-                            origen_dato="json_demo",
-                            confiabilidad=row.get("confiabilidad", 35.0),
-                        )
-                        db.add(consumo)
-                    db.commit()
-                    print(f"[OK] {len(consumo_data)} registros de consumo cargados")
-                else:
-                    print(f"[WARN] Archivo no encontrado: {consumo_file}")
+            # Eliminar registros sinteticos previos para asegurar sincronizacion con fechas actuales
+            eliminados_c = db.query(ConsumoEnergetico).filter(
+                ConsumoEnergetico.empresa_id == empresa.id,
+                ConsumoEnergetico.origen_dato == "json_demo"
+            ).delete()
+            db.commit()
+            if eliminados_c > 0:
+                print(f"[INFO] Registros anteriores de consumo sintético eliminados: {eliminados_c}")
 
-            rad_count = db.query(RadiacionSolar).count()
-            if rad_count == 0:
-                print("[INFO] Cargando datos sinteticos de radiacion solar desde JSON...")
-                radiacion_file = Path(__file__).parent / "demo_data" / "radiacion_demo.json"
-                if radiacion_file.exists():
-                    radiacion_data = json.loads(radiacion_file.read_text(encoding="utf-8"))
-                    for row in radiacion_data:
-                        rad = RadiacionSolar(
-                            fecha=datetime.fromisoformat(row["fecha"]),
-                            ghi=row["ghi"],
-                            dni=row["dni"],
-                            dhi=row["dhi"],
-                            temperatura=row["temperatura"],
-                            nubosidad=row["nubosidad"],
-                            fuente=row.get("fuente", "synthetic"),
-                            escenario=row.get("escenario", "demo"),
-                            origen_dato="json_demo",
-                            confiabilidad=row.get("confiabilidad", 35.0),
-                            latitud=row.get("latitud", 11.5444),
-                            longitud=row.get("longitud", -72.9072),
-                        )
-                        db.add(rad)
-                    db.commit()
-                    print(f"[OK] {len(radiacion_data)} registros de radiacion cargados")
-                else:
-                    print(f"[WARN] Archivo no encontrado: {radiacion_file}")
+            print("[INFO] Cargando datos sinteticos de consumo desde JSON...")
+            consumo_file = Path(__file__).parent / "demo_data" / "consumo_demo.json"
+            if consumo_file.exists():
+                consumo_data = json.loads(consumo_file.read_text(encoding="utf-8"))
+                for row in consumo_data:
+                    consumo = ConsumoEnergetico(
+                        empresa_id=empresa.id,
+                        fecha=datetime.fromisoformat(row["fecha"]),
+                        consumo_kwh=row["consumo_kwh"],
+                        costo_cop=row["costo_cop"],
+                        demanda_pico_kw=row["demanda_pico_kw"],
+                        produccion_solar_kwh=row["produccion_solar_kwh"],
+                        nivel_bateria_pct=row["nivel_bateria_pct"],
+                        periodo=row.get("periodo", "diario"),
+                        escenario=row.get("escenario", "demo"),
+                        origen_dato="json_demo",
+                        confiabilidad=row.get("confiabilidad", 35.0),
+                    )
+                    db.add(consumo)
+                db.commit()
+                print(f"[OK] {len(consumo_data)} registros de consumo cargados")
+            else:
+                print(f"[WARN] Archivo no encontrado: {consumo_file}")
+
+            eliminados_r = db.query(RadiacionSolar).filter(
+                RadiacionSolar.origen_dato == "json_demo"
+            ).delete()
+            db.commit()
+            if eliminados_r > 0:
+                print(f"[INFO] Registros anteriores de radiación sintética eliminados: {eliminados_r}")
+
+            print("[INFO] Cargando datos sinteticos de radiacion solar desde JSON...")
+            radiacion_file = Path(__file__).parent / "demo_data" / "radiacion_demo.json"
+            if radiacion_file.exists():
+                radiacion_data = json.loads(radiacion_file.read_text(encoding="utf-8"))
+                for row in radiacion_data:
+                    rad = RadiacionSolar(
+                        fecha=datetime.fromisoformat(row["fecha"]),
+                        ghi=row["ghi"],
+                        dni=row["dni"],
+                        dhi=row["dhi"],
+                        temperatura=row["temperatura"],
+                        nubosidad=row["nubosidad"],
+                        fuente=row.get("fuente", "synthetic"),
+                        escenario=row.get("escenario", "demo"),
+                        origen_dato="json_demo",
+                        confiabilidad=row.get("confiabilidad", 35.0),
+                        latitud=row.get("latitud", 10.8858),
+                        longitud=row.get("longitud", -72.8481),
+                    )
+                    db.add(rad)
+                db.commit()
+                print(f"[OK] {len(radiacion_data)} registros de radiacion cargados")
+            else:
+                print(f"[WARN] Archivo no encontrado: {radiacion_file}")
         else:
             print("[INFO] Seed sin series sinteticas en BD (SEED_PERSIST_SYNTHETIC=0).")
 

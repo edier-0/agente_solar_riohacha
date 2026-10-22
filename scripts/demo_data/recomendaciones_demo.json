@@ -1,67 +1,67 @@
 [
   {
-    "id": 1779765110,
+    "id": 1792424394,
     "empresa_id": 1,
-    "texto": "Implementa un sistema de gesti\u00f3n de energ\u00eda para programar el uso de equipos de alto consumo (aires acondicionados, calentadores de agua) durante las horas de m\u00e1xima radiaci\u00f3n solar (10 AM - 3 PM) para reducir la demanda pico y el costo en un estimado de 15%.",
+    "texto": "Programe el pre-enfriamiento de las habitaciones vac\u00edas con aire acondicionado entre las 11:00 y las 14:00 horas, aprovechando el pico de radiaci\u00f3n solar para reducir la demanda m\u00e1xima.",
     "tipo": "redistribucion",
-    "impacto_estimado_cop": 888550.0,
+    "impacto_estimado_cop": 1450000.0,
     "confianza_pct": 90.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
     "aplicada": false,
-    "created_at": "2026-05-26T03:11:50"
+    "created_at": "2026-10-19T15:39:54"
   },
   {
-    "id": 1779765111,
+    "id": 1792424395,
     "empresa_id": 1,
-    "texto": "Realiza limpieza de paneles solares semanalmente, especialmente entre las 7 AM y 9 AM, para mitigar la p\u00e9rdida de eficiencia por polvo y arena, incrementando la producci\u00f3n solar hasta en un 10% y ahorrando aproximadamente 660.000 COP/mes.",
-    "tipo": "mantenimiento",
-    "impacto_estimado_cop": 660000.0,
-    "confianza_pct": 95.0,
-    "escenario": "demo",
-    "origen_dato": "json_demo",
-    "confiabilidad_datos": 55.0,
-    "aplicada": false,
-    "created_at": "2026-05-26T03:11:50"
-  },
-  {
-    "id": 1779765112,
-    "empresa_id": 1,
-    "texto": "Invierte en iluminaci\u00f3n LED de bajo consumo para \u00e1reas comunes y habitaciones, programando su apagado autom\u00e1tico entre las 12 AM y 6 AM, lo que podr\u00eda reducir el consumo energ\u00e9tico en un 5% y generar un ahorro mensual de 314.000 COP.",
+    "texto": "Instale variadores de frecuencia en las bombas de la piscina para operar a menor capacidad de 13:00 a 16:00, ahorrando hasta un 30% en su consumo el\u00e9ctrico diario.",
     "tipo": "ahorro",
-    "impacto_estimado_cop": 314000.0,
+    "impacto_estimado_cop": 2100000.0,
     "confianza_pct": 88.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
     "aplicada": false,
-    "created_at": "2026-05-26T03:11:50"
+    "created_at": "2026-10-19T15:39:54"
   },
   {
-    "id": 1779765113,
+    "id": 1792424396,
     "empresa_id": 1,
-    "texto": "Considera la instalaci\u00f3n de un sistema de almacenamiento de energ\u00eda (bater\u00edas) para utilizar la energ\u00eda solar generada durante el d\u00eda en horas pico o durante apagones, reduciendo la dependencia de la red y el costo de energ\u00eda en un 20% con un retorno de inversi\u00f3n estimado a 5 a\u00f1os.",
-    "tipo": "ahorro",
-    "impacto_estimado_cop": 1777100.0,
+    "texto": "Realice lavado en seco de los paneles solares cada 15 d\u00edas antes de las 07:00 horas para mitigar la p\u00e9rdida de eficiencia del 12% causada por el polvo y la arena del desierto guajiro.",
+    "tipo": "mantenimiento",
+    "impacto_estimado_cop": 1800000.0,
+    "confianza_pct": 92.0,
+    "escenario": "demo",
+    "origen_dato": "json_demo",
+    "confiabilidad_datos": 55.0,
+    "aplicada": false,
+    "created_at": "2026-10-19T15:39:54"
+  },
+  {
+    "id": 1792424397,
+    "empresa_id": 1,
+    "texto": "Configure el sistema de respaldo con bater\u00edas para asumir las cargas cr\u00edticas autom\u00e1ticamente durante los frecuentes apagones locales, evitando da\u00f1os en equipos de refrigeraci\u00f3n y penalizaciones por picos.",
+    "tipo": "contingencia",
+    "impacto_estimado_cop": 1200000.0,
     "confianza_pct": 85.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
     "aplicada": false,
-    "created_at": "2026-05-26T03:11:50"
+    "created_at": "2026-10-19T15:39:54"
   },
   {
-    "id": 1779765114,
+    "id": 1792424398,
     "empresa_id": 1,
-    "texto": "Establece un protocolo de apagado de equipos no esenciales (se\u00f1alizaci\u00f3n, decoraci\u00f3n) durante las horas de menor ocupaci\u00f3n (11 PM - 7 AM) para disminuir la demanda base y el gasto energ\u00e9tico en un 3%, resultando en un ahorro de aproximadamente 188.000 COP mensuales.",
+    "texto": "Reemplace la iluminaci\u00f3n hal\u00f3gena y fluorescente de \u00e1reas comunes por tecnolog\u00eda LED y sensores de presencia, operando con mayor intensidad entre las 18:00 y las 22:00 horas.",
     "tipo": "ahorro",
-    "impacto_estimado_cop": 188000.0,
-    "confianza_pct": 87.0,
+    "impacto_estimado_cop": 950000.0,
+    "confianza_pct": 95.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
     "aplicada": false,
-    "created_at": "2026-05-26T03:11:50"
+    "created_at": "2026-10-19T15:39:54"
   }
 ]

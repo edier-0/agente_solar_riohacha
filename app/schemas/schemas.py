@@ -61,7 +61,7 @@ class EmpresaCreate(BaseModel):
     nombre: str
     tipo: Optional[str] = None
     direccion: Optional[str] = None
-    ciudad: str = "Riohacha"
+    ciudad: str = "Fonseca"
     departamento: str = "La Guajira"
     tarifa_kwh: float = 943.0
     capacidad_paneles_kw: float = 0.0

@@ -156,7 +156,7 @@ with tab_alertas:
         st.info("Sin alertas tecnicas activas.")
 
 with tab_config:
-    st.info("💡 **Modelo Híbrido Inteligente Activo**: Por defecto, los valores estándar (500 kWh, 20% batería, 2.0 radiación) le indican al supervisor que **calcule automáticamente y adapte dinámicamente los umbrales** basados en tus promedios históricos y en el pronóstico meteorológico de Riohacha. Si configuras un valor diferente, este actuará como una **anulación manual (override)**.")
+    st.info("💡 **Modelo Híbrido Inteligente Activo**: Por defecto, los valores estándar (500 kWh, 20% batería, 2.0 radiación) le indican al supervisor que **calcule automáticamente y adapte dinámicamente los umbrales** basados en tus promedios históricos y en el pronóstico meteorológico de Fonseca. Si configuras un valor diferente, este actuará como una **anulación manual (override)**.")
     config = api_get(f"/alertas/config/{empresa_id}")
     if config:
         with st.form("config_alertas"):

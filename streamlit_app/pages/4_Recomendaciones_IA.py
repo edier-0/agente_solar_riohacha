@@ -95,7 +95,7 @@ st.markdown("""
     <div class="advisor-banner__icon">🧠</div>
     <div class="advisor-banner__text">
         <div class="advisor-banner__title">Copiloto de Ahorro y Eficiencia IA Activo</div>
-        Nuestra inteligencia artificial analiza proactivamente el perfil de tu empresa, tu telemetría de consumo de red y el pronóstico de radiación solar en Riohacha para generar sugerencias accionables de ahorro. No requieres solicitar recomendaciones de forma manual.
+        Nuestra inteligencia artificial analiza proactivamente el perfil de tu empresa, tu telemetría de consumo de red y el pronóstico de radiación solar en Fonseca para generar sugerencias accionables de ahorro. No requieres solicitar recomendaciones de forma manual.
     </div>
 </div>
 """, unsafe_allow_html=True)

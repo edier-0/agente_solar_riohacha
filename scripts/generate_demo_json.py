@@ -92,8 +92,8 @@ def build_radiacion(days_past: int = 60, days_future: int = 20) -> list[dict]:
                 "escenario": "demo",
                 "origen_dato": "json_demo",
                 "confiabilidad": 35.0,
-                "latitud": 11.5444,
-                "longitud": -72.9072,
+                "latitud": 10.8858,
+                "longitud": -72.8481,
             }
         )
     
@@ -113,8 +113,8 @@ def build_radiacion(days_past: int = 60, days_future: int = 20) -> list[dict]:
                 "escenario": "demo",
                 "origen_dato": "json_demo",
                 "confiabilidad": 35.0,
-                "latitud": 11.5444,
-                "longitud": -72.9072,
+                "latitud": 10.8858,
+                "longitud": -72.8481,
             }
         )
     return rows
@@ -131,9 +131,12 @@ def main() -> None:
     (OUT_DIR / "radiacion_demo.json").write_text(
         json.dumps(radiacion, ensure_ascii=True, indent=2), encoding="utf-8"
     )
+    (OUT_DIR / "predicciones_demo.json").write_text("[]", encoding="utf-8")
+    (OUT_DIR / "alertas_demo.json").write_text("[]", encoding="utf-8")
+    (OUT_DIR / "recomendaciones_demo.json").write_text("[]", encoding="utf-8")
     manifest = {
         "generated_at": datetime.now().isoformat(),
-        "files": ["consumo_demo.json", "radiacion_demo.json"],
+        "files": ["consumo_demo.json", "radiacion_demo.json", "predicciones_demo.json", "alertas_demo.json", "recomendaciones_demo.json"],
         "records": {
             "consumo_demo": len(consumo),
             "radiacion_demo": len(radiacion),
@@ -145,6 +148,7 @@ def main() -> None:
     print(f"[OK] JSON demo generado en: {OUT_DIR}")
     print(f"  - Consumo: {len(consumo)} registros (60 días pasados + 20 futuros)")
     print(f"  - Radiación: {len(radiacion)} registros (60 días pasados + 20 futuros)")
+    print("  - Predicciones, alertas y recomendaciones reiniciadas para regeneración dinámica.")
 
 
 if __name__ == "__main__":
