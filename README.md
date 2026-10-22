@@ -388,7 +388,8 @@ Para garantizar la mantenibilidad, trazabilidad y estándares éticos en el desa
 * 🏛️ **Registro de Decisiones (ADR):** [docs/memory/decisions.md](docs/memory/decisions.md) — Histórico de elecciones arquitectónicas.
 * 📐 **Patrones del Sistema:** [docs/memory/system-patterns.md](docs/memory/system-patterns.md) — Cálculos tarifarios y orquestación de baterías.
 * 📜 **Constitución del Sistema:** [docs/constitution.md](docs/constitution.md) — Principios éticos, resiliencia energética comunitaria y protección de baterías.
-* 📄 **Licencia:** [LICENSE](LICENSE) — Licencia MIT permisiva (2026, Edier Robles).
+* 👥 **Equipo de Desarrollo:** [AUTHORS.md](AUTHORS.md) — Code Masters (Edier Robles, Igmar Lozada, Neider Gonsalez, Andres Mora).
+* 📄 **Licencia:** [LICENSE](LICENSE) — Licencia MIT permisiva (2026, Code Masters).
 
 ---
 
