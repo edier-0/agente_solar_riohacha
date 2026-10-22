@@ -1,28 +1,25 @@
-# 🧠 Memoria del Proyecto: Agente Solar
+# MEMORY.md — Agente Solar Riohacha / Fonseca
+Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo que ya no aporte.
 
-Contexto persistente, estado del sistema y mapa de conocimiento.
+## Estado actual
+- Plataforma operativa con FastAPI (8000), Streamlit (8501) y Docker Compose.
+- Datos y modelos migrados a Fonseca y Riohacha (La Guajira), radiación pico ~5.85 kWh/m²/día.
+- Motor dual activo: Google GenAI (`gemini-2.5/3.5-flash-lite`) + fallback heurístico local.
+- Perfiles adaptativos funcionando: Residencial (hogar/comunidad) y Comercial (PYME).
+- Rama base de desarrollo: `develop`. Rama actual: `feature/agent-rules-memory-constitution`.
 
-## 1. Resumen del Sistema
-- **Nombre**: Agente Solar Riohacha / Fonseca (La Guajira).
-- **Propósito**: Copiloto de energía limpia, ahorro tarifario y resiliencia a apagones.
-- **Stack**: FastAPI, Streamlit, SQLAlchemy, MySQL/Docker, Google GenAI.
+## Decisiones (y por qué)
+- **Motor dual IA + Heurística**: Asegurar operación continua offline durante cortes o sin API Key.
+- **Flujo Git estricto por ramas**: Evitar tocar `develop`/`main` directo y esperar orden para PRs.
+- **Desacoplamiento FastAPI/Streamlit**: Permite escalar API y frontend de forma independiente.
+- **Regla <= 50 líneas**: Modularizar detalles en [docs/memory/decisions.md](file:///docs/memory/decisions.md) y [docs/memory/system-patterns.md](file:///docs/memory/system-patterns.md).
 
-## 2. Estado Actual y Contexto Activo
-- **Ubicación clave**: Fonseca y Riohacha (La Guajira, Colombia).
-- **Tarifa referencial**: ~$943 COP/kWh (Air-E). Radiación pico: 5.8 - 7.0 kWh/m²/día.
-- **Doble perfil de usuario**: Residencial (comunitario/hogar) y Comercial (PYME).
-- **Rama base de desarrollo**: `develop` (features se integran aquí previa orden).
-- **Rama de producción**: `main`.
+## Aprendizajes y errores a evitar
+- No hardcodear `GEMINI_API_KEY` ni asumir conexión permanente a internet en La Guajira.
+- Tarifa real de Air-E es ~$943 COP/kWh; nunca inventar métricas de ahorro sin sustento.
+- Proteger profundidad de descarga en baterías (DoD) para no acortar su vida útil.
 
-## 3. Servicios y Puertos
-- Backend API: `http://localhost:8000` (Swagger: `/docs`).
-- Frontend Streamlit: `http://localhost:8501`.
-- Base de datos: MySQL 8.0 en Docker (`3306`) o SQLite local de respaldo.
-
-## 4. Extensiones de Memoria
-- [docs/memory/decisions.md](file:///docs/memory/decisions.md): Registro de decisiones (ADR y hitos).
-- [docs/memory/system-patterns.md](file:///docs/memory/system-patterns.md): Patrones de arquitectura y cálculos solares.
-
-## 5. Regla de Mantenimiento
-- Actualizar este índice o sus extensiones al introducir cambios de fondo.
-- Ningún archivo de memoria debe superar **50 líneas**.
+## Próximos pasos
+- Afinar calibración del orquestador autónomo de baterías ante simulaciones de apagón.
+- Robustecer suite de tests unitarios y de integración para endpoints clave.
+- Esperar orden del usuario para definir rama destino de PR de esta feature.

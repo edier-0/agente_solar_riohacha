@@ -1,30 +1,33 @@
-# ☀️ Agente Solar - Directrices para Agentes
+# AGENTS.md — Agente Solar Riohacha / Fonseca
+Copiloto de energía limpia con IA para mitigar la asfixia tarifaria ($943 COP/kWh) y dar resiliencia ante apagones a hogares y PYMEs en La Guajira.
 
-Guía operativa para agentes de IA que colaboren en este repositorio.
+## Stack y estructura
+- FastAPI (Python 3.11+), Streamlit (`streamlit_app/`), MySQL 8.0 / SQLite, Google GenAI SDK.
+- `app/api/`: endpoints REST; `app/services/`: cálculo solar y Gemini; `docs/`: constitución y memoria.
 
-## 1. Identidad y Misión
-- Proyecto: **Agente Solar Riohacha / Fonseca** (La Guajira, Colombia).
-- Objetivo: Copiloto energético con FastAPI, Streamlit, Gemini y Docker.
-- Prioridad: Resiliencia ante apagones, honestidad tarifaria y código robusto.
+## Comandos
+- Iniciar API: `uvicorn app.main:app --reload --port 8000` | Frontend: `streamlit run streamlit_app/Home.py`
+- Docker: `docker-compose up -d --build` | Tests: `pytest`
 
-## 2. Flujo de Trabajo Git Obligatorio
-- **Nunca trabajar directo en `main` o `develop`**.
-- Crear una rama específica por tarea (`feature/*`, `fix/*`, `chore/*`).
-- Realizar **commits atómicos** con Conventional Commits (`feat:`, `fix:`, etc.).
-- **Protocolo de PR**: NO abrir PR ni hacer merge de forma autónoma.
-  Esperar siempre la orden explícita del usuario indicando la rama destino.
-- Detalles: [.agents/rules/git-workflow.md](file:///.agents/rules/git-workflow.md).
+## Convenciones y Flujo Git
+- Rama por tarea (`feature/*`, `fix/*`), commits atómicos y PR **solo bajo orden del usuario**.
+- Reglas modulares: [.agents/rules/git-workflow.md](file:///.agents/rules/git-workflow.md) y [.agents/rules/code-standards.md](file:///.agents/rules/code-standards.md).
 
-## 3. Estándares Técnicos
-- Backend: FastAPI, SQLAlchemy 2.0, Pydantic v2, Python 3.11+.
-- Frontend: Streamlit modular (`streamlit_app/pages/`).
-- IA: Google GenAI SDK (`google-genai`), modelo Gemini 2.5/3.5 Flash Lite.
-- Detalles: [.agents/rules/code-standards.md](file:///.agents/rules/code-standards.md).
+## Reglas de dominio / trampas conocidas
+- Tarifa base $943 COP/kWh (Air-E). Siempre proveer fallback heurístico si no hay `GEMINI_API_KEY`.
+- Diferenciar vista Residencial (simple) de Comercial (ROI técnico). Baterías: reserva mínima 30-40%.
 
-## 4. Memoria y Constitución
-- Consulta el contexto acumulado en [MEMORY.md](file:///MEMORY.md).
-- Acata los principios éticos en [docs/constitution.md](file:///docs/constitution.md).
+## Forma de trabajar
+- Planificar antes de tocar más de 2 archivos. Cambios incrementales y commits atómicos con Conventional Commits.
 
-## 5. Regla de Brevedad Documental
-- Ningún archivo de reglas o memoria debe superar **50 líneas**.
-- Modularizar en extensiones si se requiere mayor profundidad.
+## Memoria
+- Al empezar, lee [MEMORY.md](file:///MEMORY.md). Al terminar, actualízalo con estado, decisiones y aprendizajes.
+- Mantenerlo breve (<= 50 líneas). Nunca guardar claves, tokens ni datos personales.
+
+## Límites
+- ✅ Siempre: actualizar [MEMORY.md](file:///MEMORY.md), crear rama por tarea y hacer commits atómicos.
+- ⚠️ Pregunta antes: nuevas dependencias, cambios en esquemas de BD o apertura de PR.
+- 🚫 Nunca: hacer commit directo a `main`/`develop`, ni alterar cálculos de ahorro con datos irreales.
+
+## Verificación
+- Validar sintaxis y tests locales (`pytest`), comprobar endpoints y verificar visualmente en Streamlit.
