@@ -1,8 +1,16 @@
-# ☀️ Agente Solar Riohacha
+# ☀️ Agente Solar Riohacha / Fonseca
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](requirements.txt)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com)
+[![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B.svg)](https://streamlit.io)
+[![Gemini](https://img.shields.io/badge/IA-Gemini%203.5%20Flash%20Lite-8E75B2.svg)](https://ai.google.dev/)
+[![Location](https://img.shields.io/badge/Regi%C3%B3n-Fonseca%20%26%20Riohacha%2C%20La%20Guajira-orange.svg)](#)
 
 > **Copiloto con Inteligencia Artificial y Datos Abiertos para la Democratización de la Energía Limpia y Resiliencia ante Apagones en La Guajira**
 
-Desarrollado bajo la rúbrica y criterios de evaluación de la **Hackathon Regional La Guajira (MinTIC · Colombia 5.0)**, **Agente Solar Riohacha** es una plataforma de software relacional, dockerizada e interactiva, diseñada para solventar la paradoja energética del norte de Colombia mediante analítica avanzada de radiación, orquestación autónoma de almacenamiento y una capa dual de recomendaciones por Inteligencia Artificial (Gemini + Heurística).
+Desarrollado bajo la rúbrica y criterios de evaluación de la **Hackathon Regional La Guajira (MinTIC · Colombia 5.0)**, **Agente Solar Riohacha / Fonseca** es una plataforma de software relacional, dockerizada e interactiva, diseñada para solventar la paradoja energética del norte de Colombia mediante analítica avanzada de radiación, orquestación autónoma de almacenamiento y una capa dual de recomendaciones por Inteligencia Artificial (Gemini 3.5 + Heurística).
+
 
 ---
 
@@ -17,9 +25,9 @@ Sin embargo, sus habitantes y comercios sufren una cruda paradoja energética:
 
 ---
 
-## ⚡ 2. La Solución Propuesta: Agente Solar Riohacha
+## ⚡ 2. La Solución Propuesta: Agente Solar Riohacha / Fonseca
 
-**Agente Solar** actúa como un copiloto energético inteligente y dinámico. Mediante la integración automática de datos climáticos abiertos en tiempo real y el uso de modelos de lenguaje avanzados (**Gemini 2.5 Flash Lite**), el sistema traduce métricas de ingeniería complejas en decisiones financieras y hábitos operativos sencillos para cualquier ciudadano.
+**Agente Solar** actúa como un copiloto energético inteligente y dinámico. Mediante la integración automática de datos climáticos abiertos en tiempo real y el uso de modelos de lenguaje avanzados (**Gemini 3.5 Flash Lite**), el sistema traduce métricas de ingeniería complejas en decisiones financieras y hábitos operativos sencillos para cualquier ciudadano.
 
 ### 🌟 Los 4 Pilares de Valor de la Plataforma
 1. **Mitigación Directa de Tarifas:** Proyecciones y simulaciones financieras 100% transparentes e ingresadas a partir del recibo real de Air-E del usuario en Riohacha, eliminando estimaciones ficticias de estratos.
@@ -76,7 +84,7 @@ graph TD
     end
 
     subgraph Motores_Externos [Capa de Datos Climáticos e Inteligencia Artificial]
-        AgRecomendador -->|Orquestación Asíncrona| Gemini[🧠 Google Gemini-2.5-Flash-Lite]
+        AgRecomendador -->|Orquestación Asíncrona| Gemini[🧠 Google Gemini-3.5-Flash-Lite]
         AgPrediccion -->|Pronóstico 24-72h| OpenMeteo[☁️ Open-Meteo API]
         AgPrediccion -->|Validación Cruzada| OpenWeather[🌦️ OpenWeather API]
         AgAlertas -->|Monitoreo de Lluvias/Viento| OpenMeteo
@@ -212,7 +220,7 @@ La brisa marina seca y los vientos alisios de La Guajira acumulan grandes capas 
 
 ### D. Capa Dual de Recomendaciones (Estabilidad sin Conexión)
 Dado que La Guajira experimenta cortes de red y DNS constantes, la arquitectura del software está diseñada de forma defensiva frente a fallas de infraestructura:
-* **Capa Principal:** Realiza la consulta asíncrona mediante un hilo no bloqueante (`run_in_executor`) hacia el modelo de lenguaje **Gemini 2.5 Flash Lite** de Google, logrando respuestas personalizadas en tiempo real.
+* **Capa Principal:** Realiza la consulta asíncrona mediante un hilo no bloqueante (`run_in_executor`) hacia el modelo de lenguaje **Gemini 3.5 Flash Lite** de Google, logrando respuestas personalizadas en tiempo real.
 * **Capa de Contingencia:** En caso de fallas de DNS, latencias extremas o límites de cuota (`429 Resource Exhausted`), un **Motor Heurístico Local basado en Reglas** asume el control del backend de forma no bloqueante. Este motor procesa los datos reales de radiación, consumo y apagones del usuario y redacta automáticamente una narrativa fluida, semaforizada e informativa sumamente coherente, logrando que el sistema **nunca** falle ante el jurado o el usuario final.
 
 ### E. Sistema de Monitoreo de Alertas Dinámico y Proactivo
@@ -290,6 +298,8 @@ Este script creará:
 
 ```
 .
+├── .agents/                      # Convenciones y reglas del agente
+│   └── rules/                    # Flujo Git y estándares de código
 ├── app/                          # Backend FastAPI
 │   ├── main.py                   # Entrada de la API e inicio del lifespan
 │   ├── core/                     # Seguridad, JWT y configuración general
@@ -311,6 +321,10 @@ Este script creará:
 │           ├── agente_prediccion.py # Proyecciones financieras a futuro
 │           ├── agente_alertas.py  # Disparador relacional de alertas semafóricas
 │           └── agente_recomendaciones.py # Recomendador adaptativo por perfil (Gemini + Reglas)
+├── docs/                         # Documentación de gobernanza y memoria técnica
+│   ├── constitution/             # Principios y seguridad operativa
+│   ├── memory/                   # Decisiones (ADR) y patrones de dominio
+│   └── constitution.md           # Constitución suprema del proyecto
 ├── streamlit_app/                # Frontend en Streamlit
 │   ├── Home.py                   # Landing page, Login y Registro adaptativo de usuarios
 │   ├── api_client.py             # Cliente HTTP REST centralizado con control de sesiones
@@ -318,7 +332,7 @@ Este script creará:
 │       ├── 0_Mi_Dia.py           # Vista ejecutiva compacta y resumen diario (LLM/Heurístico) con héroe expandible
 │       ├── 1_Dashboard.py        # Detalles técnicos de telemetría y gráficos interactivos de consumo
 │       ├── 2_Consumo.py          # Registro, consulta e importación de consumos y costos de Air-E
-│       ├── 3_Datos_Solares.py    # Historial de radiación local de Riohacha e integración climática
+│       ├── 3_Datos_Solares.py    # Historial de radiación local e integración climática
 │       ├── 4_Recomendaciones_IA.py # Recomendador adaptativo y aplicación de acciones de ahorro
 │       ├── 5_Alertas.py          # Monitoreo de alertas críticas y severas del sistema
 │       ├── 6_Predicciones.py     # Panel predictivo y Simulador de Orquestación de Almacenamiento IA
@@ -327,6 +341,9 @@ Este script creará:
 ├── scripts/
 │   ├── seed.py                   # Seed de datos demostrativos relacionales
 │   └── init_db.sql               # Inicialización nativa de tablas MySQL
+├── AGENTS.md                     # Guía operativa para agentes de IA
+├── MEMORY.md                     # Contexto persistente del sistema entre sesiones
+├── LICENSE                       # Licencia MIT oficial (2026, Edier Robles)
 ├── docker-compose.yml            # Orquestador del stack multicontenedor de Docker
 ├── Dockerfile.api                # Construcción de la imagen del backend de FastAPI
 └── Dockerfile.streamlit          # Construcción de la imagen del frontend de Streamlit
@@ -353,15 +370,30 @@ Este script creará:
 
 ## 🌟 12. Viabilidad y Compromiso Regional
 
-**Agente Solar Riohacha** no es un mockup estático ni una presentación conceptual de diapositivas; es una **herramienta tecnológica 100% reproducible, consistente y operativa** diseñada específicamente para solventar las problemáticas reales de la región norte de Colombia:
+**Agente Solar Riohacha / Fonseca** no es un mockup estático ni una presentación conceptual de diapositivas; es una **herramienta tecnológica 100% reproducible, consistente y operativa** diseñada específicamente para solventar las problemáticas reales de la región norte de Colombia:
 * **Viabilidad Técnica:** Arquitectura relacional robusta en MySQL que maneja con eficiencia la inserción de datos históricos y pronósticos climáticos. Dispone de una suite integrada que exporta reportes ejecutivos e históricos en formatos PDF y Excel de alta fidelidad, listos para la toma de decisiones.
 * **Viabilidad de Negocio:** Reduce hasta en un **33% el costo directo de la factura de energía** para PYMEs comerciales y de cadena de frío mediante optimización horaria de equipos pesados, ciclado del banco de baterías en horas pico y autoconsumo solar, viabilizando el ROI de proyectos solares con estimaciones financieras reales.
-* **Viabilidad Social:** Democratiza y simplifica la comprensión de la transición energética en comunidades residenciales y hogares vulnerables de Riohacha a través de una interfaz adaptativa amable en su vocabulario, fomento del ahorro cooperativo familiar y alertas preventivas ante factores hostiles de la región (polvo del desierto y apagones recurrentes).
+* **Viabilidad Social:** Democratiza y simplifica la comprensión de la transición energética en comunidades residenciales y hogares vulnerables de Fonseca y Riohacha a través de una interfaz adaptativa amable en su vocabulario, fomento del ahorro cooperativo familiar y alertas preventivas ante factores hostiles de la región (polvo del desierto y apagones recurrentes).
 
 ---
 
-MIT — Proyecto Académico y de Desarrollo Sostenible para la **Hackathon Regional La Guajira 2026**.
+## 📜 13. Gobernanza, Directrices de Agentes y Licencia
 
-📍 **Riohacha, La Guajira — Colombia**  
+Para garantizar la mantenibilidad, trazabilidad y estándares éticos en el desarrollo asistido por IA, el repositorio cuenta con un marco normativo modular:
+
+* 🤖 **Directrices para Agentes:** [AGENTS.md](AGENTS.md) — Reglas operativas, flujo de trabajo y convenciones de codificación.
+* 🌿 **Convención de Git:** [.agents/rules/git-workflow.md](.agents/rules/git-workflow.md) — Política estricta de ramas por tarea (`feature/*`), commits atómicos y PR condicionado a autorización.
+* 🛠️ **Estándares de Código:** [.agents/rules/code-standards.md](.agents/rules/code-standards.md) — Buenas prácticas para FastAPI, Streamlit y Docker.
+* 🧠 **Memoria Técnica del Sistema:** [MEMORY.md](MEMORY.md) — Contexto persistente entre sesiones, estado de servicios y decisiones clave.
+* 🏛️ **Registro de Decisiones (ADR):** [docs/memory/decisions.md](docs/memory/decisions.md) — Histórico de elecciones arquitectónicas.
+* 📐 **Patrones del Sistema:** [docs/memory/system-patterns.md](docs/memory/system-patterns.md) — Cálculos tarifarios y orquestación de baterías.
+* 📜 **Constitución del Sistema:** [docs/constitution.md](docs/constitution.md) — Principios éticos, resiliencia energética comunitaria y protección de baterías.
+* 📄 **Licencia:** [LICENSE](LICENSE) — Licencia MIT permisiva (2026, Edier Robles).
+
+---
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) — Proyecto de Desarrollo Sostenible e Innovación Energética para La Guajira 2026.
+
+📍 **Fonseca y Riohacha, La Guajira — Colombia**  
 ☀️ *Democratizando el sol de la capital de la energía limpia colombiana.*
 
