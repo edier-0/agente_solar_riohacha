@@ -12,10 +12,11 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, get_current_user, is_authenticated
 from design import render_hero, render_section_header
+from ubicacion import CIUDAD
 from ui import render_user_sidebar
 
 
-st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="auto")
 render_user_sidebar()
 
 if not is_authenticated():
@@ -41,6 +42,18 @@ else:
 paneles_instalados = empresa_sel.get("capacidad_paneles_kw", 0.0) or 0.0
 es_simulado = (paneles_instalados == 0.0)
 simulated_capacity = 2.5 if empresa_sel.get("tipo") == "hogar" else 10.0
+PERFORMANCE_RATIO = 0.8  # pérdidas reales: temperatura, polvo, inversor y cableado
+sistema_sugerido = None
+if es_simulado:
+    # Tamaño calculado con la factura o los aparatos del usuario (si no hay datos, un sistema de referencia)
+    sistema_sugerido = api_get(f"/empresas/{empresa_id}/aparatos/dimensionamiento")
+    if sistema_sugerido and sistema_sugerido.get("kwp_sugerido"):
+        simulated_capacity = sistema_sugerido["kwp_sugerido"]
+BASE_SISTEMA = {
+    "factura": "calculado con tu consumo real",
+    "inventario": "calculado con los aparatos que registraste",
+    "referencia": "de referencia: registra tus aparatos o tu factura para ajustarlo",
+}
 
 render_hero(
     "Dashboard energetico",
@@ -54,8 +67,9 @@ render_hero(
 if es_simulado:
     st.info(
         f"💡 **Simulación Solar Activa:** Tu perfil no tiene paneles registrados en la base de datos. "
-        f"Simulamos el potencial de generación y ahorro para un sistema estándar recomendado de "
-        f"**{simulated_capacity} kWp** para tu consumo en Fonseca, utilizando radiación real."
+        f"Simulamos el potencial de generación y ahorro para un sistema de **{simulated_capacity} kWp** "
+        f"({BASE_SISTEMA.get((sistema_sugerido or {}).get('base'), BASE_SISTEMA['referencia'])}) en {CIUDAD}, "
+        "utilizando radiación real y descontando un 20% de pérdidas."
     )
 
 kpis = api_get(f"/consumo/kpis/{empresa_id}")
@@ -65,10 +79,14 @@ if kpis:
     # Cálculos para simulación
     tarifa = empresa_sel.get("tarifa_kwh", 943.0)
     ghi_hoy = kpis.get("radiacion_actual_kwh") if kpis.get("radiacion_actual_kwh") is not None else 5.5
-    prod_hoy_simulada = simulated_capacity * ghi_hoy
+    prod_hoy_simulada = simulated_capacity * ghi_hoy * PERFORMANCE_RATIO
     ahorro_hoy_simulado = prod_hoy_simulada * tarifa
     
-    prod_mes_simulada = simulated_capacity * 5.8 * 30
+    prod_mes_simulada = (
+        sistema_sugerido["produccion_mes_kwh"]
+        if sistema_sugerido and sistema_sugerido.get("produccion_mes_kwh")
+        else simulated_capacity * 5.0 * 30 * PERFORMANCE_RATIO
+    )
     ahorro_mes_simulado = prod_mes_simulada * tarifa
     
     cols = st.columns(4)
@@ -139,7 +157,7 @@ with tab_general:
                 return rad_map.get(d, 5.5)
             
             df_c["ghi_diaria"] = df_c["fecha"].apply(_get_ghi_simulada)
-            df_c["produccion_solar_simulada"] = df_c["ghi_diaria"] * simulated_capacity
+            df_c["produccion_solar_simulada"] = df_c["ghi_diaria"] * simulated_capacity * PERFORMANCE_RATIO
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=df_c["fecha"], y=df_c["consumo_kwh"], name="Consumo", mode="lines+markers", line=dict(color="#245C81", width=2)))

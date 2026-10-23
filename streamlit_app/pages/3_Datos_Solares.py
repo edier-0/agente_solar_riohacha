@@ -10,10 +10,11 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, api_post, is_authenticated
 from design import render_hero, render_section_header
+from ubicacion import CIUDAD, LAT, LON, NOMBRE
 from ui import render_user_sidebar
 
 
-st.set_page_config(page_title="Datos Solares", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Datos Solares", layout="wide", initial_sidebar_state="auto")
 render_user_sidebar()
 
 if not is_authenticated():
@@ -21,14 +22,14 @@ if not is_authenticated():
     st.stop()
 
 render_hero(
-    "Datos solares de Fonseca",
+    f"Datos solares de {CIUDAD}",
     "Open-Meteo como fuente principal, OpenWeather como complemento y PVGIS como linea base.",
     icon="sun",
-    eyebrow="Fonseca, La Guajira",
+    eyebrow=NOMBRE,
     tone="warning",
 )
 
-st.info("Ubicacion: 10.8858 N, 72.8481 W. Referencia historica de GHI: 5.5 a 7.0 kWh/m2/dia.")
+st.info(f"Ubicacion: {NOMBRE} ({LAT:.4f}, {LON:.4f}). La linea base de radiacion es el TMY de PVGIS.")
 
 render_section_header("Enlace con Fuentes Externas", "upload", "Consulta manual de satelites e inst. meteorologicos.")
 col_sync, col_sources = st.columns([1, 2])
@@ -46,7 +47,7 @@ with col_sync:
                     f"total: {data.get('total', 0)}."
                 )
                 st.rerun()
-    st.caption("Esta accion actualiza la tabla global de radiacion para Fonseca y funciona igual en demo o real.")
+    st.caption(f"Esta accion actualiza la tabla global de radiacion para {CIUDAD} y funciona igual en demo o real.")
 
 with col_sources:
     st.markdown(
@@ -59,7 +60,7 @@ with col_sources:
 tab_pvgis = st.tabs(["PVGIS"])
 
 with tab_pvgis[0]:
-    if st.button("Obtener TMY de Fonseca", key="pvgis_tmy"):
+    if st.button(f"Obtener TMY de {CIUDAD}", key="pvgis_tmy"):
         with st.spinner("Consultando PVGIS..."):
             tmy = api_get("/solar/pvgis/tmy")
             if tmy and tmy.get("disponible"):

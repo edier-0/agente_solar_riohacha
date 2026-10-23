@@ -8,10 +8,11 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, api_patch, api_post, get_current_user, is_authenticated
 from design import render_card, render_hero, render_section_header
+from ubicacion import CIUDAD
 from ui import render_user_sidebar
 
 
-st.set_page_config(page_title="Alertas", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Alertas", layout="wide", initial_sidebar_state="auto")
 render_user_sidebar()
 
 if not is_authenticated():
@@ -119,6 +120,9 @@ else:
         "bateria_baja": "battery",
         "baja_radiacion": "cloud",
         "riesgo_apagon": "alert",
+        "consumo_sobre_inventario": "chart",
+        "aparato_dominante": "bolt",
+        "recordatorio_pago": "calendar",
     }
     for alerta in alertas_humanizadas:
         cols = st.columns([5, 1])
@@ -128,7 +132,7 @@ else:
                 body=alerta.get("mensaje", ""),
                 action=alerta.get("accion"),
                 badge="Nueva" if not alerta.get("leida") else "Revisada",
-                icon=icon_map.get(alerta.get("tipo"), "alert"),
+                icon=icon_map.get(alerta.get("tipo_original") or alerta.get("tipo"), "alert"),
                 tone=tone_map.get(alerta.get("nivel"), "info"),
             )
         with cols[1]:
@@ -156,7 +160,7 @@ with tab_alertas:
         st.info("Sin alertas tecnicas activas.")
 
 with tab_config:
-    st.info("💡 **Modelo Híbrido Inteligente Activo**: Por defecto, los valores estándar (500 kWh, 20% batería, 2.0 radiación) le indican al supervisor que **calcule automáticamente y adapte dinámicamente los umbrales** basados en tus promedios históricos y en el pronóstico meteorológico de Fonseca. Si configuras un valor diferente, este actuará como una **anulación manual (override)**.")
+    st.info(f"💡 **Modelo Híbrido Inteligente Activo**: Por defecto, los valores estándar (500 kWh, 20% batería, 2.0 radiación) le indican al supervisor que **calcule automáticamente y adapte dinámicamente los umbrales** basados en tus promedios históricos y en el pronóstico meteorológico de {CIUDAD}. Si configuras un valor diferente, este actuará como una **anulación manual (override)**.")
     config = api_get(f"/alertas/config/{empresa_id}")
     if config:
         with st.form("config_alertas"):

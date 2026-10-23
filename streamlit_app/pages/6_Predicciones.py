@@ -11,10 +11,11 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, api_post, get_current_user, is_authenticated
 from design import render_card, render_hero, render_section_header
+from ubicacion import CIUDAD
 from ui import render_user_sidebar
 
 
-st.set_page_config(page_title="Predicciones", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Predicciones", layout="wide", initial_sidebar_state="auto")
 render_user_sidebar()
 
 if not is_authenticated():
@@ -45,6 +46,16 @@ tiene_telemetria_solar = any((c.get("produccion_solar_kwh") or 0.0) > 0.0 for c 
 
 tiene_baterias = ((empresa_sel.get("capacidad_bateria_kwh") or 0.0) > 0.0) or tiene_telemetria_bateria
 tiene_paneles = ((empresa_sel.get("capacidad_paneles_kw") or 0.0) > 0.0) or tiene_telemetria_solar
+
+# Sistema sugerido según la factura o los aparatos del usuario (si no hay datos, valores de referencia)
+_es_hogar_perfil = (empresa_sel.get("tipo") == "hogar")
+sistema_sugerido = (
+    api_get(f"/empresas/{empresa_id}/aparatos/dimensionamiento")
+    if not (tiene_baterias and tiene_paneles) else None
+) or {}
+bateria_sugerida = sistema_sugerido.get("bateria_kwh_sugerida") or (5.0 if _es_hogar_perfil else 30.0)
+kwp_sugerido = sistema_sugerido.get("kwp_sugerido") or (2.5 if _es_hogar_perfil else 10.0)
+autonomia_criticas = sistema_sugerido.get("autonomia_cargas_criticas_horas")
 
 
 
@@ -144,12 +155,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Banner premium indicando motor predictivo y simulación IA activa
-st.markdown("""
+st.markdown(f"""
 <div class="prediction-banner">
     <div class="prediction-banner__icon">🔮</div>
     <div class="prediction-banner__text">
         <div class="prediction-banner__title">Motor Predictivo y Simulación IA Activa</div>
-        Nuestro agente orquesta y proyecta automáticamente la generación solar fotovoltaica, demanda y riesgos de continuidad en Fonseca para las próximas 24h, 48h y 72h.
+        Nuestro agente orquesta y proyecta automáticamente la generación solar fotovoltaica, demanda y riesgos de continuidad en {CIUDAD} para las próximas 24h, 48h y 72h.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -158,7 +169,7 @@ st.write("")
 render_section_header("Orquestación Autónoma de Respaldo", "spark", "Orquestador inteligente de baterías y excedentes solares ante apagones.")
 
 st.markdown(
-    "El Agente Solar de Fonseca implementa un **algoritmo de orquestación proactiva** "
+    f"En {CIUDAD}, Ka’i implementa un **algoritmo de orquestación proactiva** "
     "que vincula las predicciones de apagones con el control físico del banco de baterías "
     "y los excedentes fotovoltaicos. Ajusta el simulador de abajo para ver cómo responde la IA:"
 )
@@ -180,12 +191,12 @@ if not tiene_baterias:
     st.info(
         "💡 **Simulador Solar Activo:** Actualmente este perfil no posee un banco de baterías físicas "
         "registrado (capacidad = 0 kWh). A continuación se muestra cómo funcionaría el "
-        "Orquestador Autónomo si equiparas tu sistema con el banco de baterías recomendado "
-        "para tu tipo de perfil (Hogar recomendado: 5 kWh | PYME recomendado: 30 kWh)."
+        f"Orquestador Autónomo si equiparas tu sistema con el banco de baterías sugerido "
+        f"para tus cargas críticas (**{bateria_sugerida:g} kWh**)."
     )
-    bateria_sim = 5.0 if es_hogar else 30.0
+    bateria_sim = bateria_sugerida
 else:
-    bateria_sim = capacidad_bateria if capacidad_bateria > 0.0 else (5.0 if es_hogar else 30.0)
+    bateria_sim = capacidad_bateria if capacidad_bateria > 0.0 else bateria_sugerida
 
 # Lógica del orquestador basado en el slider
 if sim_riesgo >= 40:
@@ -275,7 +286,7 @@ if not show_details:
     st.stop()
 
 render_section_header("Análisis de Tendencias", "chart", "Confianza de la IA, horizontes y desglose de problemáticas clave.")
-st.caption("ℹ️ El motor predictivo evalúa el impacto financiero de las tarifas comerciales (Air-E) y la probabilidad de apagones meteorológicos en Fonseca.")
+st.caption(f"ℹ️ El motor predictivo evalúa el impacto financiero de las tarifas comerciales (Air-E) y la probabilidad de apagones meteorológicos en {CIUDAD}.")
 
 h_col, hr_btn_col = st.columns([1, 3])
 with h_col:
@@ -347,8 +358,13 @@ with tab1:
                 st.warning(
                     f"⚠️ **Sin Baterías Físicas:** No registras banco de baterías en tu perfil. "
                     f"Bajo un apagón en este horizonte de **{horizonte}h**, quedarías sin energía de respaldo. "
-                    f"Recomendamos instalar un almacenamiento de **{5.0 if es_hogar else 30.0} kWh** "
-                    f"para asegurar hasta **{(5.0 if es_hogar else 30.0) / (cons_next/24.0 if cons_next else 1.0):.1f} horas** de continuidad autónoma completa."
+                    + (
+                        f"Recomendamos instalar un almacenamiento de **{bateria_sugerida:g} kWh**, que mantendría tus "
+                        f"cargas críticas (nevera, luces, internet) durante unas **{autonomia_criticas:.0f} horas**."
+                        if autonomia_criticas else
+                        f"Recomendamos instalar un almacenamiento de **{bateria_sugerida:g} kWh** "
+                        f"para asegurar hasta **{bateria_sugerida / (cons_next/24.0 if cons_next else 1.0):.1f} horas** de continuidad autónoma completa."
+                    )
                 )
                 
             st.markdown("**Desglose de Predicción:**")
@@ -445,11 +461,10 @@ with tab2:
                     f"de **${gasto_mitigado:,.0f} COP** en este horizonte de {horizonte}h."
                 )
             else:
-                es_hogar = (empresa_sel.get("tipo") == "hogar")
-                pot_ahorro = (3.0 if es_hogar else 15.0) * 4.5 * 30 * tarifa
+                pot_ahorro = sistema_sugerido.get("ahorro_mes_cop") or kwp_sugerido * 5.0 * 0.8 * 30 * tarifa
                 st.warning(
                     f"💡 **Recomendación de Banco Solar:** Actualmente este perfil no cuenta con paneles fotovoltaicos activos. "
-                    f"Si decidieras instalar un banco solar estándar de **{3.0 if es_hogar else 15.0} kWp**, "
+                    f"Si decidieras instalar el sistema sugerido para tu consumo de **{kwp_sugerido:g} kWp**, "
                     f"podrías mitigar hasta **${(pot_ahorro / 30.0) * (horizonte / 24.0):,.0f} COP** del costo total de red de este horizonte."
                 )
                 

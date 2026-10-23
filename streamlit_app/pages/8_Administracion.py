@@ -9,10 +9,12 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, api_patch, api_post, get_current_user, is_authenticated
 from design import render_hero, render_section_header
+from registro import render_registro
+from ubicacion import CIUDAD
 from ui import render_user_sidebar
 
 
-st.set_page_config(page_title="Administracion", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Administracion", layout="wide", initial_sidebar_state="auto")
 render_user_sidebar()
 
 if not is_authenticated():
@@ -75,7 +77,11 @@ with tab_empresas:
 
 with tab_nuevo:
     render_section_header("Gestión de Entidades", "spark", "Alta de nuevas cuentas y clientes corporativos.")
-    sub_t1, sub_t2 = st.tabs(["Alta Empresa", "Alta Usuario"])
+    sub_t0, sub_t1, sub_t2 = st.tabs(["Registrar hogar o negocio", "Alta Empresa", "Alta Usuario"])
+
+    with sub_t0:
+        # Cuenta nueva con su hogar o negocio y sus aparatos (antes era el registro público)
+        render_registro()
 
     with sub_t1:
         with st.form("form_empresa"):
@@ -86,7 +92,7 @@ with tab_nuevo:
                 direccion = st.text_input("Direccion")
                 tarifa = st.number_input("Tarifa (COP/kWh)", min_value=0.0, value=943.0, step=10.0)
             with col_b:
-                ciudad = st.text_input("Ciudad", value="Fonseca")
+                ciudad = st.text_input("Ciudad", value=CIUDAD)
                 departamento = st.text_input("Departamento", value="La Guajira")
                 paneles = st.number_input("Capacidad paneles (kW)", min_value=0.0, value=0.0, step=0.5)
                 bateria = st.number_input("Capacidad bateria (kWh)", min_value=0.0, value=0.0, step=0.5)

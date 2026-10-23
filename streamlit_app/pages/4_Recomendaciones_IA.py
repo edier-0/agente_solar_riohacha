@@ -8,10 +8,11 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, api_patch, api_post, get_current_user, is_authenticated
 from design import render_card, render_hero, render_section_header
+from ubicacion import CIUDAD
 from ui import render_user_sidebar
 
 
-st.set_page_config(page_title="Recomendaciones IA", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Recomendaciones IA", layout="wide", initial_sidebar_state="auto")
 render_user_sidebar()
 
 if not is_authenticated():
@@ -90,12 +91,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Banner premium indicando asesoría de eficiencia automática e inteligente
-st.markdown("""
+st.markdown(f"""
 <div class="advisor-banner">
     <div class="advisor-banner__icon">🧠</div>
     <div class="advisor-banner__text">
         <div class="advisor-banner__title">Copiloto de Ahorro y Eficiencia IA Activo</div>
-        Nuestra inteligencia artificial analiza proactivamente el perfil de tu empresa, tu telemetría de consumo de red y el pronóstico de radiación solar en Fonseca para generar sugerencias accionables de ahorro. No requieres solicitar recomendaciones de forma manual.
+        Nuestra inteligencia artificial analiza proactivamente el perfil de tu empresa, tu telemetría de consumo de red y el pronóstico de radiación solar en {CIUDAD} para generar sugerencias accionables de ahorro. No requieres solicitar recomendaciones de forma manual.
     </div>
 </div>
 """, unsafe_allow_html=True)
