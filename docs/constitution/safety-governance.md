@@ -11,6 +11,7 @@ Directrices para proteger la integridad del usuario, el hardware y el código.
 ## 2. Privacidad de Datos y Secretos
 - Prohibido almacenar claves (`GEMINI_API_KEY`, passwords) en el repositorio.
 - Los recibos de energía y datos de consumo no deben exponer PII no autorizada.
+- Solo el administrador registra usuarios: la API rechaza registros sin sesión de administrador.
 
 ## 3. Gobernanza del Código y Soberanía del Usuario
 - **Control Humano**: El usuario decide cuándo y hacia qué rama se crea un PR.

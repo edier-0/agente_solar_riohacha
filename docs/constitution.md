@@ -1,4 +1,4 @@
-# 📜 Constitución del Agente Solar
+# 📜 Constitución del Agente Solar (Ka'i)
 
 Norma suprema de desarrollo, ética energética y gobernanza técnica.
 
@@ -8,8 +8,8 @@ tarifaria y brindar resiliencia ante apagones a las comunidades de La Guajira.
 
 ## Artículo I: Honestidad y Veracidad Energética
 - Prohibido prometer ahorros irreales o manipular cálculos de ROI.
-- Todo dato debe declarar su fuente (`api_real` o `demo_sintetico`).
-- Respetar la tarifa real local (referencia $943 COP/kWh Air-E).
+- Todo dato debe declarar su fuente (`origen_dato`: `real_api`, `json_demo` o `synthetic_fallback`).
+- Respetar la tarifa real local (referencia $890 COP/kWh Air-E).
 
 ## Artículo II: Resiliencia y Protección Humana
 - Priorizar cargas críticas (refrigeración médica/alimentos, iluminación).
@@ -25,5 +25,5 @@ tarifaria y brindar resiliencia ante apagones a las comunidades de La Guajira.
 - Toda profundización temática debe modularizarse en extensiones.
 
 ## Extensiones Constitucionales
-- Principios Fundamentales: [docs/constitution/core-principles.md](file:///docs/constitution/core-principles.md)
-- Seguridad y Gobernanza: [docs/constitution/safety-governance.md](file:///docs/constitution/safety-governance.md)
+- Principios Fundamentales: [constitution/core-principles.md](constitution/core-principles.md)
+- Seguridad y Gobernanza: [constitution/safety-governance.md](constitution/safety-governance.md)

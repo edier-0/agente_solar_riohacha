@@ -287,10 +287,10 @@ Este script creará:
 
 | Componente | URL de Acceso Local | Descripción Operativa |
 | :--- | :--- | :--- |
-| 🎨 **Streamlit Frontend** | [http://localhost:8502](http://localhost:8502) | Interfaz web interactiva del usuario |
-| ⚡ **FastAPI Swagger Docs** | [http://localhost:8001/docs](http://localhost:8001/docs) | Documentación interactiva de endpoints |
-| 📡 **API ReDoc** | [http://localhost:8001/redoc](http://localhost:8001/redoc) | Documentación estructurada de endpoints |
-| 🗄️ **Base de Datos MySQL** | `localhost:3307` | Base de datos relacional (User: `root`, Pass: `root`) |
+| 🎨 **Streamlit Frontend** | [http://localhost:8503](http://localhost:8503) (o `:8501` local) | Interfaz web interactiva del usuario (Ka'i) |
+| ⚡ **FastAPI Swagger Docs** | [http://localhost:8002/docs](http://localhost:8002/docs) (o `:8000` local) | Documentación interactiva de endpoints |
+| 📡 **API ReDoc** | [http://localhost:8002/redoc](http://localhost:8002/redoc) (o `:8000` local) | Documentación estructurada de endpoints |
+| 🗄️ **Base de Datos MySQL** | `localhost:3308` (o `:3306` local) | Base de datos relacional (User: `root`, Pass: `root`) |
 
 ---
 
@@ -302,48 +302,65 @@ Este script creará:
 │   └── rules/                    # Flujo Git y estándares de código
 ├── app/                          # Backend FastAPI
 │   ├── main.py                   # Entrada de la API e inicio del lifespan
-│   ├── core/                     # Seguridad, JWT y configuración general
+│   ├── core/                     # Seguridad (bcrypt), JWT y configuración general
+│   ├── data/                     # Catálogo de electrodomésticos y equipos (catalogo_aparatos.json)
 │   ├── db/                       # Sesión y motor SQLAlchemy
-│   ├── models/                   # Modelos relacionales ORM (MySQL)
+│   ├── models/                   # Modelos relacionales ORM (MySQL) con soporte para aparatos
 │   ├── schemas/                  # Validadores y esquemas Pydantic
 │   ├── api/
 │   │   ├── deps/                 # Dependencias inyectables (Auth y DB)
-│   │   └── routes/               # Rutas REST (auth, consumo, solar, ia, reportes, alertas, predicciones, insights)
+│   │   └── routes/               # Rutas REST (auth, consumo, solar, aparatos, ia, reportes, alertas, predicciones, insights)
 │   └── services/
 │       ├── startup_sync.py       # Sincronización automática de datos en segundo plano al arrancar
 │       ├── openmeteo.py          # Cliente API Open-Meteo (radiación, pronósticos e índice PM10)
 │       ├── openweather.py        # Cliente API OpenWeather (AQI y contraste meteorológico)
 │       ├── pvgis.py              # Cliente API PVGIS (Baseline meteorológica TMY y simulación fotovoltaica)
 │       ├── reportes.py           # Generador binario de reportes ejecutivos en PDF y Excel
+│       ├── aparatos.py           # Lógica y cálculos de consumo y ahorro de aparatos
+│       ├── catalogo_aparatos.py  # Consulta y búsqueda en catálogo de aparatos
+│       ├── contexto_energetico.py # Agregador de contexto energético y perfil del usuario
+│       ├── alertas_fonseca.py    # Servicio de alertas climáticas del municipio y apagón
 │       └── agents/               # 5 Agentes de Inteligencia Artificial
 │           ├── agente_solar.py   # Potencial de generación fotovoltaica
 │           ├── agente_consumo.py # Detección de patrones y anomalías
 │           ├── agente_prediccion.py # Proyecciones financieras a futuro
-│           ├── agente_alertas.py  # Disparador relacional de alertas semafóricas
+│           ├── agente_alertas.py  # Disparador relacional de alertas semafóricas y climáticas
 │           └── agente_recomendaciones.py # Recomendador adaptativo por perfil (Gemini + Reglas)
 ├── docs/                         # Documentación de gobernanza y memoria técnica
 │   ├── constitution/             # Principios y seguridad operativa
 │   ├── memory/                   # Decisiones (ADR) y patrones de dominio
 │   └── constitution.md           # Constitución suprema del proyecto
-├── streamlit_app/                # Frontend en Streamlit
-│   ├── Home.py                   # Landing page, Login y Registro adaptativo de usuarios
-│   ├── api_client.py             # Cliente HTTP REST centralizado con control de sesiones
+├── streamlit_app/                # Frontend en Streamlit (Ka'i)
+│   ├── Home.py                   # Landing page, Login y bienvenida adaptativa
+│   ├── design.py                 # Sistema de diseño responsivo y estilos CSS para móviles/escritorio
+│   ├── registro.py               # Asistente de registro guiado en 3 pasos (solo administrador)
+│   ├── inventario.py             # Lógica de cálculo y validación de inventario de aparatos
+│   ├── ubicacion.py              # Gestión y configuración de ubicación municipal
+│   ├── api_client.py             # Cliente HTTP REST centralizado con control de sesiones y aparatos
+│   ├── ui.py                     # Componentes y widgets visuales reutilizables
 │   └── pages/                    # Páginas y Vistas Interactivas
 │       ├── 0_Mi_Dia.py           # Vista ejecutiva compacta y resumen diario (LLM/Heurístico) con héroe expandible
+│       ├── 0_Mis_Aparatos.py     # Gestión de inventario de aparatos, consumo desglosado y optimización
 │       ├── 1_Dashboard.py        # Detalles técnicos de telemetría y gráficos interactivos de consumo
-│       ├── 2_Consumo.py          # Registro, consulta e importación de consumos y costos de Air-E
+│       ├── 2_Consumo.py          # Registro, consulta e importación de consumos y costos
 │       ├── 3_Datos_Solares.py    # Historial de radiación local e integración climática
 │       ├── 4_Recomendaciones_IA.py # Recomendador adaptativo y aplicación de acciones de ahorro
-│       ├── 5_Alertas.py          # Monitoreo de alertas críticas y severas del sistema
+│       ├── 5_Alertas.py          # Monitoreo de alertas críticas y severas del sistema y clima municipal
 │       ├── 6_Predicciones.py     # Panel predictivo y Simulador de Orquestación de Almacenamiento IA
 │       ├── 7_Reportes.py         # Descarga de reportes ejecutivos de alta fidelidad (PDF/Excel)
 │       └── 8_Administracion.py   # Panel de control de usuarios, carga masiva y configuraciones
 ├── scripts/
-│   ├── seed.py                   # Seed de datos demostrativos relacionales
+│   ├── seed.py                   # Seed de datos demostrativos relacionales y aparatos demo
+│   ├── demo_data/                # Datasets sintéticos JSON sincronizados
 │   └── init_db.sql               # Inicialización nativa de tablas MySQL
+├── tests/                        # Suite de pruebas unitarias y de integración (pytest)
 ├── AGENTS.md                     # Guía operativa para agentes de IA
 ├── MEMORY.md                     # Contexto persistente del sistema entre sesiones
-├── LICENSE                       # Licencia MIT oficial (2026, Edier Robles)
+├── AUTHORS.md                    # Créditos y autoría formal del equipo Code Masters
+├── LICENSE                       # Licencia MIT oficial (2026, Code Masters)
+├── pytest.ini                    # Configuración de pytest
+├── requirements.txt              # Dependencias de producción
+├── requirements-dev.txt          # Dependencias de desarrollo y testing
 ├── docker-compose.yml            # Orquestador del stack multicontenedor de Docker
 ├── Dockerfile.api                # Construcción de la imagen del backend de FastAPI
 └── Dockerfile.streamlit          # Construcción de la imagen del frontend de Streamlit
@@ -365,6 +382,7 @@ Este script creará:
 | Detener stack eliminando volúmenes (Clean) | `docker compose down -v` |
 | Acceder a la CLI de la Base de Datos | `docker compose exec mysql mysql -uroot -proot agente_solar_db` |
 | Ejecutar Seed de forma manual | `docker compose exec api python scripts/seed.py` |
+| Ejecutar suite de pruebas con pytest | `docker compose exec api sh -c "pip install -q pytest==8.3.3 && python -m pytest"` |
 
 ---
 
