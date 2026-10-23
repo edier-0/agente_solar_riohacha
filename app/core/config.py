@@ -33,10 +33,11 @@ class Settings(BaseSettings):
     # --- LEGACY: NASA POWER (se mantiene como respaldo histórico) ---
     NASA_POWER_BASE_URL: str = "https://power.larc.nasa.gov/api/temporal/daily/point"
 
-    # Coordenadas y Ubicación (Fonseca, La Guajira, Colombia)
+    # Ubicación de la instalación: coordenadas para los servicios de clima y nombre para los mensajes
     LOCATION_NAME: str = "Fonseca, La Guajira"
     LOCATION_LAT: float = 10.8858
     LOCATION_LON: float = -72.8481
+    # Obsoletas: se conservan para no romper archivos .env antiguos, pero ya no se usan
     RIOHACHA_LAT: float = 10.8858
     RIOHACHA_LON: float = -72.8481
 
@@ -48,6 +49,11 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
     API_BASE_URL: str = "http://localhost:8000"
+
+    @property
+    def LOCATION_CITY(self) -> str:
+        """Solo el municipio: 'Fonseca, La Guajira' -> 'Fonseca'."""
+        return self.LOCATION_NAME.split(",")[0].strip() or self.LOCATION_NAME
 
     @property
     def DATABASE_URL(self) -> str:

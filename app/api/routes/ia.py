@@ -1,6 +1,8 @@
 import os
+import time
 from typing import List, Optional
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
@@ -36,16 +38,50 @@ def _demo_recs(empresa_id: int) -> list[dict]:
     )
 
 
+GEMINI_HOST = "https://generativelanguage.googleapis.com/"
+SEGUNDOS_CACHE_CONEXION = 60  # para no consultar a Google en cada carga de página
+_conexion_cache = {"ok": None, "revisado": 0.0}
+
+
+async def _hay_conexion_gemini(refrescar: bool = False) -> bool:
+    """True si el servidor llega a Gemini. Cualquier respuesta HTTP (incluso un 404) cuenta como conexión."""
+    ahora = time.monotonic()
+    if (
+        not refrescar
+        and _conexion_cache["ok"] is not None
+        and ahora - _conexion_cache["revisado"] < SEGUNDOS_CACHE_CONEXION
+    ):
+        return _conexion_cache["ok"]
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as cliente:
+            await cliente.get(GEMINI_HOST)
+        ok = True
+    except httpx.HTTPError:
+        ok = False
+    _conexion_cache.update(ok=ok, revisado=ahora)
+    return ok
+
+
 @router.get("/status")
-async def get_ia_status():
+async def get_ia_status(refrescar: bool = Query(False, description="Vuelve a revisar la conexión sin usar la caché")):
+    """
+    Estado del motor de recomendaciones:
+    - con_ia: hay clave de Gemini y el servidor tiene conexión.
+    - sin_conexion: hay clave pero no se llega a Gemini (sin internet); se usan las reglas.
+    - sin_clave: Gemini no está configurado; se usan las reglas.
+    """
     api_key = os.getenv("GEMINI_API_KEY", "")
-    is_valid = bool(api_key and not api_key.startswith("tu_api_key"))
+    tiene_clave = bool(api_key and not api_key.startswith("tu_api_key"))
     model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+    conectado = await _hay_conexion_gemini(refrescar) if tiene_clave else False
+    disponible = tiene_clave and conectado
+    estado = "con_ia" if disponible else ("sin_conexion" if tiene_clave else "sin_clave")
     return {
-        "gemini_disponible": is_valid,
-        "modelo": model if is_valid else "Heurístico Local (Reglas)",
-        "api": "Google GenAI" if is_valid else "Motor Local",
-        "modo": f"LLM Gemini ({model})" if is_valid else "Heurístico Local (Reglas)",
+        "gemini_disponible": disponible,
+        "estado": estado,
+        "modelo": model if disponible else "Heurístico Local (Reglas)",
+        "api": "Google GenAI" if disponible else "Motor Local",
+        "modo": f"LLM Gemini ({model})" if disponible else "Heurístico Local (Reglas)",
     }
 
 
@@ -140,9 +176,17 @@ async def generar_recomendaciones(
             capacidad_paneles_kw=get_demo_empresa()["capacidad_paneles_kw"],
             capacidad_bateria_kwh=get_demo_empresa()["capacidad_bateria_kwh"],
         )
-        recs = await agente_recomendaciones._generar_con_llm(empresa_demo, solar, consumo)
+        # La empresa demo también existe en la BD: si tiene aparatos, las recomendaciones los nombran
+        ctx = None
+        empresa_db = db.query(Empresa).filter(Empresa.id == empresa_id).first()
+        if empresa_db:
+            try:
+                ctx = await agente_recomendaciones.contexto(db, empresa_db)
+            except Exception as e:
+                print(f"[RECOMENDACIONES] Sin contexto de aparatos para la demo: {e}")
+        recs = await agente_recomendaciones._generar_con_llm(empresa_demo, solar, consumo, ctx)
         if not recs:
-            recs = agente_recomendaciones._generar_con_reglas(empresa_demo, solar, consumo)
+            recs = agente_recomendaciones._generar_con_reglas(empresa_demo, solar, consumo, ctx)
         return save_demo_recs(empresa_id, recs)
     _check_acceso(current_user, empresa_id)
     empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()

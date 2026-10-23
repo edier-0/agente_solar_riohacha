@@ -17,8 +17,8 @@ class OpenWeatherService:
     def __init__(self):
         self.base_url = settings.OPENWEATHER_BASE_URL
         self.api_key = settings.OPENWEATHER_API_KEY
-        self.lat = settings.RIOHACHA_LAT
-        self.lon = settings.RIOHACHA_LON
+        self.lat = settings.LOCATION_LAT
+        self.lon = settings.LOCATION_LON
 
     async def get_current_weather(
         self,

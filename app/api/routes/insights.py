@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
+from app.core.config import get_settings
 from app.db.session import get_db
 from app.models.models import (
     Empresa,
@@ -26,6 +27,13 @@ from app.services.demo_data import get_consumo_demo, get_demo_empresa, get_radia
 from app.services.insights_translator import construir_resumen_dia
 from app.services.openmeteo import openmeteo_service
 from app.services.gemini_client import obtener_respuesta_gemini
+from app.services.contexto_energetico import (
+    consejo_del_dia,
+    dimensionar_sistema,
+    obtener_franja_solar,
+    resumen_inventario,
+    texto_inventario_para_prompt,
+)
 
 router = APIRouter(prefix="/insights", tags=["Insights (Vista Simple)"])
 
@@ -36,6 +44,19 @@ def _check_acceso(current_user: User, empresa_id: int):
         and current_user.empresa_id != empresa_id
     ):
         raise HTTPException(status_code=403, detail="Sin permisos")
+
+
+async def _consejo_aparatos(db: Session, empresa: Optional[Empresa]):
+    """Consejo del día sobre los aparatos del usuario. Devuelve (consejo, resumen) o (None, None)."""
+    if empresa is None:
+        return None, None
+    try:
+        resumen_ap = resumen_inventario(db, empresa)
+        franja = await obtener_franja_solar() if resumen_ap["tiene_aparatos"] else None
+        return consejo_del_dia(resumen_ap, franja), resumen_ap
+    except Exception as e:
+        print(f"[INSIGHTS] No se pudo calcular el consejo de aparatos: {e}")
+        return None, None
 
 
 def _generar_narrativa_fallback(resumen: dict, empresa_nombre: str, empresa_tipo: str) -> str:
@@ -52,14 +73,14 @@ def _generar_narrativa_fallback(resumen: dict, empresa_nombre: str, empresa_tipo
     
     if es_hogar:
         narrativa = (
-            f"¡Hola! Analizamos los datos de tu hogar para el día de hoy. En cuanto a las condiciones climáticas de Fonseca, {dia_solar} "
+            f"¡Hola! Analizamos los datos de tu hogar para el día de hoy. En cuanto a las condiciones climáticas de {get_settings().LOCATION_CITY}, {dia_solar} "
             f"Con respecto al comportamiento de tu casa, {consumo} Adicionalmente, sobre la autogeneración solar, {produccion}\n\n"
             f"Para mantener tu hogar seguro hoy, {riesgo} En cuanto al almacenamiento de energía en tu casa, {bateria} "
             f"¡Que tengas un gran día con tu familia en {empresa_nombre}!"
         )
     else:
         narrativa = (
-            f"Informe de análisis operativo diario para {empresa_nombre}. Respecto a las condiciones de radiación solar en Fonseca, {dia_solar} "
+            f"Informe de análisis operativo diario para {empresa_nombre}. Respecto a las condiciones de radiación solar en {get_settings().LOCATION_CITY}, {dia_solar} "
             f"En términos de demanda y costos energéticos, {consumo} Sobre la capacidad de generación propia distribuida, {produccion}\n\n"
             f"En la dimensión de resiliencia operativa y riesgos de red, {riesgo} Los sistemas de almacenamiento local reportan que {bateria} "
             f"Se sugiere mantener el seguimiento de estas métricas operativas para optimizar la eficiencia y rentabilidad hoy."
@@ -114,11 +135,14 @@ async def insights_diario(
             capacidad_bateria_kwh=demo.get("capacidad_bateria_kwh", 0.0),
         )
         resumen_narrativo = _generar_narrativa_fallback(resumen, demo["nombre"], demo.get("tipo", "pyme"))
+        # La empresa demo también existe en la BD: si tiene aparatos registrados se usan para el consejo
+        consejo, _ = await _consejo_aparatos(db, db.query(Empresa).filter(Empresa.id == empresa_id).first())
         return {
             "empresa": {"id": demo["id"], "nombre": demo["nombre"], "tipo": demo["tipo"]},
             "fecha": ahora.isoformat(),
             "score_global": resumen["score_global"],
             "tarjetas": resumen["tarjetas"],
+            "consejo_aparatos": consejo,
             "resumen_narrativo": resumen_narrativo,
             "fuente_narrativa": "plantilla",
         }
@@ -137,6 +161,7 @@ async def insights_diario(
         .filter(
             ConsumoEnergetico.empresa_id == empresa_id,
             ConsumoEnergetico.fecha >= inicio_hoy,
+            ConsumoEnergetico.fecha < inicio_hoy + timedelta(days=1),
         )
         .all()
     )
@@ -196,6 +221,15 @@ async def insights_diario(
     except Exception:
         polvo_pm10 = None
 
+    # ---- Aparatos del usuario y sistema solar sugerido ----
+    consejo, resumen_ap = await _consejo_aparatos(db, empresa)
+    sistema_sugerido = None
+    if not empresa.capacidad_paneles_kw:
+        try:
+            sistema_sugerido = dimensionar_sistema(db, empresa, resumen_ap)
+        except Exception as e:
+            print(f"[INSIGHTS] No se pudo dimensionar el sistema solar: {e}")
+
     # ---- Construir tarjetas (capa de traducción) ----
     resumen = construir_resumen_dia(
         ghi=ghi_actual,
@@ -209,28 +243,35 @@ async def insights_diario(
         tipo_empresa=empresa.tipo,
         capacidad_paneles_kw=empresa.capacidad_paneles_kw,
         capacidad_bateria_kwh=empresa.capacidad_bateria_kwh,
+        sistema_sugerido=sistema_sugerido,
     )
 
     # ---- Resumen narrativo (LLM) ----
     resumen_llm = None
     fuente = "plantilla"
     if incluir_resumen_llm:
-        fecha = ahora.strftime("%Y-%m-%d")
+        bloque_aparatos = ""
+        if resumen_ap and resumen_ap["tiene_aparatos"]:
+            bloque_aparatos = (
+                f"\nAparatos del usuario:\n{texto_inventario_para_prompt(resumen_ap, maximo=8)}\n"
+                f"Consejo del día sobre sus aparatos: {consejo['titulo']}. {consejo['mensaje']}\n"
+                "Menciona al menos uno de sus aparatos por su nombre en el consejo de cierre.\n"
+            )
         prompt = f"""Genera un resumen diario (de 2 a 3 párrafos cortos) para el hogar "{empresa.nombre}" (Sector: Residencial) en base a los siguientes datos operativos y climáticos de hoy:
 Datos del día: {resumen}
-
+{bloque_aparatos}
 Da un consejo corto de cierre familiar.""" if empresa.tipo == "hogar" else f"""Genera un resumen diario (de 2 a 3 párrafos cortos) para la empresa "{empresa.nombre}" (Sector: {empresa.tipo or 'PYME'}) en base a los siguientes datos operativos y climáticos de hoy:
 Datos del día: {resumen}
-
+{bloque_aparatos}
 Da un consejo corto de cierre."""
         
-        system_instruction = "Eres un asistente virtual de análisis energético de Fonseca, La Guajira. Hablas de forma familiar, concisa y optimista hoy." if empresa.tipo == "hogar" else "Eres un asistente virtual de análisis energético de Fonseca, La Guajira. Hablas de forma ejecutiva, concisa y optimista."
+        lugar = get_settings().LOCATION_NAME
+        system_instruction = f"Eres un asistente virtual de análisis energético de {lugar}. Hablas de forma familiar, concisa y optimista hoy." if empresa.tipo == "hogar" else f"Eres un asistente virtual de análisis energético de {lugar}. Hablas de forma ejecutiva, concisa y optimista."
         
         try:
             resumen_llm = await obtener_respuesta_gemini(
                 prompt=prompt,
                 system_instruction=system_instruction,
-                model_name="gemini-3.5-flash-lite"
             )
             if resumen_llm:
                 fuente = "gemini"
@@ -251,6 +292,7 @@ Da un consejo corto de cierre."""
         "fecha": ahora.isoformat(),
         "score_global": resumen["score_global"],
         "tarjetas": resumen["tarjetas"],
+        "consejo_aparatos": consejo,
         "resumen_narrativo": resumen_llm,
         "fuente_narrativa": fuente,
     }

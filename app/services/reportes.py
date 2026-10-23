@@ -24,6 +24,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 import xlsxwriter
 
+from app.core.config import get_settings
 from app.models.models import (
     ConsumoEnergetico,
     Recomendacion,
@@ -164,12 +165,12 @@ class ReporteService:
         )
 
         story = []
-        story.append(Paragraph("AGENTE SOLAR INTELIGENTE", title_style))
+        story.append(Paragraph("KA’I", title_style))
         story.append(Paragraph(f"Reporte Energético — {empresa.nombre}", subtitle_style))
         story.append(Paragraph(
             f"Período: últimos {days} días | "
             f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M')} | "
-            f"{empresa.ciudad or 'Fonseca'}, La Guajira",
+            f"{empresa.ciudad}, {empresa.departamento}" if empresa.ciudad and empresa.departamento else get_settings().LOCATION_NAME,
             styles["Normal"],
         ))
         story.append(Spacer(1, 0.5 * cm))
@@ -270,8 +271,8 @@ class ReporteService:
         # Footer
         story.append(Spacer(1, 1 * cm))
         story.append(Paragraph(
-            "<i>Reporte generado automáticamente por Agente Solar Inteligente — "
-            "Dashboard Solar con IA para Ahorro Energético en Fonseca, La Guajira</i>",
+            "<i>Reporte generado automáticamente por Ka’i — "
+            f"Dashboard Solar con IA para Ahorro Energético en {get_settings().LOCATION_NAME}</i>",
             ParagraphStyle("Footer", parent=styles["Normal"], fontSize=8, alignment=TA_CENTER),
         ))
 
@@ -309,7 +310,7 @@ class ReporteService:
         ws = wb.add_worksheet("Resumen")
         ws.set_column("A:A", 35)
         ws.set_column("B:B", 25)
-        ws.merge_range("A1:B1", "AGENTE SOLAR INTELIGENTE", title_fmt)
+        ws.merge_range("A1:B1", "KA’I", title_fmt)
         ws.merge_range("A2:B2", f"Reporte de {empresa.nombre}", title_fmt)
         ws.write("A4", "Período", header_fmt)
         ws.write("B4", f"Últimos {days} días")

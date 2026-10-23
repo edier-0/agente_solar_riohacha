@@ -464,7 +464,7 @@ async def cross_check(
 async def get_pvgis_tmy(
     current_user: User = Depends(get_current_user),
 ):
-    """Año Meteorológico Típico de Fonseca (baseline PVGIS)."""
+    """Año Meteorológico Típico de la ubicación configurada (baseline PVGIS)."""
     return await pvgis_service.get_tmy()
 
 

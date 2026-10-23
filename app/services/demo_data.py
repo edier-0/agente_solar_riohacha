@@ -4,7 +4,7 @@ Lectura de datasets demo en JSON (sin persistencia en BD).
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -13,7 +13,45 @@ ROOT = Path(__file__).resolve().parents[2]
 DEMO_DIR = ROOT / "scripts" / "demo_data"
 CONSUMO_FILE = DEMO_DIR / "consumo_demo.json"
 RADIACION_FILE = DEMO_DIR / "radiacion_demo.json"
+MANIFEST_FILE = DEMO_DIR / "manifest.json"
 DEMO_EMPRESA_ID = 1
+
+
+def _desfase() -> timedelta:
+    """
+    Días transcurridos desde que se generaron los JSON demo.
+
+    Las fechas de los archivos son fijas; al leerlas se corren este número de días para que
+    el último día generado como "hoy" siga siendo hoy y la demo no caduque. Los registros que
+    se guardan se corren al revés, así que todo el archivo queda en la misma escala de tiempo.
+    """
+    try:
+        generado = datetime.fromisoformat(json.loads(MANIFEST_FILE.read_text(encoding="utf-8"))["generated_at"])
+    except (OSError, ValueError, KeyError):
+        return timedelta(0)
+    return timedelta(days=(date.today() - generado.date()).days)
+
+
+def _a_hoy(row: Dict[str, Any], desfase: timedelta) -> Dict[str, Any]:
+    """Copia del registro con la fecha corrida al tiempo real."""
+    copia = dict(row)
+    try:
+        copia["fecha"] = (datetime.fromisoformat(str(row.get("fecha"))) + desfase).isoformat()
+    except ValueError:
+        pass
+    return copia
+
+
+def _a_archivo(fecha: Any) -> Any:
+    """Fecha real -> fecha en la escala del archivo (inversa de _a_hoy)."""
+    if isinstance(fecha, str):
+        try:
+            fecha = datetime.fromisoformat(fecha)
+        except ValueError:
+            return fecha
+    if isinstance(fecha, datetime):
+        return (fecha - _desfase()).isoformat()
+    return fecha
 
 
 def _write(path: Path, rows: List[Dict[str, Any]]) -> None:
@@ -50,11 +88,12 @@ def _serialize_row(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _within_days(fecha_iso: str, days: int) -> bool:
+    """Últimos `days` días hasta hoy. Los días futuros de los JSON no cuentan."""
     try:
-        fecha = datetime.fromisoformat(fecha_iso)
+        fecha = datetime.fromisoformat(fecha_iso).replace(tzinfo=None)
     except ValueError:
         return False
-    return fecha >= datetime.now() - timedelta(days=days)
+    return datetime.now() - timedelta(days=days) <= fecha and fecha.date() <= date.today()
 
 
 def _find_record(rows: List[Dict[str, Any]], record_id: int) -> Optional[Dict[str, Any]]:
@@ -62,14 +101,16 @@ def _find_record(rows: List[Dict[str, Any]], record_id: int) -> Optional[Dict[st
 
 
 def get_consumo_demo(days: int = 30) -> List[Dict[str, Any]]:
-    rows = _ensure_ids(_load(CONSUMO_FILE), CONSUMO_FILE)
+    desfase = _desfase()
+    rows = [_a_hoy(r, desfase) for r in _ensure_ids(_load(CONSUMO_FILE), CONSUMO_FILE)]
     rows = [r for r in rows if _within_days(str(r.get("fecha", "")), days)]
     rows.sort(key=lambda x: x.get("fecha", ""), reverse=True)
     return rows
 
 
 def get_radiacion_demo(days: int = 30) -> List[Dict[str, Any]]:
-    rows = _ensure_ids(_load(RADIACION_FILE), RADIACION_FILE)
+    desfase = _desfase()
+    rows = [_a_hoy(r, desfase) for r in _ensure_ids(_load(RADIACION_FILE), RADIACION_FILE)]
     rows = [r for r in rows if _within_days(str(r.get("fecha", "")), days)]
     rows.sort(key=lambda x: x.get("fecha", ""), reverse=True)
     return rows
@@ -83,11 +124,12 @@ def save_consumo_demo(data: Dict[str, Any]) -> Dict[str, Any]:
     record["origen_dato"] = "json_demo"
     record["confiabilidad"] = record.get("confiabilidad", 50.0)
     record = _serialize_row(record)
+    record["fecha"] = _a_archivo(record.get("fecha"))
     max_id = max((r.get("id") for r in rows if isinstance(r.get("id"), int)), default=99999)
     record["id"] = max(max_id + 1, 100000)
     rows.insert(0, record)
     _write(CONSUMO_FILE, rows)
-    return record
+    return _a_hoy(record, _desfase())
 
 
 def update_consumo_demo(consumo_id: int, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -98,12 +140,12 @@ def update_consumo_demo(consumo_id: int, updates: Dict[str, Any]) -> Optional[Di
     for key, value in updates.items():
         if value is None:
             continue
-        if key == "fecha" and isinstance(value, datetime):
-            record[key] = value.isoformat()
+        if key == "fecha":
+            record[key] = _a_archivo(value)
         else:
             record[key] = value
     _write(CONSUMO_FILE, rows)
-    return record
+    return _a_hoy(record, _desfase())
 
 
 def delete_consumo_demo(consumo_id: int) -> bool:
@@ -122,11 +164,12 @@ def save_radiacion_demo(data: Dict[str, Any]) -> Dict[str, Any]:
     record["origen_dato"] = record.get("origen_dato", "json_demo")
     record["confiabilidad"] = record.get("confiabilidad", 35.0)
     record = _serialize_row(record)
+    record["fecha"] = _a_archivo(record.get("fecha"))
     max_id = max((r.get("id") for r in rows if isinstance(r.get("id"), int)), default=99999)
     record["id"] = max(max_id + 1, 100000)
     rows.insert(0, record)
     _write(RADIACION_FILE, rows)
-    return record
+    return _a_hoy(record, _desfase())
 
 
 def update_radiacion_demo(radiacion_id: int, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -137,12 +180,12 @@ def update_radiacion_demo(radiacion_id: int, updates: Dict[str, Any]) -> Optiona
     for key, value in updates.items():
         if value is None:
             continue
-        if key == "fecha" and isinstance(value, datetime):
-            record[key] = value.isoformat()
+        if key == "fecha":
+            record[key] = _a_archivo(value)
         else:
             record[key] = value
     _write(RADIACION_FILE, rows)
-    return record
+    return _a_hoy(record, _desfase())
 
 
 def delete_radiacion_demo(radiacion_id: int) -> bool:
@@ -159,6 +202,7 @@ def get_demo_empresa() -> Dict[str, Any]:
         "id": DEMO_EMPRESA_ID,
         "nombre": "Hotel Solar Fonseca (Demo)",
         "tipo": "hotel",
+        "tipo_entidad": "empresa",
         "direccion": "Calle 13 #18-40, Fonseca",
         "ciudad": "Fonseca",
         "departamento": "La Guajira",

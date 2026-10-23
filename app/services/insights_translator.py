@@ -6,6 +6,8 @@ con: emoji, nivel (verde/amarillo/rojo), titulo y mensaje en lenguaje natural.
 """
 from typing import Dict, Optional
 
+from app.core.config import get_settings
+
 
 # ---------------------------------------------------------------------------
 # Niveles estándar (semáforo)
@@ -37,7 +39,7 @@ def traducir_radiacion(ghi: Optional[float], tipo_empresa: str = "pyme") -> Dict
     
     if ghi >= 6.0:
         msg = (
-            "Hoy el sol está espectacular para tu hogar (≈{:.1f} kWh/m²). "
+            f"Hoy el sol está espectacular para tu hogar (≈{ghi:.1f} kWh/m²). "
             "Es ideal encender electrodomésticos de mayor consumo como lavadora, secadora o aire acondicionado entre 10 AM y 2 PM."
             if es_hogar else
             f"Hoy el sol está fuerte (≈{ghi:.1f} kWh/m²). Es ideal operar a máxima carga entre 10 AM y 2 PM."
@@ -47,7 +49,7 @@ def traducir_radiacion(ghi: Optional[float], tipo_empresa: str = "pyme") -> Dict
         
     if ghi >= 4.5:
         msg = (
-            "Buen día solar para tu casa (≈{:.1f} kWh/m²). La radiación solar de hoy cubrirá una parte importante del consumo de tu refrigerador y luces."
+            f"Buen día solar para tu casa (≈{ghi:.1f} kWh/m²). La radiación solar de hoy cubrirá una parte importante del consumo de tu refrigerador y luces."
             if es_hogar else
             f"La radiación de hoy (≈{ghi:.1f} kWh/m²) cubrirá una parte importante de tu consumo."
         )
@@ -55,7 +57,7 @@ def traducir_radiacion(ghi: Optional[float], tipo_empresa: str = "pyme") -> Dict
         
     if ghi >= 3.0:
         msg = (
-            "Hoy el sol está más suave (≈{:.1f} kWh/m²). Te sugerimos optimizar el uso del aire acondicionado y apagar las luces en habitaciones vacías."
+            f"Hoy el sol está más suave (≈{ghi:.1f} kWh/m²). Te sugerimos optimizar el uso del aire acondicionado y apagar las luces en habitaciones vacías."
             if es_hogar else
             f"Hoy hay menos sol (≈{ghi:.1f} kWh/m²). Limita el uso de aire acondicionado y equipos no esenciales."
         )
@@ -63,7 +65,7 @@ def traducir_radiacion(ghi: Optional[float], tipo_empresa: str = "pyme") -> Dict
         return _pkg("🌥️", NIVEL_AMARILLO, "Día solar regular", msg, action)
         
     msg = (
-        "Muy poca radiación hoy en Fonseca (≈{:.1f} kWh/m²). Tu hogar consumirá principalmente de la red eléctrica general de Air-E."
+        f"Muy poca radiación hoy en {get_settings().LOCATION_CITY} (≈{ghi:.1f} kWh/m²). Tu hogar consumirá principalmente de la red eléctrica general de Air-E."
         if es_hogar else
         f"Muy poca radiación hoy (≈{ghi:.1f} kWh/m²). Prioriza consumir desde batería o red."
     )
@@ -124,15 +126,24 @@ def traducir_produccion_solar(
     tarifa_kwh: float = 943.0,
     tipo_empresa: str = "pyme",
     capacidad_paneles_kw: float = 0.0,
+    sistema_sugerido: Optional[Dict] = None,
 ) -> Dict:
     es_hogar = (tipo_empresa == "hogar")
     
-    if capacidad_paneles_kw == 0.0:
-        sim_capacity = 2.5 if es_hogar else 10.0
+    if not capacidad_paneles_kw:
+        if sistema_sugerido and sistema_sugerido.get("kwp_sugerido") and sistema_sugerido.get("consumo_mes_kwh"):
+            mensaje = (
+                f"No tienes paneles registrados. Un sistema de {sistema_sugerido['kwp_sugerido']} kWp produciría "
+                f"≈{sistema_sugerido['produccion_mes_kwh']:.0f} kWh al mes, cerca del {sistema_sugerido['cobertura_pct']:.0f}% "
+                f"de tu consumo (ahorro ≈ ${sistema_sugerido['ahorro_mes_cop']:,.0f} al mes)."
+            )
+        else:
+            sim_capacity = (sistema_sugerido or {}).get("kwp_sugerido") or (2.5 if es_hogar else 10.0)
+            mensaje = f"No tienes paneles registrados. Estimamos que un sistema sugerido de {sim_capacity} kWp cubriría gran parte de tu consumo diario."
         return _pkg(
             "💡", NIVEL_VERDE,
             "Simulador Solar Activo",
-            f"No tienes paneles registrados. Estimamos que un sistema sugerido de {sim_capacity} kWp cubriría gran parte de tu consumo diario.",
+            mensaje,
             "Simula tu ahorro en el Dashboard"
         )
         
@@ -204,18 +215,18 @@ def traducir_polvo(
     
     if capacidad_paneles_kw == 0.0:
         if valor is None:
-            return _pkg("🍃", NIVEL_VERDE, "Calidad del Aire", "El aire de Fonseca está agradable y limpio hoy.", None)
+            return _pkg("🍃", NIVEL_VERDE, "Calidad del Aire", f"El aire de {get_settings().LOCATION_CITY} está agradable y limpio hoy.", None)
         if valor >= 80:
             return _pkg(
                 "💨", NIVEL_AMARILLO,
-                "Polvo moderado en Fonseca",
+                f"Polvo moderado en {get_settings().LOCATION_CITY}",
                 f"PM10/polvo en {valor:.0f} µg/m³. Se siente algo de brisa seca en tu sector residencial.",
                 None
             )
         return _pkg(
             "🍃", NIVEL_VERDE,
             "Aire agradable",
-            f"Buena calidad del aire hoy en Fonseca ({valor:.0f} µg/m³). Un ambiente fresco para tu familia.",
+            f"Buena calidad del aire hoy en {get_settings().LOCATION_CITY} ({valor:.0f} µg/m³). Un ambiente fresco para tu familia.",
             None
         )
         
@@ -283,12 +294,13 @@ def construir_resumen_dia(
     tipo_empresa: str = "pyme",
     capacidad_paneles_kw: float = 0.0,
     capacidad_bateria_kwh: float = 0.0,
+    sistema_sugerido: Optional[Dict] = None,
 ) -> Dict:
     """Devuelve el paquete completo de tarjetas para la vista 'simple'."""
     tarjetas = [
         ("dia_solar", traducir_radiacion(ghi, tipo_empresa)),
         ("consumo", traducir_consumo(consumo_hoy_kwh, consumo_ayer_kwh, tarifa_kwh, tipo_empresa)),
-        ("produccion", traducir_produccion_solar(produccion_kwh, consumo_hoy_kwh, tarifa_kwh, tipo_empresa, capacidad_paneles_kw)),
+        ("produccion", traducir_produccion_solar(produccion_kwh, consumo_hoy_kwh, tarifa_kwh, tipo_empresa, capacidad_paneles_kw, sistema_sugerido)),
         ("riesgo_apagon", traducir_riesgo_apagon(riesgo_apagon_pct, tipo_empresa)),
         ("aire", traducir_polvo(polvo_pm10, tipo_empresa=tipo_empresa, capacidad_paneles_kw=capacidad_paneles_kw)),
         ("bateria", traducir_bateria(nivel_bateria_pct, tipo_empresa, capacidad_bateria_kwh)),

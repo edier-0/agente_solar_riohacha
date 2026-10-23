@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -6,6 +8,7 @@ from app.core.security import decode_access_token
 from app.models.models import User, UserRole
 
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
@@ -49,3 +52,17 @@ async def get_admin_user(
             detail="Permisos insuficientes. Se requiere rol de administrador.",
         )
     return current_user
+
+
+async def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    """Usuario autenticado si viene un token válido; None si la petición es anónima."""
+    if not credentials:
+        return None
+    payload = decode_access_token(credentials.credentials)
+    if not payload or payload.get("user_id") is None:
+        return None
+    user = db.query(User).filter(User.id == payload["user_id"]).first()
+    return user if user and user.is_active else None

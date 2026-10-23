@@ -1,7 +1,103 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+
+from app.core.config import get_settings
 from typing import Optional, List
 from datetime import datetime
-from app.models.models import UserRole, VistaPreferida
+from app.models.models import UserRole, VistaPreferida, TipoEntidad
+
+
+# --- Aparatos Schemas ---
+class AparatoUsuarioCreate(BaseModel):
+    """Un aparato del inventario. Del catálogo (catalogo_id) o propio (nombre + potencia + horas)."""
+    catalogo_id: Optional[int] = None
+    nombre: Optional[str] = Field(None, min_length=2, max_length=120)
+    cantidad: int = Field(1, ge=1, le=500)
+    potencia_w: Optional[float] = Field(None, gt=0, le=200000)
+    horas_uso_dia: Optional[float] = Field(None, ge=0, le=24)
+
+    @model_validator(mode="after")
+    def _catalogo_o_propio(self):
+        if self.catalogo_id is None:
+            if not self.nombre:
+                raise ValueError("Indica un aparato del catálogo (catalogo_id) o el nombre de tu aparato")
+            if self.potencia_w is None or self.horas_uso_dia is None:
+                raise ValueError("Para un aparato que no está en el catálogo indica su potencia (W) y horas de uso al día")
+        return self
+
+
+class AparatoUsuarioUpdate(BaseModel):
+    """Campos a cambiar. potencia_w u horas_uso_dia en null vuelven al valor del catálogo."""
+    nombre: Optional[str] = Field(None, min_length=2, max_length=120)
+    cantidad: Optional[int] = Field(None, ge=1, le=500)
+    potencia_w: Optional[float] = Field(None, gt=0, le=200000)
+    horas_uso_dia: Optional[float] = Field(None, ge=0, le=24)
+
+
+class AparatoUsuarioResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    empresa_id: int
+    catalogo_id: Optional[int] = None
+    nombre: str
+    cantidad: int
+    tipo_aparato: str
+    potencia_w: Optional[float] = None  # lo que indicó el usuario
+    horas_uso_dia: Optional[float] = None  # lo que indicó el usuario
+    potencia_efectiva_w: float  # la que se usa en los cálculos
+    horas_efectivas_dia: float
+    consumo_kwh_mes: float
+    origen_dato: str  # usuario | catalogo
+    created_at: datetime
+
+
+class CatalogoAparatoResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    codigo: str
+    nombre: str
+    descripcion: Optional[str] = None
+    tipo_aparato: str
+    categorias_entidad: List[str]
+    potencia_w: float
+    horas_uso_dia: float
+    consumo_kwh_mes: float
+    palabras_clave: Optional[str] = None
+    fuente: Optional[str] = None
+
+
+class EstadisticaAparato(BaseModel):
+    aparato_id: Optional[int] = None  # None = consumo no identificado
+    nombre: str
+    tipo_aparato: str
+    cantidad: int
+    origen_dato: str
+    consumo_estimado_kwh_mes: float  # según potencia x horas
+    consumo_kwh_mes: float  # ajustado a la factura cuando hay datos reales
+    costo_cop_mes: float
+    porcentaje: float
+
+
+class EstadisticaTipoAparato(BaseModel):
+    tipo_aparato: str
+    consumo_kwh_mes: float
+    costo_cop_mes: float
+    porcentaje: float
+
+
+class EstadisticasAparatosResponse(BaseModel):
+    empresa_id: int
+    tarifa_kwh: float
+    base_calculo: str  # factura | catalogo
+    dias_con_datos: int
+    consumo_inventario_kwh_mes: float
+    consumo_real_kwh_mes: Optional[float] = None
+    consumo_total_kwh_mes: float
+    costo_total_cop_mes: float
+    factor_ajuste: Optional[float] = None
+    aparatos: List[EstadisticaAparato]
+    por_tipo: List[EstadisticaTipoAparato]
 
 
 # --- Auth Schemas ---
@@ -15,6 +111,8 @@ class UserCreate(BaseModel):
     nombre_empresa: Optional[str] = None
     tipo_empresa: Optional[str] = None
     tarifa_kwh: Optional[float] = None
+    tipo_entidad: Optional[TipoEntidad] = None
+    aparatos: List[AparatoUsuarioCreate] = Field(default_factory=list, max_length=200)
 
 
 class UserLogin(BaseModel):
@@ -58,10 +156,13 @@ class MessageResponse(BaseModel):
 
 # --- Empresa Schemas ---
 class EmpresaCreate(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     nombre: str
     tipo: Optional[str] = None
+    tipo_entidad: Optional[TipoEntidad] = None
     direccion: Optional[str] = None
-    ciudad: str = "Fonseca"
+    ciudad: str = Field(default_factory=lambda: get_settings().LOCATION_CITY)
     departamento: str = "La Guajira"
     tarifa_kwh: float = 943.0
     capacidad_paneles_kw: float = 0.0
@@ -69,8 +170,11 @@ class EmpresaCreate(BaseModel):
 
 
 class EmpresaUpdate(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     nombre: Optional[str] = None
     tipo: Optional[str] = None
+    tipo_entidad: Optional[TipoEntidad] = None
     direccion: Optional[str] = None
     tarifa_kwh: Optional[float] = None
     capacidad_paneles_kw: Optional[float] = None
@@ -81,6 +185,7 @@ class EmpresaResponse(BaseModel):
     id: int
     nombre: str
     tipo: Optional[str]
+    tipo_entidad: Optional[str] = None
     direccion: Optional[str]
     ciudad: str
     departamento: str

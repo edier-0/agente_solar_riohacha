@@ -2,7 +2,7 @@
 Servicio PVGIS (OPCIONAL).
 
 PVGIS provee datos climatológicos típicos (TMY) de 15+ años, ideal como
-LÍNEA BASE para Riohacha. Se usa puntualmente, no en runtime continuo.
+LÍNEA BASE para la ubicación configurada. Se usa puntualmente, no en runtime continuo.
 
 Endpoints clave (PVGIS API v5_3 — la más estable disponible públicamente):
 - /tmy: Año Meteorológico Típico (datos horarios típicos de un año "promedio").
@@ -27,8 +27,8 @@ class PVGISService:
 
     def __init__(self):
         self.base_url = settings.PVGIS_BASE_URL
-        self.lat = settings.RIOHACHA_LAT
-        self.lon = settings.RIOHACHA_LON
+        self.lat = settings.LOCATION_LAT
+        self.lon = settings.LOCATION_LON
         self.enabled = settings.PVGIS_ENABLED
 
     async def get_tmy(

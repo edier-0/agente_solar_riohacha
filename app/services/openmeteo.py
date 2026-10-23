@@ -5,7 +5,7 @@ Open-Meteo es la fuente principal del sistema porque ofrece:
 - GHI / DNI / DHI horarios y diarios sin API key.
 - Pronostico hasta 16 dias.
 - Archivo historico (ERA5) con algunos dias de retraso.
-- Calidad del aire, relevante para Riohacha por polvo del desierto.
+- Calidad del aire, relevante en La Guajira por el polvo del desierto.
 
 Documentacion: https://open-meteo.com/en/docs
 """
@@ -50,6 +50,19 @@ class OpenMeteoService:
         ]
     )
 
+    # Variables diarias para las alertas generales del municipio (solo pronóstico, no histórico)
+    ALERTAS_DAILY_VARS = ",".join(
+        [
+            "temperature_2m_max",
+            "apparent_temperature_max",
+            "precipitation_sum",
+            "precipitation_probability_max",
+            "wind_speed_10m_max",
+            "wind_gusts_10m_max",
+            "shortwave_radiation_sum",
+        ]
+    )
+
     AIR_QUALITY_VARS = ",".join(
         [
             "pm10",
@@ -63,8 +76,8 @@ class OpenMeteoService:
         self.forecast_url = settings.OPENMETEO_FORECAST_URL
         self.archive_url = settings.OPENMETEO_ARCHIVE_URL
         self.air_quality_url = settings.OPENMETEO_AIR_QUALITY_URL
-        self.lat = settings.RIOHACHA_LAT
-        self.lon = settings.RIOHACHA_LON
+        self.lat = settings.LOCATION_LAT
+        self.lon = settings.LOCATION_LON
 
     async def get_forecast_horario(
         self,
@@ -78,6 +91,7 @@ class OpenMeteoService:
             "latitude": lat or self.lat,
             "longitude": lon or self.lon,
             "hourly": self.HOURLY_VARS,
+            "wind_speed_unit": "kmh",
             "forecast_days": min(max(days, 1), 16),
             "timezone": "America/Bogota",
         }
@@ -105,6 +119,7 @@ class OpenMeteoService:
             "latitude": lat or self.lat,
             "longitude": lon or self.lon,
             "daily": self.DAILY_VARS,
+            "wind_speed_unit": "kmh",
             "forecast_days": min(max(days, 1), 16),
             "timezone": "America/Bogota",
         }
@@ -119,6 +134,50 @@ class OpenMeteoService:
                 raise RuntimeError("No se pudo consultar Open-Meteo forecast diario en modo real")
 
         return self._parse_daily(data)
+
+    async def get_pronostico_alertas(
+        self,
+        days: int = 3,
+        lat: Optional[float] = None,
+        lon: Optional[float] = None,
+    ) -> List[Dict]:
+        """
+        Pronóstico diario para las alertas del municipio: calor, sensación térmica, lluvia, viento y sol.
+        Devuelve [] si Open-Meteo no responde: una alerta del clima nunca sale de datos inventados.
+        """
+        params = {
+            "latitude": lat or self.lat,
+            "longitude": lon or self.lon,
+            "daily": self.ALERTAS_DAILY_VARS,
+            "wind_speed_unit": "kmh",
+            "forecast_days": min(max(days, 1), 16),
+            "timezone": "America/Bogota",
+        }
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            try:
+                resp = await client.get(self.forecast_url, params=params)
+                resp.raise_for_status()
+                data = resp.json()
+            except (httpx.HTTPError, ValueError):
+                return []
+
+        daily = data.get("daily", {})
+        dias = []
+        for i, t in enumerate(daily.get("time", [])):
+            ghi_mj = self._safe(daily, "shortwave_radiation_sum", i)
+            dias.append(
+                {
+                    "fecha": t,
+                    "temp_max": self._safe(daily, "temperature_2m_max", i),
+                    "sensacion_max": self._safe(daily, "apparent_temperature_max", i),
+                    "lluvia_mm": self._safe(daily, "precipitation_sum", i),
+                    "prob_lluvia": self._safe(daily, "precipitation_probability_max", i),
+                    "viento_max": self._safe(daily, "wind_speed_10m_max", i),
+                    "rafagas_max": self._safe(daily, "wind_gusts_10m_max", i),
+                    "ghi": round(ghi_mj / 3.6, 2) if ghi_mj is not None else None,
+                }
+            )
+        return dias
 
     async def get_historico(
         self,
@@ -137,6 +196,7 @@ class OpenMeteoService:
             "start_date": start_date,
             "end_date": end_date,
             "daily": self.DAILY_VARS,
+            "wind_speed_unit": "kmh",
             "timezone": "America/Bogota",
         }
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -255,7 +315,7 @@ class OpenMeteoService:
                     "nubosidad_baja": self._safe(hourly, "cloud_cover_low", i),
                     "nubosidad_media": self._safe(hourly, "cloud_cover_mid", i),
                     "nubosidad_alta": self._safe(hourly, "cloud_cover_high", i),
-                    "viento_kmh": self._mul(self._safe(hourly, "wind_speed_10m", i), 3.6),
+                    "viento_kmh": self._safe(hourly, "wind_speed_10m", i),  # Open-Meteo entrega km/h por defecto
                     "ghi_w_m2": ghi_w,
                     "dni_w_m2": dni_w,
                     "dhi_w_m2": dhi_w,
@@ -297,7 +357,7 @@ class OpenMeteoService:
                     "temperatura_min": t_min,
                     "nubosidad": None,
                     "precipitacion_mm": self._safe(daily, "precipitation_sum", i),
-                    "viento_kmh_max": self._mul(self._safe(daily, "wind_speed_10m_max", i), 3.6),
+                    "viento_kmh_max": self._safe(daily, "wind_speed_10m_max", i),  # km/h
                     "fuente": "open_meteo",
                     "origen_dato": "real_api",
                     "escenario": "real",

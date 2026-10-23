@@ -86,6 +86,22 @@ def ensure_schema_compatibility(engine: Engine) -> None:
                         "ADD COLUMN escenario_default VARCHAR(20) NOT NULL DEFAULT 'demo'"
                     )
                 )
+        if "tipo_entidad" not in empresa_columns:
+            with engine.begin() as connection:
+                connection.execute(text("ALTER TABLE empresas ADD COLUMN tipo_entidad VARCHAR(30) NULL"))
+                connection.execute(text("CREATE INDEX ix_empresas_tipo_entidad ON empresas (tipo_entidad)"))
+        # Empresas creadas antes de existir tipo_entidad: se deduce del campo 'tipo' del registro anterior
+        # (hogar y comunidad tenian opcion propia; el resto venia de "Empresa / PYME").
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "UPDATE empresas SET tipo_entidad = CASE "
+                    "WHEN tipo = 'hogar' THEN 'hogar' "
+                    "WHEN tipo = 'comunidad' THEN 'comunidad' "
+                    "ELSE 'empresa' END "
+                    "WHERE tipo_entidad IS NULL"
+                )
+            )
 
     if inspector.has_table("consumo_energetico"):
         consumo_columns = {column["name"] for column in inspector.get_columns("consumo_energetico")}

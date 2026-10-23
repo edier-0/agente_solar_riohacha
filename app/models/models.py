@@ -1,14 +1,27 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text, JSON, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
+from app.core.config import get_settings
 from app.db.session import Base
+
+_settings = get_settings()
 
 
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
     EMPRESA = "empresa"
     ANALISTA = "analista"
+
+
+class TipoEntidad(str, enum.Enum):
+    """Tipo de entidad que se registra. Define qué aparatos del catálogo se le ofrecen."""
+    HOGAR = "hogar"
+    NEGOCIO = "negocio"            # tienda, restaurante, peluquería, panadería...
+    EMPRESA = "empresa"            # empresa o industria (hotel, hielera, bodega...)
+    INSTITUCION = "institucion"    # colegio, puesto de salud, oficina pública
+    FINCA = "finca"                # finca o actividad agropecuaria
+    COMUNIDAD = "comunidad"        # comunidad / espacio comunitario
 
 
 class VistaPreferida(str, enum.Enum):
@@ -49,9 +62,10 @@ class Empresa(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(255), nullable=False)
-    tipo = Column(String(100))  # hotel, hielera, retail, pyme, comunidad
+    tipo = Column(String(100))  # giro o subtipo: hogar, hotel, hielera, retail, pyme, comunidad...
+    tipo_entidad = Column(String(30), nullable=True, index=True)  # ver TipoEntidad
     direccion = Column(String(500))
-    ciudad = Column(String(100), default="Fonseca")
+    ciudad = Column(String(100), default=lambda: _settings.LOCATION_CITY)
     departamento = Column(String(100), default="La Guajira")
     tarifa_kwh = Column(Float, default=943.0)  # COP/kWh
     capacidad_paneles_kw = Column(Float, default=0.0)
@@ -64,6 +78,9 @@ class Empresa(Base):
     consumos = relationship("ConsumoEnergetico", back_populates="empresa")
     alertas = relationship("Alerta", back_populates="empresa")
     recomendaciones = relationship("Recomendacion", back_populates="empresa")
+    aparatos = relationship(
+        "AparatoUsuario", back_populates="empresa", cascade="all, delete-orphan"
+    )
 
 
 class RadiacionSolar(Base):
@@ -86,8 +103,8 @@ class RadiacionSolar(Base):
     escenario = Column(String(20), default="demo")  # demo | real
     origen_dato = Column(String(40), default="seed_demo")  # real_api | seed_demo | synthetic_fallback
     confiabilidad = Column(Float, default=50.0)  # 0-100
-    latitud = Column(Float, default=11.5444)
-    longitud = Column(Float, default=-72.9072)
+    latitud = Column(Float, default=lambda: _settings.LOCATION_LAT)
+    longitud = Column(Float, default=lambda: _settings.LOCATION_LON)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -171,3 +188,73 @@ class ConfiguracionAlerta(Base):
     notificar_email = Column(Boolean, default=True)
     notificar_dashboard = Column(Boolean, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class CatalogoAparato(Base):
+    """Aparatos comunes con su consumo aproximado. Se carga desde app/data/catalogo_aparatos.json."""
+    __tablename__ = "catalogo_aparatos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    codigo = Column(String(60), unique=True, nullable=False, index=True)  # identificador estable del JSON
+    nombre = Column(String(120), nullable=False)
+    descripcion = Column(String(300))
+    tipo_aparato = Column(String(40), nullable=False, index=True)  # refrigeracion, climatizacion, iluminacion...
+    categorias_entidad = Column(JSON, nullable=False)  # lista de TipoEntidad a las que aplica
+    potencia_w = Column(Float, nullable=False)  # potencia típica (W)
+    # Horas equivalentes a plena potencia por día. Para equipos con ciclos (nevera, aire)
+    # ya incluye el tiempo en que el compresor está apagado.
+    horas_uso_dia = Column(Float, nullable=False)
+    palabras_clave = Column(String(300))
+    fuente = Column(String(300))
+    activo = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    @property
+    def consumo_kwh_mes(self) -> float:
+        return round((self.potencia_w or 0) * (self.horas_uso_dia or 0) * 30 / 1000, 2)
+
+
+class AparatoUsuario(Base):
+    """Inventario de aparatos de un hogar, negocio o empresa."""
+    __tablename__ = "aparatos_usuario"
+
+    id = Column(Integer, primary_key=True, index=True)
+    empresa_id = Column(Integer, ForeignKey("empresas.id"), nullable=False, index=True)
+    catalogo_id = Column(Integer, ForeignKey("catalogo_aparatos.id"), nullable=True)  # None = aparato propio
+    nombre = Column(String(120), nullable=False)
+    cantidad = Column(Integer, default=1, nullable=False)
+    potencia_w = Column(Float, nullable=True)  # indicado por el usuario (opcional)
+    horas_uso_dia = Column(Float, nullable=True)  # indicado por el usuario (opcional)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    empresa = relationship("Empresa", back_populates="aparatos")
+    catalogo = relationship("CatalogoAparato")
+
+    @property
+    def tipo_aparato(self) -> str:
+        return self.catalogo.tipo_aparato if self.catalogo else "otro"
+
+    @property
+    def potencia_efectiva_w(self) -> float:
+        if self.potencia_w is not None:
+            return self.potencia_w
+        return self.catalogo.potencia_w if self.catalogo else 0.0
+
+    @property
+    def horas_efectivas_dia(self) -> float:
+        if self.horas_uso_dia is not None:
+            return self.horas_uso_dia
+        return self.catalogo.horas_uso_dia if self.catalogo else 0.0
+
+    @property
+    def origen_dato(self) -> str:
+        """'usuario' si la persona indicó potencia u horas; 'catalogo' si todo viene del catálogo."""
+        if self.potencia_w is not None or self.horas_uso_dia is not None or self.catalogo is None:
+            return "usuario"
+        return "catalogo"
+
+    @property
+    def consumo_kwh_mes(self) -> float:
+        return round(self.potencia_efectiva_w * self.horas_efectivas_dia * (self.cantidad or 1) * 30 / 1000, 2)

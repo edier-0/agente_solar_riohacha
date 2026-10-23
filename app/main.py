@@ -1,6 +1,6 @@
 """
-Agente Solar Inteligente — API FastAPI
-Dashboard Solar con IA para Ahorro Energético en Fonseca, La Guajira.
+Ka’i — API FastAPI
+Dashboard Solar con IA para Ahorro Energético en La Guajira (ubicación configurable con LOCATION_*).
 """
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -23,6 +23,7 @@ from app.api.routes import (
     alertas,
     reportes,
     insights,
+    aparatos,
 )
 
 settings = get_settings()
@@ -33,6 +34,16 @@ async def lifespan(app: FastAPI):
     # Startup
     Base.metadata.create_all(bind=engine)
     ensure_schema_compatibility(engine)
+
+    # Catálogo de aparatos (app/data/catalogo_aparatos.json -> tabla catalogo_aparatos)
+    from app.db.session import SessionLocal as _SessionLocal
+    from app.services.catalogo_aparatos import sincronizar_catalogo
+    with _SessionLocal() as db_catalogo:
+        try:
+            resumen = sincronizar_catalogo(db_catalogo)
+            print(f"[STARTUP] Catálogo de aparatos sincronizado: {resumen}")
+        except Exception as e:
+            print(f"[STARTUP ERROR] No se pudo sincronizar el catálogo de aparatos: {e}")
     
     # Sincronización automática de Fuentes de Verdad en segundo plano (no bloqueante)
     import asyncio
@@ -50,9 +61,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Agente Solar Inteligente API",
+    title="Ka’i API",
     description=(
-        "API REST para el Dashboard Solar con IA para Ahorro Energético en Fonseca, La Guajira. "
+        f"API REST para el Dashboard Solar con IA para Ahorro Energético en {settings.LOCATION_NAME}. "
         "Diseñada para ser consumida desde el frontend Streamlit y aplicaciones móviles."
     ),
     version="1.1.0",
@@ -86,12 +97,13 @@ app.include_router(predicciones.router, prefix=API_PREFIX)
 app.include_router(alertas.router, prefix=API_PREFIX)
 app.include_router(reportes.router, prefix=API_PREFIX)
 app.include_router(insights.router, prefix=API_PREFIX)
+app.include_router(aparatos.router, prefix=API_PREFIX)
 
 
 @app.get("/", tags=["Root"])
 def root():
     return {
-        "app": "Agente Solar Inteligente API",
+        "app": "Ka’i API",
         "version": "1.1.0",
         "ubicacion": f"{settings.LOCATION_NAME}, Colombia",
         "docs": "/docs",

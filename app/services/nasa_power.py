@@ -1,6 +1,6 @@
 """
 Servicio NASA POWER API.
-Obtiene datos de radiación solar histórica y temperatura para Riohacha.
+Obtiene datos de radiación solar histórica y temperatura para la ubicación configurada (LOCATION_*).
 Documentación: https://power.larc.nasa.gov/docs/services/api/
 """
 import httpx
@@ -23,8 +23,8 @@ class NASAPowerService:
 
     def __init__(self):
         self.base_url = settings.NASA_POWER_BASE_URL
-        self.lat = settings.RIOHACHA_LAT
-        self.lon = settings.RIOHACHA_LON
+        self.lat = settings.LOCATION_LAT
+        self.lon = settings.LOCATION_LON
 
     async def get_radiation_data(
         self,

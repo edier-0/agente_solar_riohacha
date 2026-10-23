@@ -8,6 +8,9 @@ from app.models.models import (
     Prediccion,
     ConfiguracionAlerta,
     UserRole,
+    TipoEntidad,
+    CatalogoAparato,
+    AparatoUsuario,
 )
 
 __all__ = [
@@ -20,4 +23,7 @@ __all__ = [
     "Prediccion",
     "ConfiguracionAlerta",
     "UserRole",
+    "TipoEntidad",
+    "CatalogoAparato",
+    "AparatoUsuario",
 ]

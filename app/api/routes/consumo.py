@@ -81,6 +81,9 @@ def create_consumo_mensual(
 
     if data.mes < 1 or data.mes > 12:
         raise HTTPException(status_code=400, detail="El mes debe estar entre 1 y 12")
+    hoy = datetime.now()
+    if (data.anio, data.mes) > (hoy.year, hoy.month):
+        raise HTTPException(status_code=400, detail="La factura no puede ser de un mes futuro")
 
     # Obtener el número de días del mes
     _, num_dias = calendar.monthrange(data.anio, data.mes)
@@ -313,6 +316,7 @@ async def get_dashboard_kpis(
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
     hoy_inicio = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    hoy_fin = hoy_inicio + timedelta(days=1)  # una factura del mes en curso trae días futuros: no se cuentan
     mes_inicio = hoy_inicio.replace(day=1)
 
     consumo_hoy = (
@@ -320,6 +324,7 @@ async def get_dashboard_kpis(
         .filter(
             ConsumoEnergetico.empresa_id == empresa_id,
             ConsumoEnergetico.fecha >= hoy_inicio,
+            ConsumoEnergetico.fecha < hoy_fin,
             True if not escenario else ConsumoEnergetico.escenario == escenario,
         )
         .scalar() or 0.0
@@ -330,6 +335,7 @@ async def get_dashboard_kpis(
         .filter(
             ConsumoEnergetico.empresa_id == empresa_id,
             ConsumoEnergetico.fecha >= mes_inicio,
+            ConsumoEnergetico.fecha < hoy_fin,
             True if not escenario else ConsumoEnergetico.escenario == escenario,
         )
         .scalar() or 0.0
@@ -340,12 +346,16 @@ async def get_dashboard_kpis(
         .filter(
             ConsumoEnergetico.empresa_id == empresa_id,
             ConsumoEnergetico.fecha >= hoy_inicio,
+            ConsumoEnergetico.fecha < hoy_fin,
             True if not escenario else ConsumoEnergetico.escenario == escenario,
         )
         .scalar() or 0.0
     )
 
-    q_ultimo = db.query(ConsumoEnergetico).filter(ConsumoEnergetico.empresa_id == empresa_id)
+    q_ultimo = db.query(ConsumoEnergetico).filter(
+        ConsumoEnergetico.empresa_id == empresa_id,
+        ConsumoEnergetico.fecha < hoy_fin,
+    )
     if escenario:
         q_ultimo = q_ultimo.filter(ConsumoEnergetico.escenario == escenario)
     ultimo_consumo = q_ultimo.order_by(desc(ConsumoEnergetico.fecha)).first()

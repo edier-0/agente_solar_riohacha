@@ -1,34 +1,54 @@
 """
 Agente de Recomendaciones.
-Genera recomendaciones en lenguaje natural usando LLM (Gemini).
-Si LLM no está disponible, usa plantillas basadas en reglas.
+
+Genera recomendaciones en lenguaje natural con Gemini, usando el inventario de aparatos
+del usuario, la franja solar del pronóstico y el sistema solar sugerido. Si Gemini no está
+disponible (sin clave, sin red o cuota agotada) usa reglas locales, también por aparato.
 """
-from typing import List, Dict
 import json
+from typing import Dict, List, Optional
+
 from sqlalchemy.orm import Session
 
-from app.models.models import Recomendacion, Empresa
+from app.models.models import Empresa, Recomendacion
+from app.services.contexto_energetico import (
+    CONSEJOS_POR_TIPO,
+    dimensionar_sistema,
+    obtener_franja_solar,
+    resumen_inventario,
+    texto_inventario_para_prompt,
+    _minuscula_inicial,
+    nombre_aparato,
+)
 from app.services.gemini_client import obtener_respuesta_gemini
+
+# Ahorro por reemplazos frecuentes: (código actual, código eficiente, texto)
+REEMPLAZOS = [
+    ("bombillo_incandescente", "bombillo_led", "Cambia {n} bombillo(s) incandescente(s) por LED de 9 W: dan la misma luz con 85% menos energía."),
+    ("bombillo_ahorrador", "bombillo_led", "Cambia {n} bombillo(s) ahorrador(es) por LED de 9 W cuando se dañen: gastan cerca de la mitad."),
+    ("nevera_antigua", "nevera", "Tu nevera antigua gasta bastante más que una nueva. Si la cambias, elige una con etiqueta de eficiencia A."),
+]
 
 
 class AgenteRecomendaciones:
     """Genera recomendaciones de ahorro energético."""
 
-    SYSTEM_PROMPT = """Eres un experto en eficiencia energética y energía solar en Fonseca, La Guajira, Colombia.
+    SYSTEM_PROMPT = """Eres un experto en eficiencia energética y energía solar en La Guajira, Colombia.
 Conoces que:
-- Fonseca tiene radiación solar excelente (hasta 7.0 kWh/m²/día).
-- La tarifa eléctrica promedio es de 943 COP/kWh.
-- Hay apagones frecuentes (~60h/año).
-- Las empresas locales (hoteles, hieleras, retail, PYMES) pagan hasta 33% de OpEx en energía.
-- El polvo y arena del desierto guajiro reduce la eficiencia de paneles solares (~5-15%).
+- La radiación solar de la región es alta todo el año.
+- La tarifa residencial en Colombia es la misma a cualquier hora: mover consumo a las horas de sol solo ahorra dinero si el usuario tiene paneles solares.
+- Hay cortes de energía frecuentes en la región.
+- El polvo y la arena reducen la eficiencia de los paneles (~5-15%) si no se limpian.
+Generas SIEMPRE recomendaciones en español, cortas (1-2 oraciones), prácticas, accionables y específicas,
+nombrando los aparatos reales del usuario y con horarios cuando aplique. Cada recomendación lleva un impacto económico mensual estimado en COP."""
 
-Fuentes de datos disponibles:
-- Open-Meteo (NÚCLEO): GHI/DNI/DHI horarios, pronóstico 16 días, archivo ERA5.
-- OpenWeather (COMPLEMENTO): clima actual, alertas, calidad del aire.
-- PVGIS (BASELINE OPCIONAL): TMY climatológico de 15+ años.
-
-Genera SIEMPRE recomendaciones en español, cortas (1-2 oraciones), prácticas, accionables y específicas con horarios.
-Cada recomendación debe tener un impacto económico estimado claro."""
+    async def contexto(self, db: Session, empresa: Empresa) -> Dict:
+        resumen = resumen_inventario(db, empresa)
+        return {
+            "resumen": resumen,
+            "franja": await obtener_franja_solar(),
+            "dimensionamiento": dimensionar_sistema(db, empresa, resumen),
+        }
 
     async def generar(
         self,
@@ -38,19 +58,12 @@ Cada recomendación debe tener un impacto económico estimado claro."""
         analisis_consumo: Dict,
     ) -> List[Recomendacion]:
         """Genera y guarda recomendaciones para una empresa."""
-        # 1. Intentar con LLM
-        recomendaciones_texto = await self._generar_con_llm(
-            empresa, analisis_solar, analisis_consumo
-        )
+        ctx = await self.contexto(db, empresa)
+        recomendaciones_texto = await self._generar_con_llm(empresa, analisis_solar, analisis_consumo, ctx)
         usado_llm = bool(recomendaciones_texto)
-
-        # 2. Fallback con reglas si LLM no funciona
         if not recomendaciones_texto:
-            recomendaciones_texto = self._generar_con_reglas(
-                empresa, analisis_solar, analisis_consumo
-            )
+            recomendaciones_texto = self._generar_con_reglas(empresa, analisis_solar, analisis_consumo, ctx)
 
-        # 3. Guardar en BD
         creadas = []
         escenario = empresa.escenario_default or "demo"
         origen = "llm" if usado_llm else "reglas"
@@ -78,158 +91,211 @@ Cada recomendación debe tener un impacto económico estimado claro."""
         empresa: Empresa,
         solar: Dict,
         consumo: Dict,
+        ctx: Optional[Dict] = None,
     ) -> List[Dict]:
-        """Llama a Gemini para generar recomendaciones."""
-        es_hogar = (empresa.tipo == "hogar")
-        desc_tipo = "Hogar / Familia Residencial" if es_hogar else f"empresa (giro: {empresa.tipo or 'PYME'})"
+        """Llama a Gemini. Devuelve [] si no hay clave, no responde o la respuesta no es JSON válido."""
+        es_hogar = (getattr(empresa, "tipo_entidad", None) or empresa.tipo) == "hogar"
+        desc_tipo = "Hogar / Familia Residencial" if es_hogar else f"{getattr(empresa, 'tipo_entidad', None) or 'empresa'} (giro: {empresa.tipo or 'PYME'})"
+        ciudad = empresa.ciudad or "La Guajira"
         contexto_adicional = (
-            "Como es un Hogar/Residencial, enfócate en hábitos familiares, electrodomésticos del hogar (lavadora, "
-            "nevera, aires acondicionados domésticos, luces) y evita términos industriales como 'cargas pesadas', "
-            "'procesos productivos', 'picos de demanda de potencia contratada' o 'planta diésel'."
+            "Como es un hogar, enfócate en hábitos familiares y electrodomésticos; evita términos industriales."
             if es_hogar else
-            "Como es un comercio/PYME, enfócate en eficiencia operativa, reducción de picos de potencia, "
-            "maquinaria y retorno de inversión."
+            "Enfócate en eficiencia operativa, reducción de picos de potencia, equipos del negocio y retorno de inversión."
         )
 
-        ciudad_cliente = empresa.ciudad or "Fonseca"
-        prompt = f"""Genera EXACTAMENTE 5 recomendaciones de ahorro energético para el cliente "{empresa.nombre}" (perfil: {desc_tipo}) en {ciudad_cliente}, La Guajira.
+        bloque_aparatos = ""
+        if ctx:
+            resumen, franja, dim = ctx["resumen"], ctx.get("franja"), ctx["dimensionamiento"]
+            paneles = "SÍ tiene paneles solares" if resumen["tiene_paneles"] else "NO tiene paneles solares"
+            franja_txt = f"Franja de mayor radiación: {franja['texto']} (≈{franja['ghi_dia_kwh_m2']} kWh/m² en el día)." if franja else "Sin pronóstico horario disponible."
+            bloque_aparatos = f"""
+Aparatos registrados por el usuario (consumo estimado mensual):
+{texto_inventario_para_prompt(resumen)}
+
+Situación: el usuario {paneles}. {franja_txt}
+Sistema solar sugerido para su consumo: {dim['kwp_sugerido']} kWp (≈{dim['produccion_mes_kwh']:.0f} kWh/mes, ahorro ≈${dim['ahorro_mes_cop']:,.0f}/mes) y batería de {dim['bateria_kwh_sugerida']} kWh para cargas críticas.
+
+Reglas:
+- Al menos 3 recomendaciones deben nombrar aparatos concretos de la lista y su impacto.
+- Si NO tiene paneles, no recomiendes mover consumo a las horas de sol para ahorrar: la tarifa no cambia por hora. Recomienda eficiencia, reemplazos o el sistema solar sugerido.
+- Si SÍ tiene paneles, recomienda usar los aparatos que se pueden mover de horario dentro de la franja de mayor radiación.
+- Si no registró aparatos, una recomendación debe invitarlo a registrarlos en "Mis aparatos"."""
+
+        prompt = f"""Genera EXACTAMENTE 5 recomendaciones de ahorro energético para el cliente "{empresa.nombre}" (perfil: {desc_tipo}) en {ciudad}, La Guajira.
 {contexto_adicional}
 
 Datos solares (últimos 30 días):
 - Radiación GHI promedio: {solar.get('promedio_ghi', 'N/A')} kWh/m²/día
-- Producción solar estimada: {solar.get('produccion_estimada_diaria_kwh', 0)} kWh/día
-- Capacidad paneles instalados: {empresa.capacidad_paneles_kw} kW
+- Capacidad de paneles instalados: {empresa.capacidad_paneles_kw} kW
 
-Datos consumo (últimos 30 días):
-- Consumo total: {consumo.get('total_kwh', 0)} kWh
-- Promedio diario: {consumo.get('promedio_diario_kwh', 0)} kWh
-- Demanda pico: {consumo.get('demanda_pico_kw', 0)} kW
-- Anomalías detectadas: {consumo.get('num_anomalias', 0)}
+Datos de consumo (últimos 30 días):
+- Consumo total: {consumo.get('total_kwh', 0)} kWh · promedio diario: {consumo.get('promedio_diario_kwh', 0)} kWh
+- Demanda pico: {consumo.get('demanda_pico_kw', 0)} kW · anomalías: {consumo.get('num_anomalias', 0)}
 - Tarifa: {empresa.tarifa_kwh} COP/kWh
+{bloque_aparatos}
 
 Responde EXCLUSIVAMENTE con un JSON válido con este formato (sin texto adicional):
 {{"recomendaciones": [
-  {{"texto": "...", "tipo": "ahorro|redistribucion|contingencia|mantenimiento", "impacto_cop": 50000, "confianza": 85}},
-  ...
+  {{"texto": "...", "tipo": "ahorro|redistribucion|contingencia|mantenimiento", "impacto_cop": 50000, "confianza": 85}}
 ]}}"""
 
-        respuesta = await obtener_respuesta_gemini(
-            prompt=prompt,
-            system_instruction=self.SYSTEM_PROMPT,
-            model_name="gemini-3.5-flash-lite"
-        )
-
+        try:
+            respuesta = await obtener_respuesta_gemini(prompt=prompt, system_instruction=self.SYSTEM_PROMPT)
+        except Exception as e:  # sin clave configurada u otro error: se usan las reglas
+            print(f"[RECOMENDACIONES] Gemini no disponible, se usan reglas: {e}")
+            return []
         if not respuesta:
             return []
-
-        # Intentar parsear JSON
         try:
-            # Buscar el primer { y último }
-            start = respuesta.find("{")
-            end = respuesta.rfind("}")
+            start, end = respuesta.find("{"), respuesta.rfind("}")
             if start == -1 or end == -1:
                 return []
-            data = json.loads(respuesta[start : end + 1])
-            return data.get("recomendaciones", [])[:5]
+            data = json.loads(respuesta[start:end + 1])
+            recs = [r for r in data.get("recomendaciones", []) if isinstance(r, dict) and r.get("texto")]
+            return recs[:5]
         except (json.JSONDecodeError, ValueError):
             return []
 
+    # ------------------------------------------------------------------
+    # Reglas locales (respaldo)
+    # ------------------------------------------------------------------
+    def _reglas_por_aparato(self, empresa: Empresa, ctx: Dict) -> List[Dict]:
+        resumen, franja, dim = ctx["resumen"], ctx.get("franja"), ctx["dimensionamiento"]
+        tarifa = float(empresa.tarifa_kwh or 943.0)
+        recs: List[Dict] = []
+
+        if not resumen["tiene_aparatos"]:
+            return [{
+                "texto": "Registra tus aparatos en \"Mis aparatos\": con tu lista te diremos cuánto gasta cada uno y cuándo conviene usarlos.",
+                "tipo": "ahorro", "impacto_cop": 0, "confianza": 90.0,
+            }]
+
+        mayor = resumen["top"][0]
+        if len(resumen["aparatos"]) == 1 and not resumen["no_identificado_kwh_mes"]:
+            consejo = CONSEJOS_POR_TIPO.get(mayor["tipo_aparato"], CONSEJOS_POR_TIPO["otro"])
+            recs.append({
+                "texto": f"Tu {nombre_aparato(mayor)} gasta ≈{mayor['kwh_mes']:.0f} kWh al mes (≈${mayor['costo_mes']:,.0f}). {consejo}",
+                "tipo": "ahorro", "impacto_cop": round(mayor["costo_mes"] * 0.15), "confianza": 75.0,
+            })
+            recs.append({
+                "texto": "Registra el resto de tus aparatos en \"Mis aparatos\" para saber cuál pesa más en tu factura.",
+                "tipo": "ahorro", "impacto_cop": 0, "confianza": 90.0,
+            })
+        elif mayor["porcentaje"] >= 20:
+            consejo = CONSEJOS_POR_TIPO.get(mayor["tipo_aparato"], CONSEJOS_POR_TIPO["otro"])
+            recs.append({
+                "texto": f"Tu {nombre_aparato(mayor)} es el {mayor['porcentaje']:.0f}% de tu consumo (≈${mayor['costo_mes']:,.0f}/mes). {consejo}",
+                "tipo": "ahorro", "impacto_cop": round(mayor["costo_mes"] * 0.15), "confianza": 80.0,
+            })
+
+        if resumen["tiene_paneles"] and franja and resumen["desplazables"]:
+            nombres = " y ".join(_minuscula_inicial(a["nombre"]) for a in resumen["desplazables"][:2])
+            # Sin artículos: "la secadora y horno" suena mal y cada aparato lleva uno distinto
+            kwh = sum(a["kwh_mes"] for a in resumen["desplazables"])
+            recs.append({
+                "texto": f"Programa {franja['texto']} el uso de: {nombres}. Con el sol más fuerte, tus paneles cubren ese consumo en vez de la red.",
+                "tipo": "redistribucion", "impacto_cop": round(kwh * 0.8 * tarifa), "confianza": 80.0,
+            })
+
+        por_codigo = {}
+        for a in resumen["aparatos"]:
+            if a["codigo"]:
+                por_codigo.setdefault(a["codigo"], []).append(a)
+        for actual, eficiente, texto in REEMPLAZOS:
+            for a in por_codigo.get(actual, []):
+                # Diferencia de consumo con el equivalente eficiente, con las mismas horas de uso
+                w_eficiente = {"bombillo_led": 9.0, "nevera": 150.0}[eficiente]
+                factor = 10.0 / 12.0 if actual == "nevera_antigua" else 1.0  # la nevera nueva cicla menos
+                kwh_ahorro = max(0.0, (a["potencia_w"] - w_eficiente * factor) * a["horas_dia"] * a["cantidad"] * 30 / 1000)
+                if kwh_ahorro > 1:
+                    recs.append({
+                        "texto": texto.format(n=a["cantidad"]) + f" Ahorro ≈{kwh_ahorro:.0f} kWh al mes.",
+                        "tipo": "ahorro", "impacto_cop": round(kwh_ahorro * tarifa), "confianza": 85.0,
+                    })
+
+        for a in por_codigo.get("aire_ventana", []):
+            recs.append({
+                "texto": f"Tu {_minuscula_inicial(a['nombre'])} gasta ≈{a['kwh_mes']:.0f} kWh/mes. Un mini split inverter del mismo tamaño consume cerca de 40% menos.",
+                "tipo": "ahorro", "impacto_cop": round(a["kwh_mes"] * 0.4 * tarifa), "confianza": 70.0,
+            })
+        for a in por_codigo.get("decodificador", []):
+            kwh = a["potencia_w"] * 8 * a["cantidad"] * 30 / 1000
+            recs.append({
+                "texto": "Desconecta el decodificador en la noche o con una regleta: aunque no lo uses, sigue consumiendo.",
+                "tipo": "ahorro", "impacto_cop": round(kwh * tarifa), "confianza": 75.0,
+            })
+
+        total = resumen["total_kwh_mes"] or 0
+        if resumen["no_identificado_kwh_mes"] and total and resumen["no_identificado_kwh_mes"] / total >= 0.3:
+            recs.append({
+                "texto": f"Tu factura tiene ≈{resumen['no_identificado_kwh_mes']:.0f} kWh/mes que tus aparatos registrados no explican. Revisa si falta alguno en tu lista o si alguno se usa más horas de las indicadas.",
+                "tipo": "mantenimiento", "impacto_cop": 0, "confianza": 70.0,
+            })
+
+        if (empresa.capacidad_paneles_kw or 0) == 0 and dim.get("consumo_mes_kwh"):
+            recs.append({
+                "texto": f"Un sistema solar de {dim['kwp_sugerido']} kWp produciría ≈{dim['produccion_mes_kwh']:.0f} kWh al mes, cerca del {dim['cobertura_pct']:.0f}% de tu consumo.",
+                "tipo": "ahorro", "impacto_cop": dim["ahorro_mes_cop"], "confianza": 70.0,
+            })
+        return recs
 
     def _generar_con_reglas(
         self,
         empresa: Empresa,
         solar: Dict,
         consumo: Dict,
+        ctx: Optional[Dict] = None,
     ) -> List[Dict]:
-        """Recomendaciones basadas en reglas (fallback)."""
-        recomendaciones = []
+        """Recomendaciones basadas en reglas: primero las de los aparatos del usuario, luego las generales."""
+        recomendaciones: List[Dict] = self._reglas_por_aparato(empresa, ctx) if ctx else []
         promedio_kwh = (consumo.get("promedio_diario_kwh") or 0.0) if consumo else 0.0
         promedio_ghi = (solar.get("promedio_ghi") or 0.0) if solar else 0.0
         tarifa = (empresa.tarifa_kwh or 943.0) if empresa else 943.0
         num_anomalias = (consumo.get("num_anomalias") or 0) if consumo else 0
-        es_hogar = (empresa and empresa.tipo == "hogar")
+        es_hogar = bool(empresa) and (getattr(empresa, "tipo_entidad", None) or empresa.tipo) == "hogar"
+        ciudad = (empresa.ciudad or "La Guajira") if empresa else "La Guajira"
+        tiene_paneles = bool(empresa and (empresa.capacidad_paneles_kw or 0) > 0)
+        dim = (ctx or {}).get("dimensionamiento") or {}
 
-        ciudad_cliente = (empresa.ciudad or "Fonseca") if empresa else "Fonseca"
-
-        # 1. Aprovechar horario solar pico
-        if promedio_ghi > 4.5:
-            ahorro = round(promedio_kwh * 0.2 * tarifa, 0)
-            texto_rec = (
-                "Lave, planche o encienda los electrodomésticos de mayor consumo de su casa entre 10 AM y 2 PM, "
-                f"aprovechando las horas de máxima radiación solar en {ciudad_cliente} para reducir lo comprado a Air-E."
+        # Generales (solo se agregan hasta completar 5)
+        ya_redistribuye = any(r.get("tipo") == "redistribucion" for r in recomendaciones)
+        if promedio_ghi > 4.5 and tiene_paneles and not ya_redistribuye:
+            texto = (
+                f"Lave, planche o encienda los electrodomésticos de mayor consumo entre 10 AM y 2 PM, cuando sus paneles producen más en {ciudad}."
                 if es_hogar else
-                "Concentre operaciones de alto consumo (refrigeración intensa, bombas, procesos) entre 10 AM y 2 PM "
-                f"cuando la radiación solar es máxima en {ciudad_cliente}. Puede ahorrar hasta 20% en costos diurnos."
+                f"Concentre operaciones de alto consumo entre 10 AM y 2 PM, cuando sus paneles producen más en {ciudad}."
             )
-            recomendaciones.append({
-                "texto": texto_rec,
-                "tipo": "redistribucion",
-                "impacto_cop": ahorro,
-                "confianza": 85.0,
-            })
+            recomendaciones.append({"texto": texto, "tipo": "redistribucion", "impacto_cop": round(promedio_kwh * 0.2 * tarifa), "confianza": 85.0})
 
-        # 2. Reducir consumos nocturnos / pico
         if promedio_kwh > 0:
-            ahorro = round(promedio_kwh * 0.1 * tarifa, 0)
-            texto_rec = (
-                "Apague luces y equipos de climatización innecesarios entre 6 PM y 9 PM para disminuir el consumo "
-                "acumulado nocturno y fomentar hábitos de ahorro familiar."
+            texto = (
+                "Apague luces y aires acondicionados que no se estén usando en la noche: es cuando más se acumula consumo en casa."
                 if es_hogar else
-                "Reduzca cargas no esenciales entre 6 PM y 9 PM para evitar el pico de demanda y disminuir el cargo por potencia máxima."
+                "Evite encender al mismo tiempo los equipos de mayor potencia entre 6 PM y 9 PM, la hora de mayor demanda de la red: así no sobrecarga su instalación."
             )
+            recomendaciones.append({"texto": texto, "tipo": "redistribucion", "impacto_cop": round(promedio_kwh * 0.1 * tarifa), "confianza": 80.0})
+
+        if empresa and (empresa.capacidad_paneles_kw or 0) == 0 and not dim.get("consumo_mes_kwh"):
+            kwp = dim.get("kwp_sugerido") or (2.5 if es_hogar else 10.0)
             recomendaciones.append({
-                "texto": texto_rec,
-                "tipo": "redistribucion",
-                "impacto_cop": ahorro,
-                "confianza": 80.0,
+                "texto": f"Un sistema solar de {kwp} kWp podría cubrir buena parte de su consumo diurno y reducir cada factura de Air-E.",
+                "tipo": "ahorro", "impacto_cop": round(promedio_kwh * 0.4 * tarifa * 30), "confianza": 75.0,
             })
 
-        # 3. Instalación solar
-        if empresa and empresa.capacidad_paneles_kw == 0:
-            texto_rec = (
-                "Instalar un sistema solar residencial recomendado de 2.5 kWp podría cubrir hasta el 50% de su consumo familiar diurno. "
-                "Ahorrará dinero directo en cada factura de Air-E."
-                if es_hogar else
-                f"Instalar 5-10 kW de paneles solares podría cubrir 30-50% de su consumo diario (~{promedio_kwh * 0.4:.0f} kWh/día). ROI estimado: 4-6 años en La Guajira."
-            )
-            recomendaciones.append({
-                "texto": texto_rec,
-                "tipo": "ahorro",
-                "impacto_cop": round(promedio_kwh * 0.4 * tarifa * 30, 0),
-                "confianza": 75.0,
-            })
-
-        # 4. Anomalías detectadas
         if num_anomalias > 0:
-            texto_rec = (
-                f"Se detectaron {num_anomalias} días con consumo inusualmente alto en su casa. "
-                "Revise si algún aire acondicionado doméstico se dejó encendido sin termostato, "
-                "o si hay fugas de calor por ventanas abiertas."
-                if es_hogar else
-                f"Se detectaron {num_anomalias} días con consumo anómalo. Revise equipos en operación esos días: "
-                "aires acondicionados sin termostato, fugas térmicas o equipos defectuosos."
-            )
             recomendaciones.append({
-                "texto": texto_rec,
-                "tipo": "mantenimiento",
-                "impacto_cop": round(promedio_kwh * 0.15 * tarifa, 0),
-                "confianza": 70.0,
+                "texto": f"Se detectaron {num_anomalias} días con consumo inusualmente alto. Revise qué equipos estuvieron encendidos esos días.",
+                "tipo": "mantenimiento", "impacto_cop": round(promedio_kwh * 0.15 * tarifa), "confianza": 70.0,
             })
 
-        # 5. Batería de respaldo
-        if empresa and empresa.capacidad_bateria_kwh == 0:
-            texto_rec = (
-                "Considere equipar su hogar con un banco de baterías básico (ej. 5 kWh). "
-                f"Evitará que los frecuentes apagones de {ciudad_cliente} apaguen sus luces y dañen los alimentos de su nevera."
+        if empresa and (empresa.capacidad_bateria_kwh or 0) == 0:
+            bateria = dim.get("bateria_kwh_sugerida") or (5.0 if es_hogar else 30.0)
+            texto = (
+                f"Una batería de {bateria} kWh mantendría encendidas la nevera, las luces y el internet durante los cortes de luz."
                 if es_hogar else
-                f"Considere instalar un sistema de respaldo con baterías. {ciudad_cliente} tiene ~60h de apagones al año; con baterías evitaría pérdidas operativas y costos de plantas diésel."
+                f"Una batería de {bateria} kWh respaldaría sus equipos críticos (refrigeración, iluminación, caja) durante los cortes."
             )
-            recomendaciones.append({
-                "texto": texto_rec,
-                "tipo": "contingencia",
-                "impacto_cop": 50000 if es_hogar else 200000,
-                "confianza": 70.0,
-            })
+            recomendaciones.append({"texto": texto, "tipo": "contingencia", "impacto_cop": 50000 if es_hogar else 200000, "confianza": 70.0})
 
         return recomendaciones[:5]
 

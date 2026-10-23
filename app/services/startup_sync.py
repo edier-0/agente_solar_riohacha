@@ -1,13 +1,14 @@
 """
 Servicio de sincronización inicial y precalentamiento para las Fuentes de Verdad.
 Garantiza que la base de datos MySQL cuente con series reales de radiación y clima
-de Open-Meteo, NASA Power, PVGIS y OpenWeather para Fonseca al iniciar la app,
+de Open-Meteo, NASA Power, PVGIS y OpenWeather para la ubicación configurada al iniciar la app,
 evitando que se requieran acciones manuales de los usuarios.
 """
 import logging
 from sqlalchemy.orm import Session
 from datetime import datetime
 
+from app.core.config import get_settings
 from app.models.models import RadiacionSolar
 from app.services.openmeteo import openmeteo_service
 from app.services.nasa_power import nasa_service
@@ -61,7 +62,7 @@ async def ejecutar_sincronizacion_inicial(db: Session) -> None:
     
     try:
         # 1. Sincronizar Open-Meteo (Últimos 30 días de radiación real)
-        logger.info("🌤️ [STARTUP SYNC] Conectando con Open-Meteo Archive (ERA5) para Fonseca...")
+        logger.info(f"🌤️ [STARTUP SYNC] Conectando con Open-Meteo Archive (ERA5) para {get_settings().LOCATION_CITY}...")
         try:
             om_data = await openmeteo_service.get_ultimos_dias(days=30)
             om_added = _upsert_radiacion_local(db, om_data)
@@ -70,7 +71,7 @@ async def ejecutar_sincronizacion_inicial(db: Session) -> None:
             logger.warning(f"⚠️ [STARTUP SYNC] No se pudo sincronizar Open-Meteo al iniciar: {e}. Fallback listo.")
 
         # 2. Sincronizar NASA POWER (Últimos 30 días de respaldo y validación)
-        logger.info("🌤️ [STARTUP SYNC] Conectando con NASA POWER API para Fonseca...")
+        logger.info(f"🌤️ [STARTUP SYNC] Conectando con NASA POWER API para {get_settings().LOCATION_CITY}...")
         try:
             nasa_data = await nasa_service.get_last_days(days=30)
             nasa_added = _upsert_radiacion_local(db, nasa_data)
@@ -98,7 +99,7 @@ async def ejecutar_sincronizacion_inicial(db: Session) -> None:
             weather_data = await openweather_service.get_current_weather(allow_synthetic=False)
             if weather_data:
                 logger.info(
-                    f"🟢 [STARTUP SYNC] OpenWeather inicializado. Clima actual en Fonseca: "
+                    f"🟢 [STARTUP SYNC] OpenWeather inicializado. Clima actual en {get_settings().LOCATION_CITY}: "
                     f"{weather_data.get('temperatura')}°C, {weather_data.get('descripcion')}"
                 )
         except Exception as e:
