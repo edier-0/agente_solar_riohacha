@@ -1,67 +1,41 @@
 [
   {
-    "id": 1792424394,
+    "id": 1792689265,
     "empresa_id": 1,
-    "texto": "Programe el pre-enfriamiento de las habitaciones vac\u00edas con aire acondicionado entre las 11:00 y las 14:00 horas, aprovechando el pico de radiaci\u00f3n solar para reducir la demanda m\u00e1xima.",
+    "texto": "Tu aire acondicionado 12.000 BTU (20 unidades) es el 44% de tu consumo (\u2248$4,073,760/mes). Programarlo a 24 \u00b0C, cerrar puertas y ventanas y limpiar el filtro cada mes baja bastante su consumo. Cada grado m\u00e1s fr\u00edo sube el gasto cerca de 7%.",
+    "tipo": "ahorro",
+    "impacto_estimado_cop": 611064.0,
+    "confianza_pct": 80.0,
+    "escenario": "demo",
+    "origen_dato": "json_demo",
+    "confiabilidad_datos": 55.0,
+    "aplicada": false,
+    "created_at": "2026-10-22T17:14:25"
+  },
+  {
+    "id": 1792689266,
+    "empresa_id": 1,
+    "texto": "Programa ma\u00f1ana de 10:00 a 14:00 el uso de: secadora de ropa y horno el\u00e9ctrico. Con el sol m\u00e1s fuerte, tus paneles cubren ese consumo en vez de la red.",
     "tipo": "redistribucion",
-    "impacto_estimado_cop": 1450000.0,
-    "confianza_pct": 90.0,
+    "impacto_estimado_cop": 169740.0,
+    "confianza_pct": 80.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
     "aplicada": false,
-    "created_at": "2026-10-19T15:39:54"
+    "created_at": "2026-10-22T17:14:25"
   },
   {
-    "id": 1792424395,
+    "id": 1792689267,
     "empresa_id": 1,
-    "texto": "Instale variadores de frecuencia en las bombas de la piscina para operar a menor capacidad de 13:00 a 16:00, ahorrando hasta un 30% en su consumo el\u00e9ctrico diario.",
-    "tipo": "ahorro",
-    "impacto_estimado_cop": 2100000.0,
-    "confianza_pct": 88.0,
+    "texto": "Evite encender al mismo tiempo los equipos de mayor potencia entre 6 PM y 9 PM, la hora de mayor demanda de la red: as\u00ed no sobrecarga su instalaci\u00f3n.",
+    "tipo": "redistribucion",
+    "impacto_estimado_cop": 36907.0,
+    "confianza_pct": 80.0,
     "escenario": "demo",
     "origen_dato": "json_demo",
     "confiabilidad_datos": 55.0,
     "aplicada": false,
-    "created_at": "2026-10-19T15:39:54"
-  },
-  {
-    "id": 1792424396,
-    "empresa_id": 1,
-    "texto": "Realice lavado en seco de los paneles solares cada 15 d\u00edas antes de las 07:00 horas para mitigar la p\u00e9rdida de eficiencia del 12% causada por el polvo y la arena del desierto guajiro.",
-    "tipo": "mantenimiento",
-    "impacto_estimado_cop": 1800000.0,
-    "confianza_pct": 92.0,
-    "escenario": "demo",
-    "origen_dato": "json_demo",
-    "confiabilidad_datos": 55.0,
-    "aplicada": false,
-    "created_at": "2026-10-19T15:39:54"
-  },
-  {
-    "id": 1792424397,
-    "empresa_id": 1,
-    "texto": "Configure el sistema de respaldo con bater\u00edas para asumir las cargas cr\u00edticas autom\u00e1ticamente durante los frecuentes apagones locales, evitando da\u00f1os en equipos de refrigeraci\u00f3n y penalizaciones por picos.",
-    "tipo": "contingencia",
-    "impacto_estimado_cop": 1200000.0,
-    "confianza_pct": 85.0,
-    "escenario": "demo",
-    "origen_dato": "json_demo",
-    "confiabilidad_datos": 55.0,
-    "aplicada": false,
-    "created_at": "2026-10-19T15:39:54"
-  },
-  {
-    "id": 1792424398,
-    "empresa_id": 1,
-    "texto": "Reemplace la iluminaci\u00f3n hal\u00f3gena y fluorescente de \u00e1reas comunes por tecnolog\u00eda LED y sensores de presencia, operando con mayor intensidad entre las 18:00 y las 22:00 horas.",
-    "tipo": "ahorro",
-    "impacto_estimado_cop": 950000.0,
-    "confianza_pct": 95.0,
-    "escenario": "demo",
-    "origen_dato": "json_demo",
-    "confiabilidad_datos": 55.0,
-    "aplicada": false,
-    "created_at": "2026-10-19T15:39:54"
+    "created_at": "2026-10-22T17:14:25"
   }
 ]

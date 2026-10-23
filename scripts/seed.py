@@ -20,6 +20,8 @@ from app.core.security import get_password_hash
 from app.db.migrations import ensure_schema_compatibility
 from app.db.session import Base, SessionLocal, engine
 from app.models.models import (
+    AparatoUsuario,
+    CatalogoAparato,
     ConfiguracionAlerta,
     ConsumoEnergetico,
     Empresa,
@@ -27,6 +29,50 @@ from app.models.models import (
     User,
     UserRole,
 )
+from app.services.catalogo_aparatos import sincronizar_catalogo
+
+
+def asegurar_config_alertas(db: Session, empresa: Empresa) -> None:
+    """Una sola configuración de alertas por empresa: la crea si falta y quita duplicados de seeds anteriores."""
+    configs = (
+        db.query(ConfiguracionAlerta)
+        .filter(ConfiguracionAlerta.empresa_id == empresa.id)
+        .order_by(ConfiguracionAlerta.id)
+        .all()
+    )
+    if not configs:
+        db.add(ConfiguracionAlerta(
+            empresa_id=empresa.id,
+            umbral_consumo_diario_kwh=400.0,
+            umbral_bateria_baja_pct=20.0,
+            umbral_radiacion_baja=2.5,
+        ))
+        print("[OK] Configuración de alertas creada")
+    for duplicada in configs[1:]:
+        db.delete(duplicada)
+    if len(configs) > 1:
+        print(f"[OK] Configuraciones de alertas duplicadas eliminadas: {len(configs) - 1}")
+    db.commit()
+
+
+def cargar_aparatos_demo(db: Session, empresa: Empresa) -> None:
+    """Inventario de ejemplo del hotel demo. Solo agrega los aparatos que la empresa aún no tiene."""
+    archivo = Path(__file__).parent / "demo_data" / "aparatos_demo.json"
+    if not archivo.exists():
+        print(f"[WARN] Archivo no encontrado: {archivo}")
+        return
+    sincronizar_catalogo(db)
+    catalogo = {c.codigo: c for c in db.query(CatalogoAparato).filter(CatalogoAparato.activo == True).all()}  # noqa: E712
+    existentes = {a.catalogo_id for a in db.query(AparatoUsuario).filter(AparatoUsuario.empresa_id == empresa.id).all()}
+    agregados = 0
+    for item in json.loads(archivo.read_text(encoding="utf-8"))["aparatos"]:
+        c = catalogo.get(item["codigo"])
+        if c is None or c.id in existentes:
+            continue
+        db.add(AparatoUsuario(empresa_id=empresa.id, catalogo_id=c.id, nombre=c.nombre, cantidad=item.get("cantidad", 1)))
+        agregados += 1
+    db.commit()
+    print(f"[OK] Aparatos demo agregados: {agregados}" if agregados else "[SKIP] El hotel demo ya tiene su inventario")
 
 
 def seed() -> None:
@@ -43,6 +89,7 @@ def seed() -> None:
             empresa = Empresa(
                 nombre="Hotel Solar Fonseca",
                 tipo="hotel",
+                tipo_entidad="empresa",
                 direccion="Calle 13 #18-40, Fonseca",
                 ciudad="Fonseca",
                 departamento="La Guajira",
@@ -64,14 +111,8 @@ def seed() -> None:
                 db.refresh(empresa)
                 print(f"[OK] Empresa demo actualizada a: {empresa.nombre} (Ciudad: {empresa.ciudad})")
 
-            config = ConfiguracionAlerta(
-                empresa_id=empresa.id,
-                umbral_consumo_diario_kwh=400.0,
-                umbral_bateria_baja_pct=20.0,
-                umbral_radiacion_baja=2.5,
-            )
-            db.add(config)
-            db.commit()
+        asegurar_config_alertas(db, empresa)
+        cargar_aparatos_demo(db, empresa)
 
         usuarios_demo = [
             {
