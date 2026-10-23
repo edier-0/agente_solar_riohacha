@@ -8,7 +8,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - Alertas de clima municipal (Fonseca/Riohacha) y avisos de carga por electrodoméstico.
 - Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local.
 - Entrada por login (con cuenta demo); alta de usuarios restringida a administradores.
-- Rama dedicada activa: `feature/preparacion-proyecto-ingenova` (integrando cambios de `cambio_fronen2`).
+- Rama dedicada activa: `feature/preparacion-proyecto-ingenova` (publicada en remoto).
+- Ramas del repositorio consolidadas: solo `main`, `develop` y `feature/preparacion-proyecto-ingenova`.
 
 ## Decisiones (y por qué)
 - **Motor dual IA + Heurística**: Asegurar operación continua offline durante cortes o sin API Key.
