@@ -16,6 +16,7 @@ from api_client import (
     is_authenticated,
     logout,
 )
+from asistente_widget import render_asistente_flotante
 from design import icon_svg, inject_css, inject_style_block, render_html_block, PALETTE
 
 
@@ -202,6 +203,9 @@ def render_sidebar_autenticado(user: dict | None) -> None:
             if st.button("Cerrar sesión", use_container_width=True, key="sidebar_logout"):
                 logout()
                 go_to_login()
+
+    # Widget flotante del Copiloto Ka'i en la esquina inferior derecha
+    render_asistente_flotante(user)
 
 
 def render_user_sidebar() -> None:
