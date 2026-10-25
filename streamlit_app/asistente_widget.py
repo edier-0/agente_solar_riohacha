@@ -150,11 +150,9 @@ def render_asistente_flotante(user: dict | None) -> None:
     if not user:
         return
 
-    # Ancla invisible para que el selector CSS fije el botón en la esquina inferior derecha
-    st.markdown('<div id="kai-fab-anchor"></div>', unsafe_allow_html=True)
     if st.button(
-        "☀️ Copiloto Ka'i",
-        key="btn_kai_chat_floating",
-        help="Pregúntale a Ka'i sobre cómo usar la app o conceptos solares",
+        "💬 Pregúntale a Ka'i",
+        key="btn_preguntale_kai",
+        help="Pregúntale a Ka'i sobre navegación en la app, consumo de aparatos o energía solar",
     ):
         dialog_chat_kai(user)

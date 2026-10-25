@@ -1868,38 +1868,57 @@ div[role="dialog"]:has(.ag-dialogo-borrar) .stButton button[kind="primary"]:hove
         animation: none !important;
     }}
 /* ---------- Asistente Copiloto Ka'i Flotante (Inferior Derecha) ---------- */
-div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] {{
+.st-key-btn_preguntale_kai,
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai),
+.element-container:has(.st-key-btn_preguntale_kai),
+div:has(> .st-key-btn_preguntale_kai) {{
     position: fixed !important;
     bottom: 24px !important;
     right: 24px !important;
-    z-index: 999999 !important;
+    z-index: 9999999 !important;
     width: auto !important;
     margin: 0 !important;
     padding: 0 !important;
 }}
 
-div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] button {{
+.st-key-btn_preguntale_kai button,
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button,
+.element-container:has(.st-key-btn_preguntale_kai) button {{
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    z-index: 9999999 !important;
     background: linear-gradient(135deg, #2FA38A 0%, #155546 100%) !important;
     color: #FFFFFF !important;
-    border: 1.5px solid rgba(216, 162, 74, 0.6) !important;
+    border: 1.5px solid rgba(216, 162, 74, 0.75) !important;
     border-radius: 999px !important;
-    padding: 0.65rem 1.3rem !important;
+    padding: 0.75rem 1.4rem !important;
     font-size: 0.95rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.01em !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(47, 163, 138, 0.4) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 18px rgba(47, 163, 138, 0.45) !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 0.55rem !important;
+    gap: 0.6rem !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer !important;
+    width: auto !important;
 }}
 
-div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] button:hover {{
-    transform: translateY(-2px) scale(1.04) !important;
+.st-key-btn_preguntale_kai button p,
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button p {{
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+}}
+
+.st-key-btn_preguntale_kai button:hover,
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button:hover {{
+    transform: translateY(-3px) scale(1.05) !important;
     border-color: #D8A24A !important;
     background: linear-gradient(135deg, #37BD9F 0%, #1C6E5D 100%) !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 24px rgba(216, 162, 74, 0.6) !important;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(216, 162, 74, 0.65) !important;
 }}
 
 /* Modal del Copiloto Ka'i */
