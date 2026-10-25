@@ -417,3 +417,20 @@ class DashboardKPIs(BaseModel):
     nivel_bateria_pct: Optional[float] = None
     consumo_mes_kwh: Optional[float] = None
     costo_mes_cop: Optional[float] = None
+
+
+# --- Asistente Copiloto Chat Schemas ---
+class MensajeChat(BaseModel):
+    role: str = Field(..., pattern="^(user|assistant|system)$")
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+class ChatAsistenteRequest(BaseModel):
+    mensaje: str = Field(..., min_length=1, max_length=1000)
+    historial: List[MensajeChat] = Field(default_factory=list, max_length=20)
+
+
+class ChatAsistenteResponse(BaseModel):
+    respuesta: str
+    sugerencias: List[str] = Field(default_factory=list)
+    origen: str = "gemini"

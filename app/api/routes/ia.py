@@ -10,10 +10,11 @@ from sqlalchemy.orm import Session
 from app.api.deps.auth import get_current_user
 from app.db.session import get_db
 from app.models.models import Empresa, Recomendacion, User, UserRole
-from app.schemas.schemas import RecomendacionResponse
+from app.schemas.schemas import ChatAsistenteRequest, ChatAsistenteResponse, RecomendacionResponse
 from app.services.agents.agente_consumo import agente_consumo
 from app.services.agents.agente_recomendaciones import agente_recomendaciones
 from app.services.agents.agente_solar import agente_solar
+from app.services.asistente_copiloto import responder_chat_asistente
 from app.services.demo_data import get_consumo_demo, get_demo_empresa, get_radiacion_demo
 from app.services.demo_ops import list_demo_recs, mark_demo_rec_applied, save_demo_recs
 
@@ -255,3 +256,15 @@ def marcar_aplicada(
     db.commit()
     db.refresh(rec)
     return rec
+
+
+@router.post("/asistente/chat", response_model=ChatAsistenteResponse)
+async def chat_asistente_endpoint(
+    request: ChatAsistenteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Endpoint del Copiloto Ka'i para asistencia de navegación, conceptos solares y contexto personalizado del usuario.
+    """
+    return await responder_chat_asistente(db, current_user, request)
