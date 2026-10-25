@@ -135,14 +135,14 @@ def dialog_chat_kai(user: dict) -> None:
                         "origen": "error",
                     }
                 )
-        st.rerun()
+        st.rerun(scope="fragment")
 
     # Botón inferior para reiniciar chat
     col_izq, col_der = st.columns([3, 1])
     with col_der:
         if st.button("🗑️ Limpiar chat", key=f"kai_clear_{user_id}", use_container_width=True):
             st.session_state[history_key] = []
-            st.rerun()
+            st.rerun(scope="fragment")
 
 
 def render_asistente_flotante(user: dict | None) -> None:
