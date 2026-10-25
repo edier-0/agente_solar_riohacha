@@ -169,3 +169,19 @@ def test_respuesta_fallback_cuando_gemini_falla(db, crear_empresa, crear_usuario
         resultado = asyncio.run(responder_chat_asistente(db, user, req))
         assert resultado.origen == "heuristico"
         assert "Mis Aparatos" in resultado.respuesta
+
+
+def test_limpieza_rutas_archivos_en_navegacion():
+    """El copiloto jamás debe devolver rutas de archivos como 'pages/8_Administracion.py'."""
+    from app.services.asistente_copiloto import limpiar_rutas_archivos
+
+    texto_con_rutas = (
+        "Debes ir a pages/8_Administracion.py para registrar paneles y a pages/0_Mis_Aparatos.py para tus equipos."
+    )
+    limpio = limpiar_rutas_archivos(texto_con_rutas)
+    assert "pages/8_Administracion.py" not in limpio
+    assert "pages/0_Mis_Aparatos.py" not in limpio
+    assert ".py" not in limpio
+    assert "Administración" in limpio
+    assert "Mis Aparatos" in limpio
+

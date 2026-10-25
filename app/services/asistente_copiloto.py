@@ -15,59 +15,87 @@ from app.schemas.schemas import ChatAsistenteRequest, ChatAsistenteResponse
 from app.services.aparatos import calcular_estadisticas
 from app.services.gemini_client import obtener_respuesta_gemini
 
-# Mapeo de navegación de la aplicación Ka'i
+# Mapeo de navegación amigable para el frontend (sin rutas de archivos .py)
 MAPA_NAVEGACION = [
     {
         "nombre": "Mi día",
-        "archivo": "pages/0_Mi_Dia.py",
         "proposito": "Resumen ejecutivo diario: clima, horas de mayor sol, nivel de batería y consejos rápidos de ahorro.",
     },
     {
         "nombre": "Mis Aparatos",
-        "archivo": "pages/0_Mis_Aparatos.py",
         "proposito": "Inventario de electrodomésticos y equipos: consumo detallado en W y kWh/mes, consejos por aparato y agregar nuevos.",
     },
     {
         "nombre": "Panel (Dashboard)",
-        "archivo": "pages/1_Dashboard.py",
         "proposito": "Gráficos técnicos de telemetría: curvas de consumo, radiación solar y métricas consolidadas.",
     },
     {
         "nombre": "Consumo",
-        "archivo": "pages/2_Consumo.py",
         "proposito": "Registro y consulta de recibos de energía de Air-E, costos acumulados y comparativas históricas.",
     },
     {
         "nombre": "Recomendaciones IA",
-        "archivo": "pages/4_Recomendaciones_IA.py",
         "proposito": "Estrategias personalizadas de eficiencia energética y optimización horaria para reducir la factura.",
     },
     {
         "nombre": "Alertas",
-        "archivo": "pages/5_Alertas.py",
         "proposito": "Alertas climáticas del municipio: calor extremo, lluvias torrenciales, vientos y riesgo de cortes eléctricos de red.",
     },
     {
         "nombre": "Predicciones",
-        "archivo": "pages/6_Predicciones.py",
         "proposito": "Simulador de orquestación autónoma de baterías: autonomía en horas ante apagones según el riesgo de corte.",
     },
     {
         "nombre": "Reportes",
-        "archivo": "pages/7_Reportes.py",
         "proposito": "Exportación y descarga de informes ejecutivos e históricos en formatos PDF y Excel.",
     },
     {
         "nombre": "Datos Solares",
-        "archivo": "pages/3_Datos_Solares.py",
         "proposito": "Radiación solar histórica y pronósticos climáticos de La Guajira (Open-Meteo, NASA POWER, PVGIS).",
     },
     {
         "nombre": "Administración",
-        "archivo": "pages/8_Administracion.py",
         "proposito": "Gestión de usuarios y entidades (solo administrador). Incluye la ficha técnica fotovoltaica en 'Tengo paneles solares'.",
     },
 ]
+
+# Diccionario de sanitización para eliminar cualquier ruta .py residual
+MAPA_ARCHIVOS_A_NOMBRES = {
+    "pages/0_Mi_Dia.py": "Mi día",
+    "pages/0_Mis_Aparatos.py": "Mis Aparatos",
+    "pages/1_Dashboard.py": "Panel",
+    "pages/2_Consumo.py": "Consumo",
+    "pages/3_Datos_Solares.py": "Datos solares",
+    "pages/4_Recomendaciones_IA.py": "Recomendaciones IA",
+    "pages/5_Alertas.py": "Alertas",
+    "pages/6_Predicciones.py": "Predicciones",
+    "pages/7_Reportes.py": "Reportes",
+    "pages/8_Administracion.py": "Administración",
+    "0_Mi_Dia.py": "Mi día",
+    "0_Mis_Aparatos.py": "Mis Aparatos",
+    "1_Dashboard.py": "Panel",
+    "2_Consumo.py": "Consumo",
+    "3_Datos_Solares.py": "Datos solares",
+    "4_Recomendaciones_IA.py": "Recomendaciones IA",
+    "5_Alertas.py": "Alertas",
+    "6_Predicciones.py": "Predicciones",
+    "7_Reportes.py": "Reportes",
+    "8_Administracion.py": "Administración",
+    "Home.py": "Inicio",
+}
+
+
+def limpiar_rutas_archivos(texto: str) -> str:
+    """Reemplaza cualquier mención de archivos o rutas .py por el nombre visible del apartado en el frontend."""
+    if not texto:
+        return ""
+    resultado = texto
+    for ruta, nombre in MAPA_ARCHIVOS_A_NOMBRES.items():
+        resultado = re.sub(rf"[`'\"]?{re.escape(ruta)}[`'\"]?", f"**'{nombre}'**", resultado)
+    # Limpieza de patrones genéricos residuales como 'pages/X_Algo.py' o 'X_Algo.py'
+    resultado = re.sub(r"[`'\"]?pages/\d+_([a-zA-Z_]+)\.py[`'\"]?", r"**'\1'**", resultado)
+    resultado = re.sub(r"[`'\"]?\b\d+_([a-zA-Z_]+)\.py\b[`'\"]?", r"**'\1'**", resultado)
+    return resultado
 
 
 def construir_contexto_usuario(db: Session, user: User) -> Dict:
@@ -311,21 +339,24 @@ async def responder_chat_asistente(
         f"- Principales equipos que más consumen: {', '.join(ap['principales']) if ap['principales'] else 'ninguno'}\n"
     )
 
-    pantallas_guia = "\n".join([f"- **{p['nombre']}** ({p['archivo']}): {p['proposito']}" for p in MAPA_NAVEGACION])
+    pantallas_guia = "\n".join([f"- Menú **'{p['nombre']}'**: {p['proposito']}" for p in MAPA_NAVEGACION])
 
     system_instruction = (
         "Eres Ka'i, el copiloto inteligente de energía solar y transición energética para hogares y empresas en La Guajira, Colombia.\n"
         "Tu misión es guiar al usuario en el uso del aplicativo Ka'i, explicar términos técnicos de energía solar y responder preguntas "
         "sobre sus propios aparatos y datos energéticos con máxima precisión, empatía y claridad.\n\n"
         "REGLAS OBLIGATORIAS:\n"
-        "1. ALCANCE ESTRICTO: Responde únicamente sobre el aplicativo web Ka'i, navegación entre sus páginas, uso de electrodomésticos, "
+        "1. ALCANCE ESTRICTO: Responde únicamente sobre el aplicativo web Ka'i, navegación entre sus pantallas, uso de electrodomésticos, "
         "paneles solares, baterías, facturación de energía (Air-E) y transición energética en La Guajira. Si el usuario pregunta cosas no "
         "relacionadas (fútbol, cocina, tareas escolares, política general), declina cortésmente indicando tu función como copiloto solar.\n"
         "2. ADAPTACIÓN AL PERFIL: El usuario actual es de tipo '" + str(e.get("tipo")) + "'. Si es hogar/residencial, usa lenguaje amigable "
         "sin tecnicismos innecesarios. Si es comercial/pyme, habla en términos de costo, ROI y gestión operativa.\n"
         "3. DATOS REALES DEL USUARIO: Usa los datos provistos en el contexto para responder sobre sus aparatos o su sistema solar. "
         "Nunca inventes datos de otros usuarios ni mezcles información.\n"
-        "4. NAVEGACIÓN PRECISA: Indica exactamente a qué pantalla del menú lateral debe ir el usuario para realizar cada acción.\n"
+        "4. NAVEGACIÓN EN EL FRONTEND (MUY IMPORTANTE): Refiérete a los apartados del aplicativo ÚNICAMENTE por su nombre visible en el menú lateral "
+        "(por ejemplo: 'Administración', 'Mis Aparatos', 'Mi día', 'Consumo', 'Alertas', 'Predicciones', 'Reportes'). "
+        "ESTÁ COMPLETAMENTE PROHIBIDO devolver nombres de archivos de código fuente o rutas técnicas, tales como 'pages/8_Administracion.py', "
+        "'pages/0_Mis_Aparatos.py', 'Home.py' o cualquier archivo con extensión '.py'. El usuario es una persona que usa la interfaz web en su navegador.\n"
         "5. CONCISIÓN: Mantén tus respuestas claras y directas (2 a 4 párrafos cortos como máximo)."
     )
 
@@ -353,8 +384,9 @@ async def responder_chat_asistente(
         respuesta_llm = await obtener_respuesta_gemini(prompt, system_instruction=system_instruction)
         if respuesta_llm and len(respuesta_llm.strip()) > 15:
             sugerencias = _sugerencias_por_defecto(e.get("tipo", "hogar"))
+            limpia = limpiar_rutas_archivos(respuesta_llm.strip())
             return ChatAsistenteResponse(
-                respuesta=respuesta_llm.strip(),
+                respuesta=limpia,
                 sugerencias=sugerencias,
                 origen="gemini",
             )
@@ -364,7 +396,7 @@ async def responder_chat_asistente(
     # Fallback heurístico
     resp_heuristica, sugerencias = generar_respuesta_heuristica(mensaje_usuario, contexto)
     return ChatAsistenteResponse(
-        respuesta=resp_heuristica,
+        respuesta=limpiar_rutas_archivos(resp_heuristica),
         sugerencias=sugerencias,
         origen="heuristico",
     )
