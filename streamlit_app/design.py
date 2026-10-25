@@ -1867,30 +1867,32 @@ div[role="dialog"]:has(.ag-dialogo-borrar) .stButton button[kind="primary"]:hove
     [data-testid="stSidebarUserContent"] * {{
         animation: none !important;
     }}
+}}
+
 /* ---------- Asistente Copiloto Ka'i Flotante (Inferior Derecha) ---------- */
 .st-key-btn_preguntale_kai,
+div[data-testid="stPopover"]:has(.st-key-btn_preguntale_kai),
+div[data-testid="stElementContainer"]:has(.st-key-btn_preguntale_kai),
 div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai),
 .element-container:has(.st-key-btn_preguntale_kai),
 div:has(> .st-key-btn_preguntale_kai) {{
     position: fixed !important;
     bottom: 24px !important;
     right: 24px !important;
-    z-index: 9999999 !important;
+    z-index: 9999 !important;
     width: auto !important;
     margin: 0 !important;
     padding: 0 !important;
 }}
 
 .st-key-btn_preguntale_kai button,
+.st-key-btn_preguntale_kai > button,
+div[data-testid="stPopover"]:has(.st-key-btn_preguntale_kai) button,
 div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button,
 .element-container:has(.st-key-btn_preguntale_kai) button {{
-    position: fixed !important;
-    bottom: 24px !important;
-    right: 24px !important;
-    z-index: 9999999 !important;
     background: linear-gradient(135deg, #2FA38A 0%, #155546 100%) !important;
     color: #FFFFFF !important;
-    border: 1.5px solid rgba(216, 162, 74, 0.75) !important;
+    border: 1.5px solid rgba(216, 162, 74, 0.85) !important;
     border-radius: 999px !important;
     padding: 0.75rem 1.4rem !important;
     font-size: 0.95rem !important;
@@ -1906,6 +1908,7 @@ div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button,
 }}
 
 .st-key-btn_preguntale_kai button p,
+.st-key-btn_preguntale_kai button span,
 div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button p {{
     color: #FFFFFF !important;
     font-weight: 700 !important;
@@ -1914,11 +1917,37 @@ div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button p {{
 }}
 
 .st-key-btn_preguntale_kai button:hover,
+.st-key-btn_preguntale_kai > button:hover,
+div[data-testid="stPopover"]:has(.st-key-btn_preguntale_kai) button:hover,
 div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button:hover {{
-    transform: translateY(-3px) scale(1.05) !important;
+    transform: translateY(-3px) scale(1.04) !important;
     border-color: #D8A24A !important;
     background: linear-gradient(135deg, #37BD9F 0%, #1C6E5D 100%) !important;
     box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(216, 162, 74, 0.65) !important;
+}}
+
+/* Popover desplegable del Copiloto Ka'i */
+[data-testid="stPopoverBody"],
+div[data-testid="stPopoverBody"] {{
+    background: #0F1D27 !important;
+    border: 1px solid #213A49 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 24px rgba(47, 163, 138, 0.25) !important;
+    width: min(440px, 92vw) !important;
+    max-width: 460px !important;
+    max-height: 82vh !important;
+    padding: 1rem !important;
+}}
+
+div[data-baseweb="popover"] {{
+    background: transparent !important;
+}}
+
+div[data-baseweb="popover"] > div {{
+    background: #0F1D27 !important;
+    border: 1px solid #213A49 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 24px rgba(47, 163, 138, 0.25) !important;
 }}
 
 /* Modal del Copiloto Ka'i */
@@ -1974,7 +2003,6 @@ div[data-testid="stDialog"] div[role="dialog"] {{
     border-color: #2FA38A !important;
     color: #FFFFFF !important;
     transform: translateY(-1px) !important;
-}}
 }}
         """
     )

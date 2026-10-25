@@ -59,30 +59,20 @@ MAPA_NAVEGACION = [
     },
 ]
 
-# Diccionario de sanitización para eliminar cualquier ruta .py residual
-MAPA_ARCHIVOS_A_NOMBRES = {
-    "pages/0_Mi_Dia.py": "Mi día",
-    "pages/0_Mis_Aparatos.py": "Mis Aparatos",
-    "pages/1_Dashboard.py": "Panel",
-    "pages/2_Consumo.py": "Consumo",
-    "pages/3_Datos_Solares.py": "Datos solares",
-    "pages/4_Recomendaciones_IA.py": "Recomendaciones IA",
-    "pages/5_Alertas.py": "Alertas",
-    "pages/6_Predicciones.py": "Predicciones",
-    "pages/7_Reportes.py": "Reportes",
-    "pages/8_Administracion.py": "Administración",
-    "0_Mi_Dia.py": "Mi día",
-    "0_Mis_Aparatos.py": "Mis Aparatos",
-    "1_Dashboard.py": "Panel",
-    "2_Consumo.py": "Consumo",
-    "3_Datos_Solares.py": "Datos solares",
-    "4_Recomendaciones_IA.py": "Recomendaciones IA",
-    "5_Alertas.py": "Alertas",
-    "6_Predicciones.py": "Predicciones",
-    "7_Reportes.py": "Reportes",
-    "8_Administracion.py": "Administración",
-    "Home.py": "Inicio",
-}
+# Patrones de sanitización para eliminar cualquier ruta .py residual y devolver el nombre del frontend
+PATRONES_ARCHIVOS_A_NOMBRES = [
+    (r"(?:pages[/\\])?8_administraci[oó]n\.py", "Administración"),
+    (r"(?:pages[/\\])?0_mi_d[ií]a\.py", "Mi día"),
+    (r"(?:pages[/\\])?0_mis_aparatos\.py", "Mis Aparatos"),
+    (r"(?:pages[/\\])?1_dashboard\.py", "Panel"),
+    (r"(?:pages[/\\])?2_consumo\.py", "Consumo"),
+    (r"(?:pages[/\\])?3_datos_solares\.py", "Datos solares"),
+    (r"(?:pages[/\\])?4_recomendaciones_ia\.py", "Recomendaciones IA"),
+    (r"(?:pages[/\\])?5_alertas\.py", "Alertas"),
+    (r"(?:pages[/\\])?6_predicciones\.py", "Predicciones"),
+    (r"(?:pages[/\\])?7_reportes\.py", "Reportes"),
+    (r"\bhome\.py\b", "Inicio"),
+]
 
 
 def limpiar_rutas_archivos(texto: str) -> str:
@@ -90,11 +80,12 @@ def limpiar_rutas_archivos(texto: str) -> str:
     if not texto:
         return ""
     resultado = texto
-    for ruta, nombre in MAPA_ARCHIVOS_A_NOMBRES.items():
-        resultado = re.sub(rf"[`'\"]?{re.escape(ruta)}[`'\"]?", f"**'{nombre}'**", resultado)
-    # Limpieza de patrones genéricos residuales como 'pages/X_Algo.py' o 'X_Algo.py'
-    resultado = re.sub(r"[`'\"]?pages/\d+_([a-zA-Z_]+)\.py[`'\"]?", r"**'\1'**", resultado)
-    resultado = re.sub(r"[`'\"]?\b\d+_([a-zA-Z_]+)\.py\b[`'\"]?", r"**'\1'**", resultado)
+    for patron, nombre in PATRONES_ARCHIVOS_A_NOMBRES:
+        resultado = re.sub(rf"[`'\"]?{patron}[`'\"]?", f"**'{nombre}'**", resultado, flags=re.IGNORECASE)
+    # Limpieza de patrones genéricos residuales como 'pages/X_Algo.py', 'X_Algo.py' o cualquier archivo .py
+    resultado = re.sub(r"[`'\"]?pages[/\\]\d+_([a-zA-Z_]+)\.py[`'\"]?", r"**'\1'**", resultado, flags=re.IGNORECASE)
+    resultado = re.sub(r"[`'\"]?\b\d+_([a-zA-Z_]+)\.py\b[`'\"]?", r"**'\1'**", resultado, flags=re.IGNORECASE)
+    resultado = re.sub(r"[`'\"]?\b([a-zA-Z_]+)\.py\b[`'\"]?", r"**'\1'**", resultado, flags=re.IGNORECASE)
     return resultado
 
 
@@ -353,10 +344,12 @@ async def responder_chat_asistente(
         "sin tecnicismos innecesarios. Si es comercial/pyme, habla en términos de costo, ROI y gestión operativa.\n"
         "3. DATOS REALES DEL USUARIO: Usa los datos provistos en el contexto para responder sobre sus aparatos o su sistema solar. "
         "Nunca inventes datos de otros usuarios ni mezcles información.\n"
-        "4. NAVEGACIÓN EN EL FRONTEND (MUY IMPORTANTE): Refiérete a los apartados del aplicativo ÚNICAMENTE por su nombre visible en el menú lateral "
-        "(por ejemplo: 'Administración', 'Mis Aparatos', 'Mi día', 'Consumo', 'Alertas', 'Predicciones', 'Reportes'). "
-        "ESTÁ COMPLETAMENTE PROHIBIDO devolver nombres de archivos de código fuente o rutas técnicas, tales como 'pages/8_Administracion.py', "
-        "'pages/0_Mis_Aparatos.py', 'Home.py' o cualquier archivo con extensión '.py'. El usuario es una persona que usa la interfaz web en su navegador.\n"
+        "4. NAVEGACIÓN EN EL FRONTEND (MUY IMPORTANTE): Al responder sobre en qué pantalla o lugar encontrar cualquier cosa, "
+        "refiérete SIEMPRE al nombre del apartado donde el usuario puede verlo en la interfaz (por ejemplo: 'en el apartado **Administración**', "
+        "'en el apartado **Mis Aparatos**', 'en el apartado **Mi día**', 'en el apartado **Consumo**', 'en el apartado **Alertas**', "
+        "'en el apartado **Predicciones**', 'en el apartado **Reportes**'). ESTÁ COMPLETAMENTE PROHIBIDO devolver nombres de archivos de código fuente, "
+        "rutas de carpetas o extensiones técnicas, tales como 'pages/8_Administracion.py', 'pages/0_Mis_Aparatos.py', 'Home.py' o cualquier archivo con extensión '.py'. "
+        "El usuario es una persona navegando en su navegador web, indícale siempre el nombre del apartado visible.\n"
         "5. CONCISIÓN: Mantén tus respuestas claras y directas (2 a 4 párrafos cortos como máximo)."
     )
 

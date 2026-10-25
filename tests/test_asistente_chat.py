@@ -175,13 +175,48 @@ def test_limpieza_rutas_archivos_en_navegacion():
     """El copiloto jamás debe devolver rutas de archivos como 'pages/8_Administracion.py'."""
     from app.services.asistente_copiloto import limpiar_rutas_archivos
 
-    texto_con_rutas = (
-        "Debes ir a pages/8_Administracion.py para registrar paneles y a pages/0_Mis_Aparatos.py para tus equipos."
-    )
-    limpio = limpiar_rutas_archivos(texto_con_rutas)
-    assert "pages/8_Administracion.py" not in limpio
-    assert "pages/0_Mis_Aparatos.py" not in limpio
-    assert ".py" not in limpio
-    assert "Administración" in limpio
-    assert "Mis Aparatos" in limpio
+    casos = [
+        "Debes ir a pages/8_Administracion.py para registrar paneles",
+        "Ve a pages/8_Administración.py en la seccion",
+        "Abre pages\\8_administracion.py ahora",
+        "En 8_Administracion.py encontraras paneles",
+        "Consulta pages/0_Mis_Aparatos.py",
+        "En Home.py veras el resumen",
+        "En el archivo `pages/8_Administracion.py` puedes verlo",
+    ]
+    for texto in casos:
+        limpio = limpiar_rutas_archivos(texto)
+        assert ".py" not in limpio
+        assert "pages/" not in limpio
+        assert "pages\\" not in limpio
+        if "administra" in texto.lower():
+            assert "Administración" in limpio
+
+
+def test_widget_flotante_popover_renderiza():
+    """Verifica que el widget flotante renderice correctamente el popover con AppTest."""
+    import sys
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+
+    ruta_streamlit = str(Path(__file__).parent.parent / "streamlit_app")
+    if ruta_streamlit not in sys.path:
+        sys.path.insert(0, ruta_streamlit)
+
+    code = f"""
+import sys
+sys.path.insert(0, r'{ruta_streamlit}')
+import streamlit as st
+from asistente_widget import render_asistente_flotante
+
+user = {{'id': 1, 'full_name': 'Edier Solar', 'empresa_nombre': 'Mi Casa', 'role': 'empresa'}}
+render_asistente_flotante(user)
+"""
+    at = AppTest.from_string(code)
+    at.run()
+    assert not at.exception
+    # Verifica que el popover está presente
+    popovers = [b for b in at._tree if getattr(b, "type", None) == "popover"]
+    assert len(popovers) >= 1
+
 
