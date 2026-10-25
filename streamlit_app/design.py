@@ -1926,30 +1926,6 @@ div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button:hove
     box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(216, 162, 74, 0.65) !important;
 }}
 
-/* Popover desplegable del Copiloto Ka'i */
-[data-testid="stPopoverBody"],
-div[data-testid="stPopoverBody"] {{
-    background: #0F1D27 !important;
-    border: 1px solid #213A49 !important;
-    border-radius: 18px !important;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 24px rgba(47, 163, 138, 0.25) !important;
-    width: min(440px, 92vw) !important;
-    max-width: 460px !important;
-    max-height: 82vh !important;
-    padding: 1rem !important;
-}}
-
-div[data-baseweb="popover"] {{
-    background: transparent !important;
-}}
-
-div[data-baseweb="popover"] > div {{
-    background: #0F1D27 !important;
-    border: 1px solid #213A49 !important;
-    border-radius: 18px !important;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 24px rgba(47, 163, 138, 0.25) !important;
-}}
-
 /* Modal del Copiloto Ka'i */
 div[data-testid="stDialog"] div[role="dialog"] {{
     background: #0F1D27 !important;

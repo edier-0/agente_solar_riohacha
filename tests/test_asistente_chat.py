@@ -193,8 +193,8 @@ def test_limpieza_rutas_archivos_en_navegacion():
             assert "Administración" in limpio
 
 
-def test_widget_flotante_popover_renderiza():
-    """Verifica que el widget flotante renderice correctamente el popover con AppTest."""
+def test_widget_flotante_renderiza():
+    """Verifica que el widget flotante renderice correctamente el botón con AppTest."""
     import sys
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
@@ -215,8 +215,7 @@ render_asistente_flotante(user)
     at = AppTest.from_string(code)
     at.run()
     assert not at.exception
-    # Verifica que el popover está presente
-    popovers = [b for b in at._tree if getattr(b, "type", None) == "popover"]
-    assert len(popovers) >= 1
+    # Verifica que el botón de Ka'i está presente
+    assert len(at.button) >= 1
 
 
