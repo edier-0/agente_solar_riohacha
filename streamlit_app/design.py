@@ -1868,7 +1868,7 @@ div[role="dialog"]:has(.ag-dialogo-borrar) .stButton button[kind="primary"]:hove
         animation: none !important;
     }}
 /* ---------- Asistente Copiloto Ka'i Flotante (Inferior Derecha) ---------- */
-div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] {
+div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] {{
     position: fixed !important;
     bottom: 24px !important;
     right: 24px !important;
@@ -1876,9 +1876,9 @@ div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="st
     width: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-}
+}}
 
-div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] button {
+div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] button {{
     background: linear-gradient(135deg, #2FA38A 0%, #155546 100%) !important;
     color: #FFFFFF !important;
     border: 1.5px solid rgba(216, 162, 74, 0.6) !important;
@@ -1893,24 +1893,24 @@ div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="st
     gap: 0.55rem !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer !important;
-}
+}}
 
-div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] button:hover {
+div[data-testid="stElementContainer"]:has(#kai-fab-anchor) + div[data-testid="stElementContainer"] button:hover {{
     transform: translateY(-2px) scale(1.04) !important;
     border-color: #D8A24A !important;
     background: linear-gradient(135deg, #37BD9F 0%, #1C6E5D 100%) !important;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 24px rgba(216, 162, 74, 0.6) !important;
-}
+}}
 
 /* Modal del Copiloto Ka'i */
-div[data-testid="stDialog"] div[role="dialog"] {
+div[data-testid="stDialog"] div[role="dialog"] {{
     background: #0F1D27 !important;
     border: 1px solid #213A49 !important;
     border-radius: 20px !important;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75) !important;
-}
+}}
 
-.kai-chat-header {
+.kai-chat-header {{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1919,18 +1919,18 @@ div[data-testid="stDialog"] div[role="dialog"] {
     border: 1px solid rgba(47, 163, 138, 0.25);
     border-radius: 12px;
     margin-bottom: 0.8rem;
-}
+}}
 
-.kai-chat-header__title {
+.kai-chat-header__title {{
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-weight: 700;
     color: var(--text);
     font-size: 0.96rem;
-}
+}}
 
-.kai-chat-header__badge {
+.kai-chat-header__badge {{
     font-size: 0.74rem;
     padding: 0.2rem 0.55rem;
     border-radius: 999px;
@@ -1938,9 +1938,9 @@ div[data-testid="stDialog"] div[role="dialog"] {
     border: 1px solid rgba(216, 162, 74, 0.35);
     color: #E3B866;
     font-weight: 600;
-}
+}}
 
-.kai-chip-btn button {
+.kai-chip-btn button {{
     border-radius: 999px !important;
     font-size: 0.78rem !important;
     padding: 0.25rem 0.65rem !important;
@@ -1948,14 +1948,14 @@ div[data-testid="stDialog"] div[role="dialog"] {
     border: 1px solid rgba(47, 163, 138, 0.3) !important;
     color: #EAF2F6 !important;
     transition: all 0.2s ease !important;
-}
+}}
 
-.kai-chip-btn button:hover {
+.kai-chip-btn button:hover {{
     background: rgba(47, 163, 138, 0.2) !important;
     border-color: #2FA38A !important;
     color: #FFFFFF !important;
     transform: translateY(-1px) !important;
-}
+}}
 }}
         """
     )
