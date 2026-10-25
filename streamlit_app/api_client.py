@@ -305,3 +305,13 @@ def api_download(path: str, params: Optional[Dict] = None) -> Optional[bytes]:
     except requests.RequestException as exc:
         st.error(f"Error descarga: {exc}")
         return None
+
+
+def chat_copiloto(mensaje: str, historial: Optional[List[Dict[str, str]]] = None) -> Optional[Dict[str, Any]]:
+    """Envía mensaje al Copiloto Ka'i y devuelve dict con {respuesta, sugerencias, origen}."""
+    payload = {
+        "mensaje": mensaje,
+        "historial": historial or [],
+    }
+    return api_post("/ia/asistente/chat", json=payload)
+

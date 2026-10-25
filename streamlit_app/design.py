@@ -1868,6 +1868,118 @@ div[role="dialog"]:has(.ag-dialogo-borrar) .stButton button[kind="primary"]:hove
         animation: none !important;
     }}
 }}
+
+/* ---------- Asistente Copiloto Ka'i Flotante (Inferior Derecha) ---------- */
+.st-key-btn_preguntale_kai,
+div[data-testid="stPopover"]:has(.st-key-btn_preguntale_kai),
+div[data-testid="stElementContainer"]:has(.st-key-btn_preguntale_kai),
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai),
+.element-container:has(.st-key-btn_preguntale_kai),
+div:has(> .st-key-btn_preguntale_kai) {{
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    z-index: 9999 !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}}
+
+.st-key-btn_preguntale_kai button,
+.st-key-btn_preguntale_kai > button,
+div[data-testid="stPopover"]:has(.st-key-btn_preguntale_kai) button,
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button,
+.element-container:has(.st-key-btn_preguntale_kai) button {{
+    background: linear-gradient(135deg, #2FA38A 0%, #155546 100%) !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid rgba(216, 162, 74, 0.85) !important;
+    border-radius: 999px !important;
+    padding: 0.75rem 1.4rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 18px rgba(47, 163, 138, 0.45) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    width: auto !important;
+}}
+
+.st-key-btn_preguntale_kai button p,
+.st-key-btn_preguntale_kai button span,
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button p {{
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+}}
+
+.st-key-btn_preguntale_kai button:hover,
+.st-key-btn_preguntale_kai > button:hover,
+div[data-testid="stPopover"]:has(.st-key-btn_preguntale_kai) button:hover,
+div[data-testid="element-container"]:has(.st-key-btn_preguntale_kai) button:hover {{
+    transform: translateY(-3px) scale(1.04) !important;
+    border-color: #D8A24A !important;
+    background: linear-gradient(135deg, #37BD9F 0%, #1C6E5D 100%) !important;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(216, 162, 74, 0.65) !important;
+}}
+
+/* Modal del Copiloto Ka'i */
+div[data-testid="stDialog"] div[role="dialog"] {{
+    background: #0F1D27 !important;
+    border: 1px solid #213A49 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75) !important;
+}}
+
+.kai-chat-header {{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.85rem;
+    background: rgba(47, 163, 138, 0.08);
+    border: 1px solid rgba(47, 163, 138, 0.25);
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+}}
+
+.kai-chat-header__title {{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.96rem;
+}}
+
+.kai-chat-header__badge {{
+    font-size: 0.74rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(216, 162, 74, 0.14);
+    border: 1px solid rgba(216, 162, 74, 0.35);
+    color: #E3B866;
+    font-weight: 600;
+}}
+
+.kai-chip-btn button {{
+    border-radius: 999px !important;
+    font-size: 0.78rem !important;
+    padding: 0.25rem 0.65rem !important;
+    background: rgba(47, 163, 138, 0.09) !important;
+    border: 1px solid rgba(47, 163, 138, 0.3) !important;
+    color: #EAF2F6 !important;
+    transition: all 0.2s ease !important;
+}}
+
+.kai-chip-btn button:hover {{
+    background: rgba(47, 163, 138, 0.2) !important;
+    border-color: #2FA38A !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+}}
         """
     )
     inject_style_block(css)

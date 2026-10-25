@@ -3,30 +3,27 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 
 ## Estado actual
 - Plataforma operativa con FastAPI (8000/8002), Streamlit (8501/8503) y Docker Compose.
-- Identidad visual **Ka'i** con frontend responsivo en todas las pantallas y paleta optimizada.
-- Gestión de inventario de aparatos, consumo desglosado y catálogo técnico integrado.
-- Alertas de clima municipal (Fonseca/Riohacha) y avisos de carga por electrodoméstico.
+- Identidad visual **Ka'i** con frontend responsivo y paleta optimizada (#2FA38A, #D8A24A).
+- Modal dialog conversacional `@st.dialog` restaurado (diseño amplio, limpio y persistente con fragment).
+- Botón disparador flotante FAB fijo en esquina inferior derecha (`bottom: 24px`, `right: 24px`, `z-index: 9999999`).
+- Sanitización estricta de rutas: devuelve nombres de apartados del frontend (ej. 'Administración', 'Mis Aparatos').
 - Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local.
-- Entrada por login (con cuenta demo); alta de usuarios restringida a administradores.
-- Registro técnico de instalaciones solares (paneles, inversor, baterías) y facturas integrado.
-- Rama dedicada activa: `feature/preparacion-proyecto-ingenova` (publicada en remoto).
-- Ramas del repositorio consolidadas: solo `main`, `develop` y `feature/preparacion-proyecto-ingenova`.
+- Aislamiento multi-tenant por usuario autenticado (perfil hogar/negocio, aparatos y ficha solar).
+- Rama dedicada activa: `feature/asistente-chat-kai` (100% local, no pusheada a remoto).
+- Suite completa pasando al 100%: 79 tests (pytest con `requirements-dev.txt`).
 
 ## Decisiones (y por qué)
-- **Motor dual IA + Heurística**: Asegurar operación continua offline durante cortes o sin API Key.
-- **Flujo Git estricto por ramas**: Evitar tocar `develop`/`main` directo y esperar orden para PRs.
-- **Desacoplamiento FastAPI/Streamlit**: Permite escalar API y frontend de forma independiente.
-- **Autoría del Proyecto**: Asignada formalmente al equipo Code Masters en LICENSE y AUTHORS.md.
-- **Tarifa de referencia Air-E ($890 - $943 COP/kWh)**: Modelado de facturación y ahorro real.
-- **Registro administrativo**: Control de acceso para despliegues institucionales/comunitarios.
-- **Frontend Responsivo**: Soporte adaptativo para dispositivos móviles y tabletas en territorio.
+- **Modal dialog `@st.dialog` con fragment**: Ofrece la mejor experiencia visual amplia y cómoda para el usuario.
+- **Botón flotante con CSS inyectado y fijado en esquina inferior derecha**: Accesible en scroll sin estorbar.
+- **Sanitización regex case y accent-insensitive**: Garantiza que nunca se devuelvan archivos `.py` al frontend.
+- **Aislamiento de contexto backend**: Token JWT filtra exclusivamente los datos de la entidad del usuario.
+- **Tarifa Air-E ($943 COP/kWh) y reserva de baterías 30-40%**: Modelado realista para La Guajira.
 
 ## Aprendizajes y errores a evitar
-- No hardcodear `GEMINI_API_KEY` ni asumir conexión permanente a internet en La Guajira.
-- Proteger profundidad de descarga en baterías (DoD) para no acortar su vida útil.
-- Mantener compatibilidad de migraciones y modelos relacionales al incorporar aparatos.
+- El diseño modal `@st.dialog` es preferido por el usuario frente a popovers compactos.
+- La directiva `@media (prefers-reduced-motion: reduce)` debe cerrarse adecuadamente para no atrapar estilos posteriores.
+- **NUNCA pushear la rama `feature/asistente-chat-kai` al remoto sin orden explícita del usuario.**
 
 ## Próximos pasos
-- Validar tests de integración y endpoints en la rama `feature/preparacion-proyecto-ingenova`.
-- Afinar calibración del orquestador de baterías ante simulaciones de apagón para Ingenova.
-- Consolidar documentación y preparar entrega final cuando el usuario lo indique.
+- Confirmar visualización en el frontend levantado con Docker.
+
