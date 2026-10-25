@@ -8,8 +8,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - Botón disparador flotante FAB fijo en esquina inferior derecha (`bottom: 24px`, `right: 24px`, `z-index: 9999999`).
 - Sanitización estricta de rutas: devuelve nombres de apartados del frontend (ej. 'Administración', 'Mis Aparatos').
 - Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local.
-- Aislamiento multi-tenant por usuario autenticado (perfil hogar/negocio, aparatos y ficha solar).
-- Rama dedicada activa: `feature/asistente-chat-kai` (100% local, no pusheada a remoto).
+- Rama `feature/asistente-chat-kai` integrada y fusionada vía PR #8 en `feature/preparacion-proyecto-ingenova`.
 - Suite completa pasando al 100%: 79 tests (pytest con `requirements-dev.txt`).
 
 ## Decisiones (y por qué)
