@@ -9,7 +9,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - Filtro estricto de navegación por rol en Ka'i (`admin`, `empresa`, `analista`): 'Datos solares' restringido para `empresa`, 'Administración' exclusivo de `admin`.
 - Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local sensible al rol.
 - Suite completa pasando al 100%: 84 tests (pytest con `requirements-dev.txt`).
-- Rama de trabajo activa: `feature/filtro-permisos-asistente-chat`.
+- PR #9 fusionado en `feature/preparacion-proyecto-ingenova`: filtro de permisos por rol en copiloto Ka'i.
 
 ## Decisiones (y por qué)
 - **Filtrado dinámico de navegación por rol**: Evita que Ka'i recomiende pantallas que el usuario no tiene en su menú.
