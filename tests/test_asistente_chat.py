@@ -307,4 +307,48 @@ def test_respuesta_heuristica_control_acceso_paneles():
     assert "solicita" in resp.lower() or "administrador de la plataforma" in resp.lower()
 
 
+def test_respuesta_heuristica_menciona_apis_clima_para_empresa():
+    """Cualquier usuario con rol 'empresa' que pregunte por las fuentes del clima debe recibir las 4 APIs."""
+    ctx_empresa = {
+        "usuario": {"nombre": "Familia Gómez", "rol": "empresa"},
+        "entidad": {"nombre": "Hogar Gómez", "tipo": "hogar", "ciudad": "Fonseca"},
+        "solar": {"tiene_paneles": True, "capacidad_paneles_kw": 3.0},
+        "aparatos": {"total_registrados": 4},
+        "navegacion": [{"nombre": "Mi día", "proposito": "Resumen"}],
+    }
+
+    preguntas = [
+        "¿De dónde consulta la información del clima?",
+        "¿De dónde saca los datos del clima?",
+        "¿Qué APIs utilizan para el clima y la radiación?",
+        "¿Cuáles son las fuentes del clima?",
+    ]
+    for p in preguntas:
+        resp, _ = generar_respuesta_heuristica(p, ctx_empresa)
+        assert "Open-Meteo" in resp
+        assert "NASA POWER" in resp
+        assert "PVGIS" in resp
+        assert "OpenWeatherMap" in resp
+        assert "Mi día" in resp or "Alertas" in resp
+
+
+def test_respuesta_heuristica_menciona_apis_clima_para_analista_y_admin():
+    """Analista y Admin también reciben la explicación de las 4 APIs y su acceso a 'Datos solares'."""
+    ctx_analista = {
+        "usuario": {"nombre": "Analista Solar", "rol": "analista"},
+        "entidad": {"nombre": "Parque Fotovoltaico", "tipo": "empresa", "ciudad": "Riohacha"},
+        "solar": {"tiene_paneles": True, "capacidad_paneles_kw": 50.0},
+        "aparatos": {"total_registrados": 0},
+        "navegacion": [{"nombre": "Datos solares", "proposito": "Radiación"}],
+    }
+
+    resp, _ = generar_respuesta_heuristica("¿De dónde consulta la información del clima?", ctx_analista)
+    assert "Open-Meteo" in resp
+    assert "NASA POWER" in resp
+    assert "PVGIS" in resp
+    assert "OpenWeatherMap" in resp
+    assert "Datos solares" in resp
+
+
+
 

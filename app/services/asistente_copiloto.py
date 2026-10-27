@@ -299,7 +299,72 @@ def generar_respuesta_heuristica(mensaje: str, ctx: Dict) -> Tuple[str, List[str
             ["¿Qué es kWp?", "¿Qué es la profundidad de descarga (DoD)?", "¿Dónde veo la autonomía de batería?"],
         )
 
-    # 4. Datos Solares y Radiación (Control de acceso por rol: solo admin y analista tienen 'Datos solares')
+    # 4. Fuentes y APIs de Información Climática y Solar (Transparencia para todos los usuarios y perfiles)
+    es_pregunta_fuentes_clima = any(
+        k in m
+        for k in (
+            "de donde consulta",
+            "de dónde consulta",
+            "de donde saca",
+            "de dónde saca",
+            "de donde saca la informacion",
+            "de dónde saca la información",
+            "de donde consulta la informacion",
+            "de dónde consulta la información",
+            "de donde obtiene",
+            "de dónde obtiene",
+            "de donde proviene",
+            "de dónde proviene",
+            "fuentes del clima",
+            "fuente del clima",
+            "fuentes de informacion",
+            "fuentes de información",
+            "que api",
+            "qué api",
+            "que apis",
+            "qué apis",
+            "cuales apis",
+            "cuáles apis",
+            "origen de los datos",
+            "origen del clima",
+            "como sabe el clima",
+            "cómo sabe el clima",
+        )
+    ) or (
+        any(k in m for k in ("clima", "radiacion", "radiación", "temperatura", "lluvia", "viento"))
+        and any(f in m for f in ("de donde", "de dónde", "fuente", "fuentes", "api", "apis", "satelite", "satélite", "origen"))
+    )
+
+    if es_pregunta_fuentes_clima:
+        texto_apis = (
+            "**Fuentes y APIs de Información Climática y Solar en Ka'i:**\n\n"
+            "El sistema consulta y cruza datos en tiempo real de 4 fuentes y modelos satelitales oficiales:\n\n"
+            "1. 🛰️ **Open-Meteo API:** Pronósticos meteorológicos horarios de alta resolución (temperatura, probabilidad de lluvia, "
+            "viento, radiación solar GHI/DNI y niveles de polvo sahariano PM10 en el aire de La Guajira).\n"
+            "2. 🚀 **NASA POWER API:** Series satelitales de radiación solar global e irradiancia térmica calibradas para las coordenadas de Fonseca y Riohacha.\n"
+            "3. ☀️ **PVGIS (Comisión Europea):** Base de datos científica fotovoltaica del Joint Research Centre para modelar la producción solar y calcular las Horas de Sol Pico (HSP).\n"
+            "4. ⚡ **OpenWeatherMap API:** Monitoreo y alertas meteorológicas tempranas de tormentas eléctricas, vientos severos y olas de calor.\n\n"
+        )
+        if rol in ("admin", "analista"):
+            texto_vis = (
+                "**¿Dónde puedes consultarlo en el aplicativo?**\n"
+                "- En **'Mi día'** y **'Alertas'** ves el impacto diario en tu consumo y avisos de red.\n"
+                "- Como tu perfil tiene permisos de **Analista / Administrador**, también tienes habilitado el apartado "
+                "**'Datos solares'** en tu menú lateral para comparar las curvas entre Open-Meteo, NASA POWER y PVGIS y revisar históricos."
+            )
+            sugs_f = ["Ir a Datos solares", "Ver Alertas del clima", "¿Qué significa HSP en radiación?"]
+        else:
+            texto_vis = (
+                "**¿Dónde puedes consultarlo en el aplicativo?**\n"
+                "- En el apartado **'Mi día'** ves el resumen diario con las mejores horas de sol y consejos de ahorro para tu hogar o negocio.\n"
+                "- En el apartado **'Alertas'** monitoreas los avisos preventivos del clima y posibles riesgos de corte en tu municipio.\n"
+                "*(Nota: El módulo técnico 'Datos solares' con comparativas de curvas satelitales avanzadas está reservado para perfiles analistas y administradores).*"
+            )
+            sugs_f = ["Ir a Mi día", "Ver Alertas del clima", "¿Qué es kWp?"]
+
+        return (f"{texto_apis}{texto_vis}", sugs_f)
+
+    # 5. Datos Solares y Radiación (Control de acceso por rol: solo admin y analista tienen 'Datos solares')
     if any(k in m for k in ("datos solares", "radiacion", "radiación", "pvgis", "nasa power", "hsp", "horas de sol")):
         if rol in ("admin", "analista"):
             return (
@@ -312,14 +377,15 @@ def generar_respuesta_heuristica(mensaje: str, ctx: Dict) -> Tuple[str, List[str
         else:
             return (
                 "**Consulta de Datos Solares y Radiación:**\n\n"
-                "El apartado especializado **'Datos solares'** (con modelos satelitales avanzados NASA POWER y PVGIS) "
-                "es una herramienta técnica reservada para perfiles de **Analista** y **Administrador**.\n\n"
+                "Ka'i procesa la radiación y el clima integrando las APIs de **Open-Meteo**, **NASA POWER** y **PVGIS**.\n\n"
+                "El apartado especializado **'Datos solares'** (con descarga de modelos satelitales avanzados y comparativas técnicas) "
+                "es una herramienta reservada para perfiles de **Analista** y **Administrador**.\n\n"
                 "Sin embargo, en tu cuenta puedes consultar las horas de mayor sol y la radiación estimada de hoy en el apartado **'Mi día'**, "
                 "o revisar las condiciones y avisos meteorológicos en el apartado **'Alertas'**.",
-                ["Ir a Mi día", "Ver Alertas del clima", "¿Qué es kWp?"],
+                ["Ir a Mi día", "Ver Alertas del clima", "¿De dónde consulta el clima?"],
             )
 
-    # 5. Términos energéticos (Glosario)
+    # 6. Términos energéticos (Glosario)
     if "kwh" in m or "kilovatio hora" in m:
         return (
             "**¿Qué es un kWh (Kilovatio-hora)?**\n\n"
@@ -347,7 +413,7 @@ def generar_respuesta_heuristica(mensaje: str, ctx: Dict) -> Tuple[str, List[str
             ["¿Dónde simulo el uso de mi batería?", "¿Cómo me preparo ante un apagón?"],
         )
 
-    # 6. Apagones, cortes y orquestación
+    # 7. Apagones, cortes y orquestación
     if any(k in m for k in ("apagon", "corte", "sin luz", "autonomia", "bateria")):
         return (
             "**Resiliencia ante Apagones:**\n\n"
@@ -357,16 +423,17 @@ def generar_respuesta_heuristica(mensaje: str, ctx: Dict) -> Tuple[str, List[str
             ["Ir a Predicciones", "Ver Alertas del clima", "¿Cómo proteger mis electrodomésticos?"],
         )
 
-    # 7. Alertas del clima
+    # 8. Alertas del clima
     if any(k in m for k in ("alerta", "clima", "lluvia", "calor", "viento", "polvo")):
         return (
-            f"En la sección **'Alertas'** monitoreamos el clima en tiempo real para **{e.get('ciudad', 'La Guajira')}**. "
+            f"En la sección **'Alertas'** monitoreamos el clima en tiempo real para **{e.get('ciudad', 'La Guajira')}** "
+            "a través de las APIs de **Open-Meteo** y **OpenWeatherMap**. "
             "El sistema evalúa calor extremo, tormentas que puedan causar cortes de luz y niveles de polvo PM10 en el aire "
             "que requieran limpiar tus paneles para que no pierdan producción.",
-            ["Ir a Alertas", "¿Cómo afecta el polvo a los paneles?", "¿Dónde veo la radiación solar?"],
+            ["Ir a Alertas", "¿De dónde consulta el clima?", "¿Cómo afecta el polvo a los paneles?"],
         )
 
-    # 8. Recibos y facturación
+    # 9. Recibos y facturación
     if any(k in m for k in ("factura", "recibo", "aire", "air-e", "tarifa", "costo")):
         return (
             f"En la sección **'Consumo'** puedes consultar el historial de facturación de tu energía y registrar recibos de Air-E. "
@@ -374,14 +441,15 @@ def generar_respuesta_heuristica(mensaje: str, ctx: Dict) -> Tuple[str, List[str
             ["Ir a Consumo", "¿Dónde veo el ahorro estimado?", "¿Qué electrodoméstico gasta más?"],
         )
 
-    # 9. Fuera de alcance o general
+    # 10. Fuera de alcance o general
     permitidos_str = ", ".join([f"**'{p['nombre']}'**" for p in ctx.get("navegacion", [])])
     return (
         f"Con gusto te oriento, {nombre_u}. Como copiloto del aplicativo **Ka'i**, puedo ayudarte con:\n\n"
         f"1. **Navegación**: indicarte en qué pantalla encontrar consumos, reportes, alertas o simulaciones.\n"
         f"   (Apartados disponibles en tu menú: {permitidos_str})\n"
         f"2. **Tus datos**: informarte sobre los {ap.get('total_registrados', 0)} aparatos registrados en {e.get('nombre')} o tu sistema solar.\n"
-        "3. **Términos solares**: explicarte qué significan kWh, kWp, baterías, inversores o tarifas de Air-E.\n\n"
+        "3. **Términos solares**: explicarte qué significan kWh, kWp, baterías, inversores o tarifas de Air-E.\n"
+        "4. **Clima y APIs**: explicarte las fuentes oficiales (Open-Meteo, NASA POWER, PVGIS, OpenWeatherMap) que alimentan la plataforma.\n\n"
         "¿Hay alguna sección del aplicativo o término que desees conocer?",
         sugerencias,
     )
@@ -458,7 +526,13 @@ async def responder_chat_asistente(
         "pregunta por el apartado 'Datos solares' o 'Administración'):\n"
         "- Aclárale cortésmente que dicho apartado está reservado para perfiles Analista o Administrador.\n"
         "- Oriéntalo de inmediato hacia las pantallas a las que SÍ tiene acceso (ej. ver horas de sol en 'Mi día' o 'Alertas', "
-        "o contactar al Administrador para cambios en su ficha técnica)."
+        "o contactar al Administrador para cambios en su ficha técnica).\n"
+        "7. TRANSPARENCIA EN FUENTES Y APIS DEL CLIMA (APLICA A TODOS LOS ROLES): "
+        "Si el usuario (sea 'empresa', 'analista' o 'admin') pregunta de dónde se consulta la información del clima o radiación, "
+        "MENCIONA SIEMPRE las 4 APIs y modelos satelitales que alimentan a Ka'i: Open-Meteo (pronósticos horarios y radiación en tiempo real), "
+        "NASA POWER (datos satelitales de radiación solar global), PVGIS de la Comisión Europea (base científica para Horas de Sol Pico - HSP) "
+        "y OpenWeatherMap (alertas de tormentas y calor extremo). Explica que estos datos alimentan los pronósticos en 'Mi día' y 'Alertas' "
+        "para todos los usuarios, mientras que las curvas analíticas completas se visualizan en 'Datos solares' para perfiles técnicos (Analista/Admin)."
     )
 
     historial_str = ""
