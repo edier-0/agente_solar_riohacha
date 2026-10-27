@@ -219,3 +219,92 @@ render_asistente_flotante(user)
     assert len(at.button) >= 1
 
 
+def test_contexto_usuario_filtra_apartados_por_rol_empresa(db, crear_empresa, crear_usuario):
+    """Un usuario con rol 'empresa' no debe tener 'Datos solares' ni 'Administración' en sus apartados permitidos."""
+    empresa = crear_empresa(nombre="Hogar Los Pinos", tipo="hogar")
+    crear_usuario("hogar@pinos.com", m.UserRole.EMPRESA, empresa)
+    user = db.query(m.User).filter(m.User.email == "hogar@pinos.com").first()
+
+    ctx = construir_contexto_usuario(db, user)
+
+    assert "Datos solares" in ctx["nombres_restringidos"]
+    assert "Administración" in ctx["nombres_restringidos"]
+    assert "Datos solares" not in ctx["nombres_permitidos"]
+    assert "Administración" not in ctx["nombres_permitidos"]
+
+    # Debe tener Mi día y Mis Aparatos
+    assert "Mi día" in ctx["nombres_permitidos"]
+    assert "Mis Aparatos" in ctx["nombres_permitidos"]
+    assert "Consumo" in ctx["nombres_permitidos"]
+
+
+def test_contexto_usuario_filtra_apartados_por_rol_analista(db, crear_empresa, crear_usuario):
+    """Un usuario con rol 'analista' debe ver 'Datos solares', pero no 'Mi día' ni 'Administración'."""
+    empresa = crear_empresa(nombre="Gobernación Guajira", tipo="institucion")
+    crear_usuario("analista@guajira.gov.co", m.UserRole.ANALISTA, empresa)
+    user = db.query(m.User).filter(m.User.email == "analista@guajira.gov.co").first()
+
+    ctx = construir_contexto_usuario(db, user)
+
+    assert "Datos solares" in ctx["nombres_permitidos"]
+    assert "Reportes" in ctx["nombres_permitidos"]
+    assert "Mi día" in ctx["nombres_restringidos"]
+    assert "Administración" in ctx["nombres_restringidos"]
+
+
+def test_contexto_usuario_filtra_apartados_por_rol_admin(db, crear_empresa, crear_usuario):
+    """Un usuario 'admin' tiene acceso a todos los apartados (ninguno restringido)."""
+    empresa = crear_empresa(nombre="Central Solar Guajira", tipo="empresa")
+    crear_usuario("superadmin@guajira.com", m.UserRole.ADMIN, empresa)
+    user = db.query(m.User).filter(m.User.email == "superadmin@guajira.com").first()
+
+    ctx = construir_contexto_usuario(db, user)
+
+    assert "Datos solares" in ctx["nombres_permitidos"]
+    assert "Administración" in ctx["nombres_permitidos"]
+    assert "Mi día" in ctx["nombres_permitidos"]
+    assert len(ctx["nombres_restringidos"]) == 0
+
+
+def test_respuesta_heuristica_control_acceso_datos_solares():
+    """El motor heurístico adapta la respuesta de datos solares según el rol."""
+    ctx_empresa = {
+        "usuario": {"nombre": "Carlos", "rol": "empresa"},
+        "entidad": {"nombre": "Hogar Carlos", "tipo": "hogar", "ciudad": "Fonseca"},
+        "solar": {"tiene_paneles": False, "capacidad_paneles_kw": 0.0},
+        "aparatos": {"total_registrados": 0},
+        "navegacion": [{"nombre": "Mi día", "proposito": "Resumen"}],
+    }
+
+    resp_emp, _ = generar_respuesta_heuristica("¿Dónde puedo ver los datos solares y la radiación?", ctx_empresa)
+    assert "Analista" in resp_emp or "Administrador" in resp_emp
+    assert "Mi día" in resp_emp or "Alertas" in resp_emp
+
+    ctx_analista = {
+        "usuario": {"nombre": "Ing. Laura", "rol": "analista"},
+        "entidad": {"nombre": "Gobernación", "tipo": "institucion", "ciudad": "Riohacha"},
+        "solar": {"tiene_paneles": True, "capacidad_paneles_kw": 10.0},
+        "aparatos": {"total_registrados": 0},
+        "navegacion": [{"nombre": "Datos solares", "proposito": "Radiación"}],
+    }
+
+    resp_ana, _ = generar_respuesta_heuristica("¿Dónde veo los datos solares de radiación?", ctx_analista)
+    assert "Datos solares" in resp_ana
+    assert "NASA POWER" in resp_ana or "Open-Meteo" in resp_ana
+
+
+def test_respuesta_heuristica_control_acceso_paneles():
+    """El motor heurístico indica a los usuarios 'empresa' que Administración es exclusiva del Admin."""
+    ctx_empresa = {
+        "usuario": {"nombre": "María", "rol": "empresa"},
+        "entidad": {"nombre": "Casa María", "tipo": "hogar"},
+        "solar": {"tiene_paneles": False, "capacidad_paneles_kw": 0.0},
+        "aparatos": {"total_registrados": 0},
+    }
+
+    resp, _ = generar_respuesta_heuristica("¿Dónde registro mis paneles solares?", ctx_empresa)
+    assert "Administrador" in resp
+    assert "solicita" in resp.lower() or "administrador de la plataforma" in resp.lower()
+
+
+

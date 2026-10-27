@@ -22,24 +22,46 @@ def dialog_chat_kai(user: dict) -> None:
     # Inicializar historial si esta vacio
     if history_key not in st.session_state or not st.session_state[history_key]:
         nombre_entidad = user.get("empresa_nombre") or user.get("full_name") or "tu espacio"
+        rol_usuario = str(user.get("role", "empresa")).lower()
+
+        if rol_usuario == "admin":
+            solar_intro = "- ☀️ **Energía solar:** Gestión de paneles y baterías en Administración, o qué significan términos como DoD, kWp y kWh.\n"
+            sugerencias_ini = [
+                "¿Cómo registro paneles en Administración?",
+                "¿Dónde veo los datos solares y radiación?",
+                "¿Cuánto consumen los aparatos?",
+                "¿Qué significa DoD y kWp?",
+            ]
+        elif rol_usuario == "analista":
+            solar_intro = "- ☀️ **Energía solar:** Consulta técnica en Datos Solares, o qué significan términos como DoD, kWp y kWh.\n"
+            sugerencias_ini = [
+                "¿Dónde veo los datos solares de La Guajira?",
+                "¿Dónde consulto los reportes de energía?",
+                "¿Qué significa kWh y kWp?",
+                "¿Cómo simulo la autonomía ante apagones?",
+            ]
+        else:  # empresa (hogar o comercio)
+            solar_intro = "- ☀️ **Energía solar:** Cómo funciona tu sistema solar, o qué significan términos como DoD, kWp y kWh.\n"
+            sugerencias_ini = [
+                "¿Cuánto consumen mis aparatos?",
+                "¿Dónde veo el ahorro estimado?",
+                "¿Qué significa DoD y kWp?",
+                "¿Cómo prepararme ante un apagón?",
+            ]
+
         st.session_state[history_key] = [
             {
                 "role": "assistant",
                 "content": (
                     f"¡Hola, {escape(user.get('full_name', 'amigo'))}! Soy **Ka'i**, tu copiloto de energía solar en La Guajira. ☀️\n\n"
                     f"Estoy conectado con el perfil de **{escape(nombre_entidad)}** para resolver tus dudas sobre:\n"
-                    "- 🧭 **Navegación:** En qué apartado encontrar cada función.\n"
+                    "- 🧭 **Navegación:** En qué apartado encontrar cada función según tu perfil.\n"
                     "- ⚡ **Aparatos:** Dónde registrar y consultar el consumo de tus electrodomésticos.\n"
-                    "- ☀️ **Energía solar:** Cómo registrar paneles y baterías, o qué significan términos como DoD, kWp y kWh.\n"
+                    f"{solar_intro}"
                     "- 💰 **Tarifas:** Consejos de ahorro frente a la tarifa de Air-E ($943 COP/kWh).\n\n"
                     "¿En qué te puedo orientar hoy?"
                 ),
-                "sugerencias": [
-                    "¿Dónde registro mis paneles y baterías?",
-                    "¿Cuánto consumen mis aparatos?",
-                    "¿Qué significa DoD y kWp?",
-                    "¿Dónde veo el ahorro estimado?",
-                ],
+                "sugerencias": sugerencias_ini,
                 "origen": "bienvenida",
             }
         ]
