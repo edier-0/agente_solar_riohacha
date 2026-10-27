@@ -4,25 +4,24 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 ## Estado actual
 - Plataforma operativa con FastAPI (8000/8002), Streamlit (8501/8503) y Docker Compose.
 - Identidad visual **Ka'i** con frontend responsivo y paleta optimizada (#2FA38A, #D8A24A).
-- Modal dialog conversacional `@st.dialog` restaurado (diseño amplio, limpio y persistente con fragment).
-- Botón disparador flotante FAB fijo en esquina inferior derecha (`bottom: 24px`, `right: 24px`, `z-index: 9999999`).
-- Sanitización estricta de rutas: devuelve nombres de apartados del frontend (ej. 'Administración', 'Mis Aparatos').
-- Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local.
-- Rama `feature/asistente-chat-kai` integrada y fusionada vía PR #8 en `feature/preparacion-proyecto-ingenova`.
-- Suite completa pasando al 100%: 79 tests (pytest con `requirements-dev.txt`).
+- Modal dialog conversacional `@st.dialog` con disparador FAB flotante en esquina inferior derecha.
+- Sanitización estricta de rutas: devuelve exclusivamente nombres de apartados visibles en el frontend.
+- Filtro estricto de navegación por rol en Ka'i (`admin`, `empresa`, `analista`): 'Datos solares' restringido para `empresa`, 'Administración' exclusivo de `admin`.
+- Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local sensible al rol.
+- Suite completa pasando al 100%: 84 tests (pytest con `requirements-dev.txt`).
+- Rama de trabajo activa: `feature/filtro-permisos-asistente-chat`.
 
 ## Decisiones (y por qué)
+- **Filtrado dinámico de navegación por rol**: Evita que Ka'i recomiende pantallas que el usuario no tiene en su menú.
+- **Diferenciación heurística por perfil**: Guía al usuario `empresa` hacia 'Mi día'/'Alertas' si pregunta por datos solares o le indica solicitar al admin cambios de paneles.
 - **Modal dialog `@st.dialog` con fragment**: Ofrece la mejor experiencia visual amplia y cómoda para el usuario.
-- **Botón flotante con CSS inyectado y fijado en esquina inferior derecha**: Accesible en scroll sin estorbar.
-- **Sanitización regex case y accent-insensitive**: Garantiza que nunca se devuelvan archivos `.py` al frontend.
-- **Aislamiento de contexto backend**: Token JWT filtra exclusivamente los datos de la entidad del usuario.
 - **Tarifa Air-E ($943 COP/kWh) y reserva de baterías 30-40%**: Modelado realista para La Guajira.
 
 ## Aprendizajes y errores a evitar
-- El diseño modal `@st.dialog` es preferido por el usuario frente a popovers compactos.
-- La directiva `@media (prefers-reduced-motion: reduce)` debe cerrarse adecuadamente para no atrapar estilos posteriores.
-- **NUNCA pushear la rama `feature/asistente-chat-kai` al remoto sin orden explícita del usuario.**
+- Sincronizar siempre los roles del asistente con `PAGE_VISIBILITY` de `streamlit_app/ui.py`.
+- **NUNCA pushear ramas ni abrir PR al remoto sin orden explícita del usuario.**
 
 ## Próximos pasos
-- Confirmar visualización en el frontend levantado con Docker.
+- Validar visualmente en el frontend la interacción según cada rol.
+
 
