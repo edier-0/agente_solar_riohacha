@@ -10,7 +10,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local sensible al rol.
 - Transparencia en fuentes de clima: Ka'i menciona las APIs (Open-Meteo, NASA POWER, PVGIS, OpenWeatherMap) para todos los roles.
 - Suite completa pasando al 100%: 86 tests (pytest con `requirements-dev.txt`).
-- Rama local `feature/preparacion-proyecto-ingenova` fusionada con `feature/mencion-apis-clima-chat`.
+- PR #10 fusionado en `feature/preparacion-proyecto-ingenova`: transparencia y soporte de APIs del clima en copiloto Ka'i.
 
 ## Decisiones (y por qué)
 - **Filtrado dinámico de navegación por rol**: Evita que Ka'i recomiende pantallas que el usuario no tiene en su menú.
