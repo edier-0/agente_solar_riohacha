@@ -24,6 +24,7 @@ from app.services.demo_data import (
     save_consumo_demo,
     update_consumo_demo,
 )
+from app.services.balance_solar import calcular_balance
 from app.services.openmeteo import openmeteo_service
 
 router = APIRouter(prefix="/consumo", tags=["Consumo Energético"])
@@ -377,13 +378,25 @@ async def get_dashboard_kpis(
         if forecast and forecast[0].get("ghi") is not None:
             rad_actual_kwh = forecast[0]["ghi"]
 
+    ahorro_hoy = produccion_hoy * empresa.tarifa_kwh
+    nivel_bateria = ultimo_consumo.nivel_bateria_pct if ultimo_consumo else None
+    if not produccion_hoy and (empresa.capacidad_paneles_kw or 0) > 0:
+        # Sin lecturas del inversor: producción estimada con la radiación real de hoy y los paneles registrados
+        balance = await calcular_balance(db, empresa, days=7, pronostico=0)
+        hoy_bal = (balance.get("resumen") or {}).get("hoy") if balance.get("disponible") else None
+        if hoy_bal and hoy_bal.get("produccion_kwh") is not None:
+            produccion_hoy = hoy_bal["produccion_kwh"]
+            ahorro_hoy = hoy_bal["ahorro_cop"]
+            if nivel_bateria is None:
+                nivel_bateria = hoy_bal.get("bateria_anochecer_pct")
+
     return DashboardKPIs(
         radiacion_actual_kwh=rad_actual_kwh,
         consumo_hoy_kwh=consumo_hoy,
         costo_hoy_cop=consumo_hoy * empresa.tarifa_kwh,
         produccion_solar_hoy_kwh=produccion_hoy,
-        ahorro_estimado_cop=produccion_hoy * empresa.tarifa_kwh,
-        nivel_bateria_pct=ultimo_consumo.nivel_bateria_pct if ultimo_consumo else None,
+        ahorro_estimado_cop=ahorro_hoy,
+        nivel_bateria_pct=nivel_bateria,
         consumo_mes_kwh=consumo_mes,
         costo_mes_cop=consumo_mes * empresa.tarifa_kwh,
     )

@@ -123,6 +123,9 @@ else:
         "consumo_sobre_inventario": "chart",
         "aparato_dominante": "bolt",
         "recordatorio_pago": "calendar",
+        "excedente_solar": "sun",
+        "bateria_insuficiente": "battery",
+        "produccion_baja": "cloud",
     }
     for alerta in alertas_humanizadas:
         cols = st.columns([5, 1])

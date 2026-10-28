@@ -113,8 +113,13 @@ class OpenMeteoService:
         lat: Optional[float] = None,
         lon: Optional[float] = None,
         allow_synthetic: bool = True,
+        past_days: int = 0,
     ) -> List[Dict]:
-        """Pronostico diario con radiacion solar acumulada."""
+        """Pronostico diario con radiacion solar acumulada.
+
+        past_days agrega los ultimos dias ya transcurridos (analisis del modelo), que cubren el hueco
+        mientras el archivo historico publica esos dias.
+        """
         params = {
             "latitude": lat or self.lat,
             "longitude": lon or self.lon,
@@ -123,6 +128,8 @@ class OpenMeteoService:
             "forecast_days": min(max(days, 1), 16),
             "timezone": "America/Bogota",
         }
+        if past_days:
+            params["past_days"] = min(max(int(past_days), 0), 92)
         async with httpx.AsyncClient(timeout=20.0) as client:
             try:
                 resp = await client.get(self.forecast_url, params=params)

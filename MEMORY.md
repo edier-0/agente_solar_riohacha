@@ -9,7 +9,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - Sanitización estricta de rutas: devuelve nombres de apartados del frontend (ej. 'Administración', 'Mis Aparatos').
 - Motor dual activo: Google GenAI (`gemini-3.5-flash-lite`) + fallback heurístico local.
 - Rama `feature/asistente-chat-kai` integrada y fusionada vía PR #8 en `feature/preparacion-proyecto-ingenova`.
-- Suite completa pasando al 100%: 79 tests (pytest con `requirements-dev.txt`).
+- Suite: 91 tests (pytest con `requirements-dev.txt`); el de AppTest del widget necesita streamlit instalado.
+- Rama `feature/baterias-balance-solar` (sin commit): banco de varias baterías (tabla `baterias_instalacion`),
+  pantalla "Mi sistema solar", balance solar diario (`/empresas/{id}/balance-solar`) y alertas solares.
 
 ## Decisiones (y por qué)
 - **Modal dialog `@st.dialog` con fragment**: Ofrece la mejor experiencia visual amplia y cómoda para el usuario.
@@ -17,6 +19,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - **Sanitización regex case y accent-insensitive**: Garantiza que nunca se devuelvan archivos `.py` al frontend.
 - **Aislamiento de contexto backend**: Token JWT filtra exclusivamente los datos de la entidad del usuario.
 - **Tarifa Air-E ($943 COP/kWh) y reserva de baterías 30-40%**: Modelado realista para La Guajira.
+- **Balance solar estimado, no medido**: producción = GHI real (Open-Meteo, respaldo NASA POWER) x kWp x PR;
+  sin radiación no se inventa producción. Con paneles la factura solo es la red: se usa el consumo
+  (aparatos o perfil) cuya red estimada más se parece a la factura.
+- **Baterías en lista** (`baterias_instalacion`, con cantidad): las columnas de la ficha guardan la primera;
+  las instalaciones viejas se migran solas al leerlas.
 
 ## Aprendizajes y errores a evitar
 - El diseño modal `@st.dialog` es preferido por el usuario frente a popovers compactos.

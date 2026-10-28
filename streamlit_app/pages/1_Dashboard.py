@@ -11,6 +11,7 @@ import streamlit as st
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api_client import api_get, get_current_user, is_authenticated
+from balance_solar_ui import render_graficas, render_resumen
 from design import render_hero, render_section_header
 from ubicacion import CIUDAD
 from ui import render_user_sidebar
@@ -63,6 +64,15 @@ render_hero(
     eyebrow=empresa_sel["nombre"],
     tone="info",
 )
+
+if not es_simulado:
+    # Paneles registrados: producción con radiación real, consumo, excedentes, baterías y red
+    balance = api_get(f"/empresas/{empresa_id}/balance-solar", params={"days": 30, "pronostico": 3})
+    if balance and balance.get("disponible"):
+        render_resumen(balance)
+        st.divider()
+        render_graficas(empresa_id, balance)
+        st.stop()
 
 if es_simulado:
     st.info(

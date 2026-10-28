@@ -179,11 +179,17 @@ def _potencia_pico_kw(inst: dict) -> float:
 
 
 def _bateria_kwh(inst: dict) -> float:
-    return inst["voltaje_banco_v"] * inst["capacidad_ah"] / 1000 if inst.get("tiene_bateria") else 0.0
+    if not inst.get("tiene_bateria"):
+        return 0.0
+    return inst["voltaje_banco_v"] * inst["capacidad_ah"] * int(inst.get("numero_baterias") or 1) / 1000
 
 
 def _resumen_instalacion(inst: dict) -> str:
-    bateria = f"batería de {_bateria_kwh(inst):.2f} kWh" if inst.get("tiene_bateria") else "sin batería"
+    n = int(inst.get("numero_baterias") or 1)
+    if inst.get("tiene_bateria"):
+        bateria = f"{n} baterías con {_bateria_kwh(inst):.2f} kWh" if n > 1 else f"batería de {_bateria_kwh(inst):.2f} kWh"
+    else:
+        bateria = "sin batería"
     return (
         f"{_potencia_pico_kw(inst):.2f} kWp ({inst['cantidad_paneles']} paneles de "
         f"{inst['potencia_panel_w']:,.0f} W) · {bateria}"
@@ -539,6 +545,13 @@ def _payload_instalacion(inst: dict | None) -> dict | None:
             "dod_pct": inst.get("dod_pct"),
             "eficiencia_ciclo_pct": inst.get("eficiencia_ciclo_pct"),
             "potencia_descarga_w": inst.get("potencia_descarga_w"),
+            # Banco de baterías iguales; las distintas se agregan después en "Mi sistema solar"
+            "baterias": [{
+                "quimica": QUIMICAS[inst["quimica_bateria"]][1],
+                "voltaje_v": inst["voltaje_banco_v"],
+                "capacidad_ah": inst["capacidad_ah"],
+                "cantidad": int(inst.get("numero_baterias") or 1),
+            }],
         })
     return {k: v for k, v in datos.items() if v is not None}
 
@@ -684,6 +697,7 @@ def _paso_instalacion(ss) -> None:
 
     # ---- 2. Batería ----
     voltaje_v = capacidad_ah = None
+    numero_baterias = 1
     quimica = voltaje = None
     soc = dod = eficiencia_ciclo = descarga = None
     with st.container(border=True):
@@ -717,13 +731,23 @@ def _paso_instalacion(ss) -> None:
                 capacidad_ah = st.number_input(
                     "Capacidad en amperios-hora", min_value=1.0, max_value=100000.0, step=10.0,
                     value=float(base["capacidad_ah"]), key="reg_inst_ah", format="%.0f",
-                    help="La capacidad del banco completo, como la indica el fabricante (descarga en 10 horas, C10).",
+                    help="La capacidad de cada batería, como la indica el fabricante (descarga en 10 horas, C10).",
                 )
-            wh = voltaje_v * capacidad_ah
+            numero_baterias = int(st.number_input(
+                "Número de baterías iguales", min_value=1, max_value=500, step=1,
+                value=int(base.get("numero_baterias") or 1), key="reg_inst_num_baterias",
+                help="Cuántas baterías con este voltaje y capacidad tiene el banco. Si son distintas, "
+                     "agrégalas después en Mi sistema solar.",
+            ))
+            wh = voltaje_v * capacidad_ah * numero_baterias
             dod_actual = float(ss.get("reg_inst_dod", base["dod_pct"]))
+            por_bateria = (
+                f"{numero_baterias} × ({voltaje_v:,.0f} V × {capacidad_ah:,.0f} Ah)" if numero_baterias > 1
+                else f"{voltaje_v:,.0f} V × {capacidad_ah:,.0f} Ah"
+            )
             _calculo(
                 "bateria", "battery", "Capacidad bruta almacenada", f"{wh / 1000:.2f}", "kWh nominales",
-                f"{voltaje_v:,.0f} V × {capacidad_ah:,.0f} Ah = <b>{wh:,.0f} Wh</b>. Con una profundidad de descarga "
+                f"{por_bateria} = <b>{wh:,.0f} Wh</b>. Con una profundidad de descarga "
                 f"(DoD) del {dod_actual:.0f}%, tienes <b>{wh / 1000 * dod_actual / 100:.2f} kWh</b> disponibles para la noche.",
             )
             c3, c4 = st.columns(2)
@@ -888,6 +912,7 @@ def _paso_instalacion(ss) -> None:
                 "tiene_bateria": tiene_bateria, "quimica_bateria": quimica or base["quimica_bateria"],
                 "voltaje": voltaje or base["voltaje"], "voltaje_banco_v": voltaje_v or base["voltaje_banco_v"],
                 "capacidad_ah": capacidad_ah or base["capacidad_ah"], "soc_pct": soc if soc is not None else base["soc_pct"],
+                "numero_baterias": numero_baterias if tiene_bateria else 1,
                 "dod_pct": dod or base["dod_pct"], "eficiencia_ciclo_pct": eficiencia_ciclo or base["eficiencia_ciclo_pct"],
                 "potencia_descarga_w": descarga or base["potencia_descarga_w"],
                 "potencia_inversor_w": inversor, "eficiencia_inversor_pct": eficiencia_inv,

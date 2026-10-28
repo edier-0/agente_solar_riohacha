@@ -257,6 +257,23 @@ def api_patch(path: str, json: Optional[Dict] = None, params: Optional[Dict] = N
         return None
 
 
+def api_put(path: str, json: Optional[Dict] = None) -> Optional[Any]:
+    """PUT que muestra el motivo cuando la API rechaza el cambio."""
+    try:
+        resp = requests.put(_url(path), headers=_get_headers(), json=json, params=_with_scenario(None), timeout=30)
+        if resp.status_code == 401:
+            _clear_session()
+            st.warning("Sesion expirada.")
+            return None
+        if resp.status_code >= 400:
+            st.error(f"No se pudo guardar: {_detalle_error(resp)}")
+            return None
+        return resp.json()
+    except requests.RequestException as exc:
+        st.error(f"Error API: {exc}")
+        return None
+
+
 def api_delete(path: str, params: Optional[Dict] = None) -> bool:
     """DELETE autenticado. True si la API confirmó el borrado."""
     try:

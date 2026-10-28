@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.models.models import Alerta, Empresa
 from app.services.alertas_fonseca import TIPOS_GENERALES, obtener_alertas_generales
+from app.services.alertas_solares import TIPOS_SOLARES, calcular_alertas_solares
 
 
 class AgenteAlertas:
@@ -25,12 +26,22 @@ class AgenteAlertas:
             Alerta.empresa_id == empresa.id,
             Alerta.leida == False,  # noqa: E712
             Alerta.created_at >= hoy_inicio,
-            Alerta.tipo.in_(TIPOS_GENERALES),
+            Alerta.tipo.in_(TIPOS_GENERALES + TIPOS_SOLARES),
         ).delete(synchronize_session=False)
         db.commit()
 
+        alertas = list(await obtener_alertas_generales(refrescar))
+        if (empresa.capacidad_paneles_kw or 0) > 0:
+            # Con paneles registrados: excedentes, baterías y producción según el balance solar
+            from app.services.balance_solar import calcular_balance
+
+            try:
+                alertas += calcular_alertas_solares(await calcular_balance(db, empresa, days=14, pronostico=1))
+            except Exception as e:  # el clima o la BD no deben romper las alertas generales
+                print(f"[ALERTAS SOLARES] {e}")
+
         creadas = []
-        for alerta in await obtener_alertas_generales(refrescar):
+        for alerta in alertas:
             a = self._crear_si_no_existe_hoy(db, empresa.id, **alerta)
             if a:
                 creadas.append(a)

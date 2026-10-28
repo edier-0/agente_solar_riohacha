@@ -299,12 +299,56 @@ class InstalacionSolar(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
+    # Banco de baterías: una fila por batería (o por grupo de baterías iguales).
+    # quimica_bateria, voltaje_banco_v y capacidad_ah quedan como datos de la primera batería.
+    baterias = relationship(
+        "BateriaInstalacion",
+        back_populates="instalacion",
+        cascade="all, delete-orphan",
+        order_by="BateriaInstalacion.orden",
+    )
+
     @property
     def potencia_pico_kw(self) -> float:
         return round((self.potencia_panel_w or 0) * (self.cantidad_paneles or 0) / 1000, 3)
 
     @property
     def bateria_kwh(self) -> float:
-        if not self.tiene_bateria or not self.voltaje_banco_v or not self.capacidad_ah:
+        """Energía nominal del banco completo: la suma de todas las baterías (V x Ah x cantidad)."""
+        if not self.tiene_bateria:
+            return 0.0
+        if self.baterias:
+            return round(sum(b.energia_kwh for b in self.baterias), 3)
+        if not self.voltaje_banco_v or not self.capacidad_ah:
             return 0.0
         return round(self.voltaje_banco_v * self.capacidad_ah / 1000, 3)
+
+    @property
+    def numero_baterias(self) -> int:
+        if not self.tiene_bateria:
+            return 0
+        if self.baterias:
+            return sum(b.cantidad or 1 for b in self.baterias)
+        return 1 if self.voltaje_banco_v and self.capacidad_ah else 0
+
+
+class BateriaInstalacion(Base):
+    """Una batería (o un grupo de baterías iguales) del banco de una instalación solar."""
+    __tablename__ = "baterias_instalacion"
+
+    id = Column(Integer, primary_key=True, index=True)
+    instalacion_id = Column(
+        Integer, ForeignKey("instalaciones_solares.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    orden = Column(Integer, default=1, nullable=False)
+    quimica = Column(String(60), nullable=True)
+    voltaje_v = Column(Float, nullable=False)
+    capacidad_ah = Column(Float, nullable=False)
+    cantidad = Column(Integer, default=1, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    instalacion = relationship("InstalacionSolar", back_populates="baterias")
+
+    @property
+    def energia_kwh(self) -> float:
+        return round((self.voltaje_v or 0) * (self.capacidad_ah or 0) * (self.cantidad or 1) / 1000, 3)

@@ -24,6 +24,7 @@ from app.api.routes import (
     reportes,
     insights,
     aparatos,
+    instalacion,
 )
 
 settings = get_settings()
@@ -98,6 +99,7 @@ app.include_router(alertas.router, prefix=API_PREFIX)
 app.include_router(reportes.router, prefix=API_PREFIX)
 app.include_router(insights.router, prefix=API_PREFIX)
 app.include_router(aparatos.router, prefix=API_PREFIX)
+app.include_router(instalacion.router, prefix=API_PREFIX)
 
 
 @app.get("/", tags=["Root"])

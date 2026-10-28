@@ -93,6 +93,7 @@ class EstadisticasAparatosResponse(BaseModel):
     dias_con_datos: int
     consumo_inventario_kwh_mes: float
     consumo_real_kwh_mes: Optional[float] = None
+    solar_aprovechada_kwh_mes: Optional[float] = None  # con paneles: lo que cubrió el sol además de la factura
     consumo_total_kwh_mes: float
     costo_total_cop_mes: float
     factor_ajuste: Optional[float] = None
@@ -101,8 +102,25 @@ class EstadisticasAparatosResponse(BaseModel):
 
 
 # --- Auth Schemas ---
+class BateriaInstalacionIn(BaseModel):
+    """Una batería del banco (o varias iguales, con 'cantidad')."""
+    quimica: Optional[str] = Field(None, max_length=60)
+    voltaje_v: float = Field(..., gt=0, le=1500)
+    capacidad_ah: float = Field(..., gt=0, le=100000)
+    cantidad: int = Field(1, ge=1, le=500)
+
+
+class BateriaInstalacionResponse(BateriaInstalacionIn):
+    id: int
+    orden: int
+    energia_kwh: float
+
+    class Config:
+        from_attributes = True
+
+
 class InstalacionSolarCreate(BaseModel):
-    """Sistema solar que ya tiene el usuario: paneles, batería, inversor y perfil de consumo."""
+    """Sistema solar que ya tiene el usuario: paneles, baterías, inversor y perfil de consumo."""
     potencia_panel_w: float = Field(..., gt=0, le=2000)
     cantidad_paneles: int = Field(..., ge=1, le=10000)
     orientacion: str = Field("sur", pattern="^(sur|sureste|suroeste|este_oeste|personalizada)$")
@@ -125,12 +143,49 @@ class InstalacionSolarCreate(BaseModel):
     demanda_diurna_kwh: Optional[float] = Field(None, ge=0, le=100000)
     demanda_nocturna_kwh: Optional[float] = Field(None, ge=0, le=100000)
     carga_base_w: Optional[float] = Field(None, ge=0, le=1000000)
+    # Banco de baterías: si viene vacío se usa la batería de voltaje_banco_v y capacidad_ah
+    baterias: List[BateriaInstalacionIn] = Field(default_factory=list, max_length=50)
 
     @model_validator(mode="after")
     def _bateria_completa(self):
-        if self.tiene_bateria and (not self.voltaje_banco_v or not self.capacidad_ah):
+        if self.tiene_bateria and not self.baterias and (not self.voltaje_banco_v or not self.capacidad_ah):
             raise ValueError("Para la batería indica el voltaje del banco y su capacidad en Ah")
         return self
+
+
+class InstalacionSolarResponse(BaseModel):
+    id: int
+    empresa_id: int
+    potencia_panel_w: float
+    cantidad_paneles: int
+    orientacion: Optional[str] = None
+    azimut_grados: Optional[float] = None
+    inclinacion_grados: Optional[float] = None
+    tipo_panel: Optional[str] = None
+    tiene_bateria: bool
+    quimica_bateria: Optional[str] = None
+    voltaje_banco_v: Optional[float] = None
+    capacidad_ah: Optional[float] = None
+    soc_pct: Optional[float] = None
+    dod_pct: Optional[float] = None
+    eficiencia_ciclo_pct: Optional[float] = None
+    potencia_descarga_w: Optional[float] = None
+    potencia_inversor_w: Optional[float] = None
+    eficiencia_inversor_pct: Optional[float] = None
+    rendimiento_pr_pct: Optional[float] = None
+    potencia_pv_max_w: Optional[float] = None
+    consumo_diario_kwh: Optional[float] = None
+    demanda_diurna_kwh: Optional[float] = None
+    demanda_nocturna_kwh: Optional[float] = None
+    carga_base_w: Optional[float] = None
+    baterias: List[BateriaInstalacionResponse] = Field(default_factory=list)
+    potencia_pico_kw: float
+    bateria_kwh: float
+    numero_baterias: int
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
 
 
 class UserCreate(BaseModel):

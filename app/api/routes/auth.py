@@ -12,6 +12,7 @@ from app.db.session import get_db
 from app.models.models import User, Empresa, ConfiguracionAlerta, InstalacionSolar, TipoEntidad, UserRole
 from app.schemas.schemas import MessageResponse, Token, UserCreate, UserLogin, UserResponse
 from app.services.aparatos import crear_aparatos
+from app.services.instalacion_solar import aplicar_baterias
 
 
 router = APIRouter(prefix="/auth", tags=["Autenticacion"])
@@ -95,8 +96,11 @@ def register(
 
             db.add(ConfiguracionAlerta(empresa_id=empresa_id))
             if user_data.instalacion:
-                # Paneles y batería reales: los cálculos dejan de simular el sistema
-                instalacion = InstalacionSolar(empresa_id=empresa_id, **user_data.instalacion.model_dump())
+                # Paneles y baterías reales: los cálculos dejan de simular el sistema
+                instalacion = InstalacionSolar(
+                    empresa_id=empresa_id, **user_data.instalacion.model_dump(exclude={"baterias"})
+                )
+                aplicar_baterias(instalacion, user_data.instalacion.baterias)
                 db.add(instalacion)
                 nueva_empresa.capacidad_paneles_kw = instalacion.potencia_pico_kw
                 nueva_empresa.capacidad_bateria_kwh = instalacion.bateria_kwh

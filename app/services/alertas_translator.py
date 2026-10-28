@@ -22,6 +22,9 @@ ICONO_TIPO = {
     "polvo_aire": "🌫️",
     "baja_radiacion": "☁️",
     "sin_pronostico": "📡",
+    "excedente_solar": "☀️",
+    "bateria_insuficiente": "🔋",
+    "produccion_baja": "🌥️",
 }
 
 # Título y acción por tipo. El detalle con las cifras del pronóstico va en el mensaje.
@@ -49,6 +52,18 @@ PLANTILLAS = {
     "sin_pronostico": {
         "titulo": "Pronóstico no disponible",
         "accion": "Revisa de nuevo en unos minutos.",
+    },
+    "excedente_solar": {
+        "titulo": "Te sobra energía solar",
+        "accion": "Programa la lavadora, la bomba o la carga de equipos entre 10 a. m. y 2 p. m.",
+    },
+    "bateria_insuficiente": {
+        "titulo": "Tus baterías no alcanzan para la noche",
+        "accion": "Reduce el consumo nocturno o considera ampliar el banco de baterías.",
+    },
+    "produccion_baja": {
+        "titulo": "Mañana producirás menos",
+        "accion": "Mantén las baterías cargadas y aplaza los consumos grandes.",
     },
 }
 

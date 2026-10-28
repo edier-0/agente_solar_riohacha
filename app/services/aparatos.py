@@ -3,7 +3,8 @@ Inventario de aparatos: búsqueda en el catálogo y estadísticas de consumo por
 
 No hay medidores por aparato, así que el consumo de cada uno es una estimación
 (potencia x horas de uso). Cuando la empresa tiene consumo real registrado
-(factura o carga de datos) se ajusta a ese total:
+(factura o carga de datos) se ajusta a ese total. Con paneles solares la factura solo
+muestra lo que se tomó de la red: el total es la factura más lo que cubrió el sol.
 - si el inventario estima MÁS de lo real, se reduce cada aparato en la misma proporción;
 - si estima MENOS, los aparatos conservan su estimación y la diferencia aparece como
   "Consumo no identificado" (aparatos que la persona no registró).
@@ -85,18 +86,23 @@ def calcular_estadisticas(db: Session, empresa: Empresa) -> Dict:
     inventario = round(sum(a.consumo_kwh_mes for a in aparatos), 2)
     real = consumo_real_mensual(db, empresa)
     consumo_real = real["consumo_real_kwh_mes"]
+    solar = None
+    if consumo_real is not None and (empresa.capacidad_paneles_kw or 0) > 0:
+        from app.services.balance_solar import solar_aprovechada_mes_bd
+
+        solar = solar_aprovechada_mes_bd(db, empresa)
 
     factor = None
     no_identificado = 0.0
     if consumo_real is None:
         base, total = "catalogo", inventario
     else:
-        base, total = "factura", consumo_real
-        if inventario > consumo_real and inventario > 0:
-            factor = round(consumo_real / inventario, 4)
+        base, total = "factura", round(consumo_real + (solar or 0), 2)
+        if inventario > total and inventario > 0:
+            factor = round(total / inventario, 4)
         else:
             factor = 1.0
-            no_identificado = round(consumo_real - inventario, 2)
+            no_identificado = round(total - inventario, 2)
 
     def pct(kwh: float) -> float:
         return round(kwh / total * 100, 1) if total else 0.0
@@ -149,6 +155,7 @@ def calcular_estadisticas(db: Session, empresa: Empresa) -> Dict:
         "dias_con_datos": real["dias_con_datos"],
         "consumo_inventario_kwh_mes": inventario,
         "consumo_real_kwh_mes": consumo_real,
+        "solar_aprovechada_kwh_mes": solar,
         "consumo_total_kwh_mes": round(total, 2),
         "costo_total_cop_mes": round(total * tarifa, 0),
         "factor_ajuste": factor,

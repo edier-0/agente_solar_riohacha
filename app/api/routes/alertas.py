@@ -12,6 +12,7 @@ from app.models.models import Alerta, ConfiguracionAlerta, Empresa, User, UserRo
 from app.schemas.schemas import AlertaResponse, ConfigAlertaUpdate
 from app.services.agents.agente_alertas import agente_alertas
 from app.services.alertas_fonseca import CRITERIOS, TIPOS_GENERALES, obtener_alertas_generales
+from app.services.alertas_solares import CRITERIOS_SOLARES, TIPOS_SOLARES
 from app.services.alertas_translator import humanizar_lote
 from app.services.demo_ops import (
     get_demo_alert_config,
@@ -55,8 +56,8 @@ async def _alertas_demo(empresa_id: int, refrescar: bool = False) -> List[dict]:
 
 
 def _consulta_visibles(db: Session, empresa_id: int, solo_no_leidas: bool, limit: int):
-    """Solo las alertas generales del municipio (no las de consumo, aparatos ni pagos guardadas antes)."""
-    q = db.query(Alerta).filter(Alerta.empresa_id == empresa_id, Alerta.tipo.in_(TIPOS_GENERALES))
+    """Alertas del municipio y del sistema solar (no las de consumo, aparatos ni pagos guardadas antes)."""
+    q = db.query(Alerta).filter(Alerta.empresa_id == empresa_id, Alerta.tipo.in_(TIPOS_GENERALES + TIPOS_SOLARES))
     if solo_no_leidas:
         q = q.filter(Alerta.leida == False)  # noqa: E712
     return q.order_by(desc(Alerta.created_at)).limit(limit).all()
@@ -65,7 +66,7 @@ def _consulta_visibles(db: Session, empresa_id: int, solo_no_leidas: bool, limit
 @router.get("/criterios")
 def criterios_alertas(current_user: User = Depends(get_current_user)):
     """Cuándo se dispara cada alerta general (mismos umbrales para todos)."""
-    return {"ubicacion": get_settings().LOCATION_NAME, "criterios": CRITERIOS}
+    return {"ubicacion": get_settings().LOCATION_NAME, "criterios": CRITERIOS + CRITERIOS_SOLARES}
 
 
 @router.get("/{empresa_id}", response_model=List[AlertaResponse])
